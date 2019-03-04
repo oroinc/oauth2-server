@@ -1,0 +1,37 @@
+oro:
+    oauth2server:
+        clients: OAuth Applications
+        client:
+            name:
+                label: Application Name
+                description: The name of the application.
+            active:
+                label: Active
+                description: Whether the application is active or not.
+            grants:
+                label: Grants
+                description: The grant types supported by the application. For details see <a href="https://oauth.net/2/grant-types/" target="_blank" class="no-hash">OAuth 2.0 Grant Types</a>.
+            scopes:
+                label: Scopes
+                description: The scopes to which the application can have access.
+            identifier:
+                label: Client ID
+            secret:
+                label: Client Secret
+            action:
+                add: Add Application
+                create: Create
+                save: Save
+                activate: Activate
+                deactivate: Deactivate
+            dialog:
+                create_title: Create OAuth Application
+                edit_title: Edit OAuth Application
+            created_message: The OAuth application was successfully created.
+            created_warning_message: Please remember to keep your <strong>Client ID</strong> and <strong>Client Secret</strong> because they are displayed only one time, and then is no longer visible.
+        grant_types:
+            authorization_code: Authorization Code
+            implicit: Implicit
+            password: Password
+            client_credentials: Client Credentials
+            refresh_token: Refresh Token
