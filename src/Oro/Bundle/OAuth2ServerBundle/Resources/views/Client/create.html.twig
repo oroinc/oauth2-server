@@ -1,0 +1,58 @@
+{% extends 'OroUIBundle:actions:update.html.twig' %}
+{% import 'OroUIBundle::macros.html.twig' as UI %}
+
+{% block content_data %}
+    {% if not form.vars.valid and form.vars.errors|length %}
+        <div class="alert alert-error" role="alert">
+            <div class="message">
+                {{ form_errors(form) }}
+            </div>
+        </div>
+    {% endif %}
+    <fieldset class="form form-horizontal">
+        {{ form_row(form.name) }}
+        {{ form_row(form.active) }}
+        {{ form_row(form.grants) }}
+        {{ form_rest(form) }}
+        <div class="widget-actions form-actions">
+            <button class="btn" type="reset">{{ 'Cancel'|trans }}</button>
+            <button class="btn btn-primary" type="submit">{{ 'oro.oauth2server.client.action.create'|trans }}</button>
+        </div>
+    </fieldset>
+{% endblock content_data %}
+
+{% block widget_context %}
+    <div class="widget-content">
+        <div class="row-fluid form-horizontal">
+            <div class="responsive-block">
+                {{ 'oro.oauth2server.client.created_message'|trans }}
+            </div>
+        </div>
+        <div class="row-fluid form-horizontal">
+            <div class="responsive-block alert-info">
+                {{ 'oro.oauth2server.client.created_warning_message'|trans|raw }}
+            </div>
+        </div>
+        <div class="row-fluid form-horizontal">
+            <div class="responsive-block">
+                <div>
+                    <strong>{{ 'oro.oauth2server.client.identifier.label'|trans }}:</strong>
+                    <span class="text-nowrap">{{ entity.identifier }}</span>
+                </div>
+                <div>
+                    <strong>{{ 'oro.oauth2server.client.secret.label'|trans }}:</strong>
+                    <span class="text-nowrap">{{ entity.plainSecret }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div {{ UI.renderPageComponentAttributes({
+        module: 'oroui/js/app/components/widget-form-component',
+        options: {
+            _wid: app.request.get('_wid'),
+            data: savedId|default(null),
+            preventRemove: true
+        }
+    }) }}></div>
+{% endblock widget_context %}

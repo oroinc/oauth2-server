@@ -1,0 +1,55 @@
+parameters:
+    oro_oauth2_server.supported_client_owners: [Oro\Bundle\UserBundle\Entity\User]
+    oro_oauth2_server.supported_grant_types: [client_credentials]
+
+services:
+    oro_oauth2_server.client_manager:
+        class: Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager
+        arguments:
+            - '@doctrine'
+            - '@security.encoder_factory'
+            - '@oro_security.token_accessor'
+            - '@security.authorization_checker'
+            - '@oro_security.owner.entity_owner_accessor'
+            - '@oro_entity.entity_identifier_accessor'
+
+    oro_oauth2_server.listener.add_clients_to_view_page:
+        class: Oro\Bundle\OAuth2ServerBundle\EventListener\AddClientsToViewPageListener
+        arguments:
+            - '%oro_oauth2_server.supported_client_owners%'
+            - '@translator'
+            - '@oro_entity.entity_identifier_accessor'
+            - '@oro_oauth2_server.client_manager'
+        tags:
+            - { name: kernel.event_listener, event: entity_view.render.before, method: addOAuth2Clients }
+
+    oro_oauth2_server.client_action_visibility_provider:
+        class: Oro\Bundle\OAuth2ServerBundle\Datagrid\ClientActionsVisibilityProvider
+        arguments:
+            - '@oro_oauth2_server.client_manager'
+
+    oro_oauth2_server.event_listener.datagrid.clients.add_organization:
+        class: Oro\Bundle\OAuth2ServerBundle\Datagrid\EventListener\OrganizationClientDatagridListener
+        arguments:
+            - '@oro_security.token_accessor'
+        tags:
+            - { name: kernel.event_listener, event: oro_datagrid.datagrid.build.before.oauth-client-grid, method: onBuildBefore }
+
+    oro_oauth2_server.event_listener.quote_update:
+        class: Oro\Bundle\OAuth2ServerBundle\EventListener\InitializeClientEntityListener
+        arguments:
+            - '@oro_oauth2_server.client_manager'
+        tags:
+            - { name: kernel.event_listener, event: oro.form.update_handler.before_form_submit.oro_oauth2_client, method: updateClient }
+
+    Oro\Bundle\OAuth2ServerBundle\Form\Type\ClientType:
+        public: false
+        arguments:
+            - '%oro_oauth2_server.supported_grant_types%'
+        tags: [form.type]
+
+    Oro\Bundle\OAuth2ServerBundle\Validator\Constraints\UniqueClientNameValidator:
+        public: false
+        arguments:
+            - '@doctrine'
+        tags: [validator.constraint_validator]

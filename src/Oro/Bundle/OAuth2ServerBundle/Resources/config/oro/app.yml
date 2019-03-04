@@ -1,0 +1,3 @@
+security:
+    encoders:
+        Oro\Bundle\OAuth2ServerBundle\Entity\Client: sha512

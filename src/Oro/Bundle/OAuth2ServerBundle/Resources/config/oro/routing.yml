@@ -1,0 +1,4 @@
+oro_oauth2_server_client:
+    resource: "@OroOAuth2ServerBundle/Controller/ClientController.php"
+    type: annotation
+    prefix: /oauth2

@@ -1,0 +1,21 @@
+{% extends 'OroUIBundle:actions:update.html.twig' %}
+
+{% block content_data %}
+    {% if not form.vars.valid and form.vars.errors|length %}
+        <div class="alert alert-error" role="alert">
+            <div class="message">
+                {{ form_errors(form) }}
+            </div>
+        </div>
+    {% endif %}
+    <fieldset class="form form-horizontal">
+        {{ form_row(form.name) }}
+        {{ form_row(form.active) }}
+        {{ form_row(form.grants) }}
+        {{ form_rest(form) }}
+        <div class="widget-actions form-actions">
+            <button class="btn" type="reset">{{ 'Cancel'|trans }}</button>
+            <button class="btn btn-primary" type="submit">{{ 'oro.oauth2server.client.action.save'|trans }}</button>
+        </div>
+    </fieldset>
+{% endblock content_data %}

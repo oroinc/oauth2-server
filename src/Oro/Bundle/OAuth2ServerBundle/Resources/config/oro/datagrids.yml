@@ -1,0 +1,106 @@
+datagrids:
+    oauth-client-grid:
+        source:
+            type: orm
+            query:
+                select:
+                    - client
+                    - client.id
+                    - client.name
+                    - client.active
+                    - client.grants
+                from:
+                    - { table: Oro\Bundle\OAuth2ServerBundle\Entity\Client, alias: client }
+                where:
+                    and:
+                        - client.ownerEntityClass = :ownerEntityClass
+                        - client.ownerEntityId = :ownerEntityId
+            bind_parameters:
+                - ownerEntityClass
+                - ownerEntityId
+        columns:
+            name:
+                label: oro.oauth2server.client.name.label
+            active:
+                label: oro.oauth2server.client.active.label
+                frontend_type: boolean
+            grants:
+                label: oro.oauth2server.client.grants.label
+                type: twig
+                frontend_type: html
+                template: OroOAuth2ServerBundle:Client:Datagrid/grants.html.twig
+        sorters:
+            columns:
+                name:
+                    data_name: client.name
+                active:
+                    data_name: client.active
+        filters:
+            columns:
+                name:
+                    type: string
+                    data_name: client.name
+                active:
+                    type: boolean
+                    data_name: client.active
+        properties:
+            id: ~
+            update_link:
+                type: url
+                route: oro_oauth2_server_client_update
+                params: [ id ]
+            activate_link:
+                type: url
+                route: oro_oauth2_server_client_activate
+                params: [ id ]
+            deactivate_link:
+                type: url
+                route: oro_oauth2_server_client_deactivate
+                params: [ id ]
+            delete_link:
+                type: url
+                route: oro_oauth2_server_client_delete
+                params: [ id ]
+        actions:
+            update:
+                type: dialog
+                label: oro.grid.action.update
+                icon: edit
+                link: update_link
+                widgetOptions:
+                    reload-grid-name: oauth-client-grid
+                    options:
+                        dialogOptions:
+                            title: "@translator->trans(oro.oauth2server.client.dialog.edit_title)"
+                            modal: true
+                            width: 500
+            activate:
+                type: ajax
+                label: oro.oauth2server.client.action.activate
+                icon: check
+                link: activate_link
+                requestType: POST
+                defaultMessages:
+                    success: oro.oauth2server.client.activate_success
+            deactivate:
+                type: ajax
+                label: oro.oauth2server.client.action.deactivate
+                icon: close
+                link: deactivate_link
+                requestType: POST
+                confirmation: true
+                defaultMessages:
+                    confirm_title: oro.oauth2server.client.deactivate_confirm_title
+                    confirm_content: oro.oauth2server.client.deactivate_confirm_message
+                    success: oro.oauth2server.client.deactivate_success
+            delete:
+                type: ajaxdelete
+                label: oro.grid.action.delete
+                link: delete_link
+                icon: trash
+                requestType: DELETE
+                defaultMessages:
+                    confirm_content: oro.oauth2server.client.delete_confirm_message
+        action_configuration: ['@oro_oauth2_server.client_action_visibility_provider', getActionsVisibility]
+        options:
+            entity_pagination: false

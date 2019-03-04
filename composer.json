@@ -1,0 +1,41 @@
+{
+    "name": "oro/oauth2-server",
+    "description": "Oro OAuth 2.0 authorization and resource server for BAP",
+    "type": "symfony-bundle",
+    "keywords": ["ORO", "OAuth", "OAuth2"],
+    "homepage": "https://github.com/oroinc/oauth2-server",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Oro, Inc",
+            "homepage": "http://oroinc.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {"Oro\\Bundle\\OAuth2ServerBundle\\": "src/Oro/Bundle/OAuth2ServerBundle"},
+        "exclude-from-classmap": ["/Tests/"]
+    },
+    "require": {
+        "oro/platform": "3.1.*",
+        "league/oauth2-server": "7.3.*",
+        "symfony/psr-http-message-bridge": "^1.0",
+        "zendframework/zend-diactoros": "^1.7"
+    },
+    "repositories": {
+        "oro": {
+            "type": "composer",
+            "url": "https://packagist.orocrm.com"
+        },
+        "asset-packagist": {
+            "type": "composer",
+            "url": "https://asset-packagist.orocrm.com"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "extra": {
+        "branch-alias": {
+            "dev-master": "3.1-dev"
+        }
+    }
+}

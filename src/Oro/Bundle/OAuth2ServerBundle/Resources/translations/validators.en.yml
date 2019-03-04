@@ -1,0 +1,7 @@
+oro:
+    oauth2server:
+        client:
+            name:
+                unique.message: The application with the given name already exists.
+            grants:
+                count.message: You must select at least {{ limit }} grant.|You must select at least {{ limit }} grants.

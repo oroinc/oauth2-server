@@ -1,0 +1,12 @@
+Oro\Bundle\OAuth2ServerBundle\Entity\Client:
+    constraints:
+        - Oro\Bundle\OAuth2ServerBundle\Validator\Constraints\UniqueClientName: ~
+    properties:
+        name:
+            - NotBlank: ~
+            - Length:
+                max: 255
+        grants:
+            - Count:
+                min: 1
+                minMessage: oro.oauth2server.client.grants.count.message
