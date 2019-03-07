@@ -13,6 +13,25 @@ services:
             - '@oro_security.owner.entity_owner_accessor'
             - '@oro_entity.entity_identifier_accessor'
 
+    Oro\Bundle\OAuth2ServerBundle\Command\CleanupCommand:
+        public: false
+        arguments:
+            - '@oro_oauth2_server.client_cleaner'
+            - '@oro_oauth2_server.access_token_cleaner'
+        tags: [console.command]
+
+    oro_oauth2_server.client_cleaner:
+        class: Oro\Bundle\OAuth2ServerBundle\Entity\Cleaner\ClientCleaner
+        public: false
+        arguments:
+            - '@doctrine'
+
+    oro_oauth2_server.access_token_cleaner:
+        class: Oro\Bundle\OAuth2ServerBundle\Entity\Cleaner\AccessTokenCleaner
+        public: false
+        arguments:
+            - '@doctrine'
+
     oro_oauth2_server.listener.add_clients_to_view_page:
         class: Oro\Bundle\OAuth2ServerBundle\EventListener\AddClientsToViewPageListener
         arguments:
