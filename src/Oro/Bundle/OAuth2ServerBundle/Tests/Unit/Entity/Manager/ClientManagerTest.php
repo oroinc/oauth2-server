@@ -123,13 +123,38 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
+     * @param array  $grants
+     * @param object $subject
+     */
+    private function expectIsGranted(array $grants, $subject)
+    {
+        if (!$grants['MANAGE_API_KEY']) {
+            $this->authorizationChecker->expects(self::once())
+                ->method('isGranted')
+                ->with('MANAGE_API_KEY', $subject)
+                ->willReturn(false);
+        } elseif (!$grants['EDIT']) {
+            $this->authorizationChecker->expects(self::exactly(2))
+                ->method('isGranted')
+                ->withConsecutive(['MANAGE_API_KEY', $subject], ['EDIT', $subject])
+                ->willReturnOnConsecutiveCalls(true, false);
+        } else {
+            $this->authorizationChecker->expects(self::exactly(2))
+                ->method('isGranted')
+                ->withConsecutive(['MANAGE_API_KEY', $subject], ['EDIT', $subject])
+                ->willReturnOnConsecutiveCalls(true, true);
+        }
+    }
+
+    /**
      * @return array
      */
     public static function isGrantedDataProvider()
     {
         return [
-            'granted' => [true],
-            'denied'  => [false]
+            'granted'               => [['MANAGE_API_KEY' => true, 'EDIT' => true, 'result' => true]],
+            'EDIT denied'           => [['MANAGE_API_KEY' => true, 'EDIT' => false, 'result' => false]],
+            'MANAGE_API_KEY denied' => [['MANAGE_API_KEY' => false, 'EDIT' => true, 'result' => false]]
         ];
     }
 
@@ -230,7 +255,7 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
     /**
      * @dataProvider isGrantedDataProvider
      */
-    public function testIsCreationGrantedWhenOwnerEntityIsUserButItDoesNotEqualToLoggedInUser($isGranted)
+    public function testIsCreationGrantedWhenOwnerEntityIsUserButItDoesNotEqualToLoggedInUser($grants)
     {
         $ownerEntityClass = User::class;
         $ownerEntityId = 123;
@@ -249,18 +274,18 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
             ->method('find')
             ->with($ownerEntityClass, $ownerEntityId)
             ->willReturn($owner);
-        $this->authorizationChecker->expects(self::once())
-            ->method('isGranted')
-            ->with('EDIT', self::identicalTo($owner))
-            ->willReturn($isGranted);
+        $this->expectIsGranted($grants, $owner);
 
-        self::assertSame($isGranted, $this->clientManager->isCreationGranted($ownerEntityClass, $ownerEntityId));
+        self::assertSame(
+            $grants['result'],
+            $this->clientManager->isCreationGranted($ownerEntityClass, $ownerEntityId)
+        );
     }
 
     /**
      * @dataProvider isGrantedDataProvider
      */
-    public function testIsModificationGrantedWhenClientEntityDoesNotHaveOrganization($isGranted)
+    public function testIsModificationGrantedWhenClientEntityDoesNotHaveOrganization($grants)
     {
         $ownerEntityClass = User::class;
         $ownerEntityId = 123;
@@ -279,20 +304,20 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
             ->method('find')
             ->with($ownerEntityClass, $ownerEntityId)
             ->willReturn($owner);
-        $this->authorizationChecker->expects(self::once())
-            ->method('isGranted')
-            ->with('EDIT', self::identicalTo($owner))
-            ->willReturn($isGranted);
+        $this->expectIsGranted($grants, $owner);
 
         $client = $this->getClient();
         $client->setOwnerEntity($ownerEntityClass, $ownerEntityId);
-        self::assertSame($isGranted, $this->clientManager->isModificationGranted($client));
+        self::assertSame(
+            $grants['result'],
+            $this->clientManager->isModificationGranted($client)
+        );
     }
 
     /**
      * @dataProvider isGrantedDataProvider
      */
-    public function testIsModificationGrantedWhenOwnerEntityHasSameOrganizationAsClientEntity($isGranted)
+    public function testIsModificationGrantedWhenOwnerEntityHasSameOrganizationAsClientEntity($grants)
     {
         $organizationId = 234;
         $organization = $this->createMock(Organization::class);
@@ -331,21 +356,21 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
             ->method('getOrganization')
             ->with(self::identicalTo($owner))
             ->willReturn($ownerOrganization);
-        $this->authorizationChecker->expects(self::once())
-            ->method('isGranted')
-            ->with('EDIT', self::identicalTo($owner))
-            ->willReturn($isGranted);
+        $this->expectIsGranted($grants, $owner);
 
         $client = $this->getClient();
         $client->setOwnerEntity($ownerEntityClass, $ownerEntityId);
         $client->setOrganization($organization);
-        self::assertSame($isGranted, $this->clientManager->isModificationGranted($client));
+        self::assertSame(
+            $grants['result'],
+            $this->clientManager->isModificationGranted($client)
+        );
     }
 
     /**
      * @dataProvider isGrantedDataProvider
      */
-    public function testIsModificationGrantedWhenOwnerEntityAndClientEntityHaveDifferentOrganizations($isGranted)
+    public function testIsModificationGrantedWhenOwnerEntityAndClientEntityHaveDifferentOrganizations($grants)
     {
         $organizationId = 234;
         $organization = $this->createMock(Organization::class);
@@ -398,24 +423,24 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
             ->method('getIdentifier')
             ->with(self::identicalTo($ownerOrganization))
             ->willReturn($ownerOrganizationId);
-        $this->authorizationChecker->expects(self::once())
-            ->method('isGranted')
-            ->with(
-                'EDIT',
-                new DomainObjectReference(get_class($owner), $ownerEntityId, $ownerOwnerId, $ownerOrganizationId)
-            )
-            ->willReturn($isGranted);
+        $this->expectIsGranted(
+            $grants,
+            new DomainObjectReference(get_class($owner), $ownerEntityId, $ownerOwnerId, $ownerOrganizationId)
+        );
 
         $client = $this->getClient();
         $client->setOwnerEntity($ownerEntityClass, $ownerEntityId);
         $client->setOrganization($organization);
-        self::assertSame($isGranted, $this->clientManager->isModificationGranted($client));
+        self::assertSame(
+            $grants['result'],
+            $this->clientManager->isModificationGranted($client)
+        );
     }
 
     /**
      * @dataProvider isGrantedDataProvider
      */
-    public function testIsModificationGrantedWhenOwnerEntityHasOrgOwnershipAndSameOrgAsClientEntity($isGranted)
+    public function testIsModificationGrantedWhenOwnerEntityHasOrgOwnershipAndSameOrgAsClientEntity($grants)
     {
         $organizationId = 234;
         $organization = $this->createMock(Organization::class);
@@ -453,21 +478,21 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
             ->method('getOrganization')
             ->with(self::identicalTo($owner))
             ->willReturn(null);
-        $this->authorizationChecker->expects(self::once())
-            ->method('isGranted')
-            ->with('EDIT', self::identicalTo($owner))
-            ->willReturn($isGranted);
+        $this->expectIsGranted($grants, $owner);
 
         $client = $this->getClient();
         $client->setOwnerEntity($ownerEntityClass, $ownerEntityId);
         $client->setOrganization($organization);
-        self::assertSame($isGranted, $this->clientManager->isModificationGranted($client));
+        self::assertSame(
+            $grants['result'],
+            $this->clientManager->isModificationGranted($client)
+        );
     }
 
     /**
      * @dataProvider isGrantedDataProvider
      */
-    public function testIsModificationGrantedWhenOwnerEntityHasOrgOwnershipAndDifferentOrgThenClientEntity($isGranted)
+    public function testIsModificationGrantedWhenOwnerEntityHasOrgOwnershipAndDifferentOrgThenClientEntity($grants)
     {
         $organizationId = 234;
         $organization = $this->createMock(Organization::class);
@@ -514,18 +539,18 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
             ->method('getIdentifier')
             ->with(self::identicalTo($ownerOrganization))
             ->willReturn($ownerOrganizationId);
-        $this->authorizationChecker->expects(self::once())
-            ->method('isGranted')
-            ->with(
-                'EDIT',
-                new DomainObjectReference(get_class($owner), $ownerEntityId, $ownerOrganizationId, null)
-            )
-            ->willReturn($isGranted);
+        $this->expectIsGranted(
+            $grants,
+            new DomainObjectReference(get_class($owner), $ownerEntityId, $ownerOrganizationId, null)
+        );
 
         $client = $this->getClient();
         $client->setOwnerEntity($ownerEntityClass, $ownerEntityId);
         $client->setOrganization($organization);
-        self::assertSame($isGranted, $this->clientManager->isModificationGranted($client));
+        self::assertSame(
+            $grants['result'],
+            $this->clientManager->isModificationGranted($client)
+        );
     }
 
     public function testIsModificationGrantedWhenOwnerEntityDoesNotHaveOwnership()
@@ -606,7 +631,9 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
         self::assertEquals($encodedSecret, $client->getSecret());
         self::assertRandomString($client->getSalt(), 50);
         self::assertSame($organization, $client->getOrganization());
-        self::assertNull($client->getGrants());
+        // BAP-18427: uncomment this block when other grant types is implemented
+        //self::assertNull($client->getGrants());
+        self::assertEquals(['client_credentials'], $client->getGrants());
         self::assertNull($client->getScopes());
         self::assertNull($client->getRedirectUris());
     }
@@ -622,7 +649,9 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
         self::assertNull($client->getPlainSecret());
         self::assertNull($client->getSecret());
         self::assertNull($client->getSalt());
-        self::assertNull($client->getGrants());
+        // BAP-18427: uncomment this block when other grant types is implemented
+        //self::assertNull($client->getGrants());
+        self::assertEquals(['client_credentials'], $client->getGrants());
         self::assertNull($client->getScopes());
         self::assertNull($client->getRedirectUris());
     }
@@ -647,7 +676,9 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
         self::assertEquals($encodedSecret, $client->getSecret());
         self::assertRandomString($client->getSalt(), 50);
         self::assertNotEquals($existingSalt, $client->getSalt());
-        self::assertNull($client->getGrants());
+        // BAP-18427: uncomment this block when other grant types is implemented
+        //self::assertNull($client->getGrants());
+        self::assertEquals(['client_credentials'], $client->getGrants());
         self::assertNull($client->getScopes());
         self::assertNull($client->getRedirectUris());
     }

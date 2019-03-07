@@ -27,8 +27,8 @@ oro:
             dialog:
                 create_title: Create OAuth Application
                 edit_title: Edit OAuth Application
-            created_message: The OAuth application was successfully created.
-            created_warning_message: Please remember to keep your <strong>Client ID</strong> and <strong>Client Secret</strong> because they are displayed only one time, and then is no longer visible.
+            created_message: OAuth application has been created.
+            created_warning_message: Please copy <strong>Client Secret</strong> and save it somewhere safe. For security reasons, we cannot show it to you again.
         grant_types:
             authorization_code: Authorization Code
             implicit: Implicit
