@@ -7,6 +7,7 @@ datagrids:
                     - client
                     - client.id
                     - client.name
+                    - client.identifier
                     - client.active
                     - client.grants
                 from:
@@ -21,14 +22,17 @@ datagrids:
         columns:
             name:
                 label: oro.oauth2server.client.name.label
+            identifier:
+                label: oro.oauth2server.client.identifier.label
             active:
                 label: oro.oauth2server.client.active.label
                 frontend_type: boolean
-            grants:
-                label: oro.oauth2server.client.grants.label
-                type: twig
-                frontend_type: html
-                template: OroOAuth2ServerBundle:Client:Datagrid/grants.html.twig
+# BAP-18427: uncomment this block when other grant types is implemented
+#            grants:
+#                label: oro.oauth2server.client.grants.label
+#                type: twig
+#                frontend_type: html
+#                template: OroOAuth2ServerBundle:Client:Datagrid/grants.html.twig
         sorters:
             columns:
                 name:

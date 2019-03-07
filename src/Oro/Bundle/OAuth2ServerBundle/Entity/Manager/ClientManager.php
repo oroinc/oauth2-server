@@ -72,7 +72,10 @@ class ClientManager
      */
     public function isCreationGranted(string $ownerEntityClass, int $ownerEntityId): bool
     {
-        return $this->isOwnerEditGranted($ownerEntityClass, $ownerEntityId);
+        return $this->hasModificationPermissions(
+            $ownerEntityClass,
+            $ownerEntityId
+        );
     }
 
     /**
@@ -84,7 +87,11 @@ class ClientManager
      */
     public function isModificationGranted(Client $entity): bool
     {
-        return $this->isOwnerEditGranted($entity->getOwnerEntityClass(), $entity->getOwnerEntityId(), $entity);
+        return $this->hasModificationPermissions(
+            $entity->getOwnerEntityClass(),
+            $entity->getOwnerEntityId(),
+            $entity
+        );
     }
 
     /**
@@ -105,6 +112,11 @@ class ClientManager
         }
         if (!$client->getRedirectUris() && null !== $client->getRedirectUris()) {
             $client->setRedirectUris(null);
+        }
+
+        // BAP-18427: remove this block when other grant types is implemented
+        if (!$client->getGrants()) {
+            $client->setGrants(['client_credentials']);
         }
 
         if ($flush) {
@@ -206,8 +218,11 @@ class ClientManager
      *
      * @return bool
      */
-    private function isOwnerEditGranted(string $ownerEntityClass, int $ownerEntityId, Client $entity = null): bool
-    {
+    private function hasModificationPermissions(
+        string $ownerEntityClass,
+        int $ownerEntityId,
+        Client $entity = null
+    ): bool {
         $currentUser = $this->tokenAccessor->getUser();
         if ($currentUser instanceof $ownerEntityClass
             && $this->entityIdAccessor->getIdentifier($currentUser) === $ownerEntityId
@@ -221,12 +236,12 @@ class ClientManager
         }
 
         if (null === $entity) {
-            return $this->isEditGranted($owner);
+            return $this->hasPermissionsToManageClient($owner);
         }
 
         $organization = $entity->getOrganization();
         if (null === $organization) {
-            return $this->isEditGranted($owner);
+            return $this->hasPermissionsToManageClient($owner);
         }
 
         $result = true;
@@ -234,15 +249,19 @@ class ClientManager
         $ownerOrganization = $this->entityOwnerAccessor->getOrganization($owner);
         if (null !== $ownerOrganization) {
             if ($ownerOrganization->getId() === $organization->getId()) {
-                $result = $this->isEditGranted($owner);
+                $result = $this->hasPermissionsToManageClient($owner);
             } else {
-                $result = $this->isEditGranted($this->getObjectReference($owner, $ownerOwner, $ownerOrganization));
+                $result = $this->hasPermissionsToManageClient(
+                    $this->getDomainObjectReference($owner, $ownerOwner, $ownerOrganization)
+                );
             }
         } elseif ($ownerOwner instanceof Organization) {
             if ($ownerOwner->getId() === $organization->getId()) {
-                $result = $this->isEditGranted($owner);
+                $result = $this->hasPermissionsToManageClient($owner);
             } else {
-                $result = $this->isEditGranted($this->getObjectReference($owner, $ownerOwner, null));
+                $result = $this->hasPermissionsToManageClient(
+                    $this->getDomainObjectReference($owner, $ownerOwner, null)
+                );
             }
         }
 
@@ -254,9 +273,11 @@ class ClientManager
      *
      * @return bool
      */
-    private function isEditGranted($subject): bool
+    private function hasPermissionsToManageClient($subject): bool
     {
-        return $this->authorizationChecker->isGranted('EDIT', $subject);
+        return
+            $this->authorizationChecker->isGranted('MANAGE_API_KEY', $subject)
+            && $this->authorizationChecker->isGranted('EDIT', $subject);
     }
 
     /**
@@ -266,7 +287,7 @@ class ClientManager
      *
      * @return DomainObjectReference
      */
-    private function getObjectReference($entity, $owner, $organization): DomainObjectReference
+    private function getDomainObjectReference($entity, $owner, $organization): DomainObjectReference
     {
         if (null === $organization) {
             return new DomainObjectReference(

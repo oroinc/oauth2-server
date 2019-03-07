@@ -31,9 +31,10 @@ services:
     oro_oauth2_server.event_listener.datagrid.clients.add_organization:
         class: Oro\Bundle\OAuth2ServerBundle\Datagrid\EventListener\OrganizationClientDatagridListener
         arguments:
-            - '@oro_security.token_accessor'
+            - '@oro_oauth2_server.client_owner_organizations_provider'
         tags:
             - { name: kernel.event_listener, event: oro_datagrid.datagrid.build.before.oauth-client-grid, method: onBuildBefore }
+            - { name: kernel.event_listener, event: oro_datagrid.datagrid.build.after.oauth-client-grid, method: onBuildAfter }
 
     oro_oauth2_server.event_listener.quote_update:
         class: Oro\Bundle\OAuth2ServerBundle\EventListener\InitializeClientEntityListener
@@ -42,10 +43,18 @@ services:
         tags:
             - { name: kernel.event_listener, event: oro.form.update_handler.before_form_submit.oro_oauth2_client, method: updateClient }
 
+    oro_oauth2_server.client_owner_organizations_provider:
+        class: Oro\Bundle\OAuth2ServerBundle\Provider\ClientOwnerOrganizationsProvider
+        public: false
+        arguments:
+            - '@doctrine'
+            - '@oro_security.token_accessor'
+
     Oro\Bundle\OAuth2ServerBundle\Form\Type\ClientType:
         public: false
         arguments:
             - '%oro_oauth2_server.supported_grant_types%'
+            - '@oro_oauth2_server.client_owner_organizations_provider'
         tags: [form.type]
 
     Oro\Bundle\OAuth2ServerBundle\Validator\Constraints\UniqueClientNameValidator:
