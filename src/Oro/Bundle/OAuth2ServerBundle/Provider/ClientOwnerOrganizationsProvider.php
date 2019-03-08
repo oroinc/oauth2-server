@@ -68,6 +68,25 @@ class ClientOwnerOrganizationsProvider
     }
 
     /**
+     * Checks the given list of organizations to which OAuth 2.0 client owner can belong to
+     * and decide whether the organization selector should be displayed for the current logged in user or not.
+     *
+     * @param Organization[] $organizations
+     *
+     * @return bool
+     */
+    public function isOrganizationSelectorRequired(array $organizations): bool
+    {
+        if (count($organizations) > 1) {
+            return true;
+        }
+
+        return
+            count($organizations) === 1
+            && $organizations[0]->getId() !== $this->tokenAccessor->getOrganizationId();
+    }
+
+    /**
      * Sorts the given organizations to use them in a choice form type that shows a list of organizations.
      * An organization from the security context is returned as the first element of the array,
      * all other organizations are sorted alphabetically by name.

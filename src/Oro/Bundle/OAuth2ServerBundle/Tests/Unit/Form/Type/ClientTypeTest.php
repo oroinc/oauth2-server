@@ -95,6 +95,8 @@ class ClientTypeTest extends TypeTestCase
             ->willReturn(false);
         $this->organizationsProvider->expects(self::never())
             ->method('getClientOwnerOrganizations');
+        $this->organizationsProvider->expects(self::never())
+            ->method('isOrganizationSelectorRequired');
 
         $form = $this->factory->create(ClientType::class, $client);
         $form->submit($submittedData);
@@ -118,6 +120,7 @@ class ClientTypeTest extends TypeTestCase
             // BAP-18427: uncomment this block when other grant types is implemented
             //'grants' => ['grant2']
         ];
+        $organization1 = $this->getOrganization(10, 'org1');
 
         $this->organizationsProvider->expects(self::once())
             ->method('isMultiOrganizationSupported')
@@ -125,7 +128,11 @@ class ClientTypeTest extends TypeTestCase
         $this->organizationsProvider->expects(self::once())
             ->method('getClientOwnerOrganizations')
             ->with($client->getOwnerEntityClass(), $client->getOwnerEntityId())
-            ->willReturn([$this->getOrganization(10, 'org1')]);
+            ->willReturn([$organization1]);
+        $this->organizationsProvider->expects(self::once())
+            ->method('isOrganizationSelectorRequired')
+            ->with([$organization1])
+            ->willReturn(false);
 
         $form = $this->factory->create(ClientType::class, $client);
         $form->submit($submittedData);
@@ -160,6 +167,10 @@ class ClientTypeTest extends TypeTestCase
             ->method('getClientOwnerOrganizations')
             ->with($client->getOwnerEntityClass(), $client->getOwnerEntityId())
             ->willReturn([$organization1, $organization2]);
+        $this->organizationsProvider->expects(self::once())
+            ->method('isOrganizationSelectorRequired')
+            ->with([$organization1, $organization2])
+            ->willReturn(true);
         $this->organizationsProvider->expects(self::once())
             ->method('sortOrganizations')
             ->with([$organization1, $organization2])
@@ -223,6 +234,8 @@ class ClientTypeTest extends TypeTestCase
             ->method('isMultiOrganizationSupported');
         $this->organizationsProvider->expects(self::never())
             ->method('getClientOwnerOrganizations');
+        $this->organizationsProvider->expects(self::never())
+            ->method('isOrganizationSelectorRequired');
 
         $form = $this->factory->create(ClientType::class, $client);
         $form->submit($submittedData);
