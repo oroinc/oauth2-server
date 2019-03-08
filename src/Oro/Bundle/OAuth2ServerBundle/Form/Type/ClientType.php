@@ -123,7 +123,7 @@ class ClientType extends AbstractType
             $client->getOwnerEntityClass(),
             $client->getOwnerEntityId()
         );
-        if (count($organizations) > 1) {
+        if ($this->organizationsProvider->isOrganizationSelectorRequired($organizations)) {
             $event->getForm()->add(
                 'organization',
                 EntityType::class,

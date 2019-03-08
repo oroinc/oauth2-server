@@ -67,7 +67,7 @@ class OrganizationClientDatagridListener
         );
         $datagrid->getDatasource()->bindParameters(['organizationIds']);
 
-        if (count($organizations) > 1) {
+        if ($this->organizationsProvider->isOrganizationSelectorRequired($organizations)) {
             $this->addOrganizationColumn($datagrid->getConfig(), $organizations);
         }
     }

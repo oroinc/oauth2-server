@@ -227,6 +227,10 @@ class OrganizationClientDatagridListenerTest extends \PHPUnit\Framework\TestCase
             ->method('getClientOwnerOrganizations')
             ->with($parameters->get('ownerEntityClass'), $parameters->get('ownerEntityId'))
             ->willReturn([$organization1]);
+        $this->organizationsProvider->expects(self::once())
+            ->method('isOrganizationSelectorRequired')
+            ->with([$organization1])
+            ->willReturn(false);
 
         $queryParameters->expects(self::never())
             ->method('clear');
@@ -289,6 +293,10 @@ class OrganizationClientDatagridListenerTest extends \PHPUnit\Framework\TestCase
             ->method('getClientOwnerOrganizations')
             ->with($parameters->get('ownerEntityClass'), $parameters->get('ownerEntityId'))
             ->willReturn([$organization1, $organization2]);
+        $this->organizationsProvider->expects(self::once())
+            ->method('isOrganizationSelectorRequired')
+            ->with([$organization1, $organization2])
+            ->willReturn(true);
         $this->organizationsProvider->expects(self::once())
             ->method('sortOrganizations')
             ->with([$organization1, $organization2])
