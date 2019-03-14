@@ -1,0 +1,68 @@
+<?php
+
+namespace Oro\Bundle\OAuth2ServerBundle\Security\Firewall;
+
+use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\OAuth2Token;
+use Symfony\Bridge\PsrHttpMessage\HttpMessageFactoryInterface;
+use Symfony\Component\HttpKernel\Event\GetResponseEvent;
+use Symfony\Component\Security\Core\Authentication\AuthenticationManagerInterface;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Security\Http\Firewall\ListenerInterface;
+
+/**
+ * The security firewall listener that detects request with OAuth 2.0 authorization header.
+ */
+class OAuth2Listener implements ListenerInterface
+{
+    /** @var TokenStorageInterface */
+    private $tokenStorage;
+
+    /** @var AuthenticationManagerInterface */
+    private $authenticationManager;
+
+    /** @var HttpMessageFactoryInterface */
+    private $httpMessageFactory;
+
+    /** @var string */
+    private $providerKey;
+
+    /**
+     * @param TokenStorageInterface          $tokenStorage
+     * @param AuthenticationManagerInterface $authenticationManager
+     * @param HttpMessageFactoryInterface    $httpMessageFactory
+     * @param string                         $providerKey
+     */
+    public function __construct(
+        TokenStorageInterface $tokenStorage,
+        AuthenticationManagerInterface $authenticationManager,
+        HttpMessageFactoryInterface $httpMessageFactory,
+        string $providerKey
+    ) {
+        $this->tokenStorage = $tokenStorage;
+        $this->authenticationManager = $authenticationManager;
+        $this->httpMessageFactory = $httpMessageFactory;
+        $this->providerKey = $providerKey;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function handle(GetResponseEvent $event): void
+    {
+        $request = $this->httpMessageFactory->createRequest($event->getRequest());
+
+        if (!$request->hasHeader('Authorization')
+            || strpos($request->getHeader('Authorization')[0], 'Bearer') === false
+        ) {
+            return;
+        }
+
+        $token = new OAuth2Token();
+        $token->setAttribute(OAuth2Token::REQUEST_ATTRIBUTE, $request);
+        $token->setAttribute(OAuth2Token::PROVIDER_KEY_ATTRIBUTE, $this->providerKey);
+
+        $authenticatedToken = $this->authenticationManager->authenticate($token);
+
+        $this->tokenStorage->setToken($authenticatedToken);
+    }
+}

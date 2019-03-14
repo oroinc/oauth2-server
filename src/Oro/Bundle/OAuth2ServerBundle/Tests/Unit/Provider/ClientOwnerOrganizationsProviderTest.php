@@ -6,7 +6,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\EntityManagerInterface;
 use Oro\Bundle\OAuth2ServerBundle\Provider\ClientOwnerOrganizationsProvider;
-use Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Stub\GlobalOrganization;
+use Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Fixtures\Entity\ExtendedOrganization;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Oro\Bundle\SecurityBundle\Authentication\TokenAccessorInterface;
 use Oro\Bundle\UserBundle\Entity\OrganizationAwareUserInterface;
@@ -74,7 +74,7 @@ class ClientOwnerOrganizationsProviderTest extends \PHPUnit\Framework\TestCase
     {
         $this->tokenAccessor->expects(self::once())
             ->method('getOrganization')
-            ->willReturn(new GlobalOrganization());
+            ->willReturn(new ExtendedOrganization());
 
         self::assertTrue($this->organizationsProvider->isMultiOrganizationSupported());
     }
@@ -101,7 +101,7 @@ class ClientOwnerOrganizationsProviderTest extends \PHPUnit\Framework\TestCase
     {
         $ownerEntityClass = 'Test\OwnerEntity';
         $ownerEntityId = 123;
-        $currentOrganization = new GlobalOrganization();
+        $currentOrganization = new ExtendedOrganization();
         $currentOrganization->setIsGlobal(false);
 
         $this->tokenAccessor->expects(self::once())
@@ -121,10 +121,10 @@ class ClientOwnerOrganizationsProviderTest extends \PHPUnit\Framework\TestCase
         $ownerEntityClass = 'Test\OwnerEntity';
         $ownerEntityId = 123;
         $owner = $this->createMock(OrganizationAwareUserInterface::class);
-        $organization1 = new GlobalOrganization();
-        $organization2 = new GlobalOrganization();
+        $organization1 = new ExtendedOrganization();
+        $organization2 = new ExtendedOrganization();
 
-        $currentOrganization = new GlobalOrganization();
+        $currentOrganization = new ExtendedOrganization();
         $currentOrganization->setIsGlobal(true);
 
         $this->tokenAccessor->expects(self::once())
@@ -155,7 +155,7 @@ class ClientOwnerOrganizationsProviderTest extends \PHPUnit\Framework\TestCase
         $ownerEntityClass = 'Test\OwnerEntity';
         $ownerEntityId = 123;
         $owner = new \stdClass();
-        $currentOrganization = new GlobalOrganization();
+        $currentOrganization = new ExtendedOrganization();
         $currentOrganization->setIsGlobal(true);
 
         $this->tokenAccessor->expects(self::once())
@@ -181,7 +181,7 @@ class ClientOwnerOrganizationsProviderTest extends \PHPUnit\Framework\TestCase
     {
         $ownerEntityClass = 'Test\OwnerEntity';
         $ownerEntityId = 123;
-        $currentOrganization = new GlobalOrganization();
+        $currentOrganization = new ExtendedOrganization();
         $currentOrganization->setIsGlobal(true);
 
         $this->tokenAccessor->expects(self::once())

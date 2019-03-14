@@ -1,18 +1,18 @@
 <?php
 
-namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Stub;
+namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Fixtures\Entity;
 
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 
-class GlobalOrganization extends Organization
+class ExtendedOrganization extends Organization
 {
     /** @var bool */
-    private $isGlobal = false;
+    private $isGlobal;
 
     /**
      * @return bool
      */
-    public function getIsGlobal()
+    public function getIsGlobal(): bool
     {
         return $this->isGlobal;
     }
@@ -20,7 +20,7 @@ class GlobalOrganization extends Organization
     /**
      * @param bool $isGlobal
      */
-    public function setIsGlobal($isGlobal)
+    public function setIsGlobal(bool $isGlobal): void
     {
         $this->isGlobal = $isGlobal;
     }

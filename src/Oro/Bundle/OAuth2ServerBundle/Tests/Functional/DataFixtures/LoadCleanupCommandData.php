@@ -8,7 +8,6 @@ use Doctrine\Common\Persistence\ObjectManager;
 use Oro\Bundle\OAuth2ServerBundle\Entity\AccessToken;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
-use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Oro\Bundle\TestFrameworkBundle\Tests\Functional\DataFixtures\LoadBusinessUnit;
 use Oro\Bundle\TestFrameworkBundle\Tests\Functional\DataFixtures\LoadOrganization;
 use Oro\Bundle\UserBundle\Entity\User;
@@ -58,12 +57,6 @@ class LoadCleanupCommandData extends AbstractFixture implements ContainerAwareIn
         $manager->persist($client1);
         $client2 = $this->createClient('client2', User::class, $user1->getId() + 9999);
         $manager->persist($client2);
-        $client3 = $this->createClient(
-            'client3',
-            Organization::class,
-            $this->getReference('organization')->getId() + 9999
-        );
-        $manager->persist($client3);
 
         $manager->persist(
             $this->createAccessToken($client1, 'client1_token_not_expired', new \DateTime('now + 1 second'))
@@ -73,9 +66,6 @@ class LoadCleanupCommandData extends AbstractFixture implements ContainerAwareIn
         );
         $manager->persist(
             $this->createAccessToken($client2, 'client2_token_not_expired', new \DateTime('now + 1 second'))
-        );
-        $manager->persist(
-            $this->createAccessToken($client3, 'client3_token_not_expired', new \DateTime('now + 1 second'))
         );
 
         $manager->flush();

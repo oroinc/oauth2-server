@@ -43,7 +43,7 @@ class AccessToken
     /**
      * @var string[]
      *
-     * @ORM\Column(name="scopes", type="simple_array")
+     * @ORM\Column(name="scopes", type="simple_array", nullable=true)
      */
     private $scopes;
 
@@ -85,7 +85,7 @@ class AccessToken
     ) {
         $this->identifier = $identifier;
         $this->expiresAt = $expiresAt;
-        $this->scopes = $scopes;
+        $this->scopes = $scopes ?: null;
         $this->client = $client;
         $this->userIdentifier = $userIdentifier;
     }
@@ -127,7 +127,7 @@ class AccessToken
      */
     public function getScopes()
     {
-        return $this->scopes;
+        return $this->scopes ?? [];
     }
 
     /**

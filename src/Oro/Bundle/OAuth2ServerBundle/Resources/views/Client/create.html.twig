@@ -20,7 +20,7 @@
         {{ form_rest(form) }}
         <div class="widget-actions form-actions">
             <button class="btn" type="reset">{{ 'Cancel'|trans }}</button>
-            <button class="btn btn-primary" type="submit">{{ 'oro.oauth2server.client.action.create'|trans }}</button>
+            <button class="btn btn-primary" type="submit">{{ 'Save'|trans }}</button>
         </div>
     </fieldset>
 {% endblock content_data %}
@@ -45,10 +45,24 @@
                 </div>
                 <div>
                     <strong>{{ 'oro.oauth2server.client.secret.label'|trans }}:</strong>
-                    <span class="text-nowrap">{{ entity.plainSecret }}</span>
+                    {% set client_secret_id = 'client-secret-' ~ random() %}
+                    <span class="text-nowrap" id="{{ client_secret_id }}">{{ entity.plainSecret }}</span>
+                    {{- UI.clientLink({
+                        aCss: 'no-hash btn btn-icon',
+                        iCss: 'fa-copy',
+                        title: 'oro.ui.button.copy_to_clipboard.label'|trans,
+                        labelInIcon: false,
+                        pageComponent: {
+                            module: 'oroui/js/app/components/element-value-copy-to-clipboard-component',
+                            options: { elementSelector: '#' ~ client_secret_id }
+                        }
+                    }) -}}
                 </div>
             </div>
         </div>
+    </div>
+    <div class="widget-actions">
+        <button class="btn" type="reset">{{ 'Close'|trans }}</button>
     </div>
 
     <div {{ UI.renderPageComponentAttributes({
