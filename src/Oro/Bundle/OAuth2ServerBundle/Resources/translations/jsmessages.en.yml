@@ -6,3 +6,4 @@ oro:
             deactivate_success: Deactivated successfully
             activate_success: Activated successfully
             delete_confirm_message: Are you sure you want to delete the application?
+            delete_success: Deleted successfully

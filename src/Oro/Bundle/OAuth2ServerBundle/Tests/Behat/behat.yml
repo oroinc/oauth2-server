@@ -1,0 +1,9 @@
+oro_behat_extension:
+    elements:
+        Add OAuth Application:
+            selector:
+                locator: '//div[(contains(@class,"oauth-clients-container"))]//a[contains(text(),"Add Application")]'
+                type: xpath
+        OAuth Applications Grid:
+            selector: '.oauth-clients-container .grid-container'
+            class: Oro\Bundle\DataGridBundle\Tests\Behat\Element\Grid

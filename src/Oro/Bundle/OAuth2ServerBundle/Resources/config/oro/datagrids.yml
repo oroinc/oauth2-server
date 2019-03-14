@@ -105,6 +105,7 @@ datagrids:
                 requestType: DELETE
                 defaultMessages:
                     confirm_content: oro.oauth2server.client.delete_confirm_message
+                    success: oro.oauth2server.client.delete_success
         action_configuration: ['@oro_oauth2_server.client_action_visibility_provider', getActionsVisibility]
         options:
             entity_pagination: false
