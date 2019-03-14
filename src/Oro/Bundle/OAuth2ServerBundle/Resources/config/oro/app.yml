@@ -1,3 +1,15 @@
 security:
     encoders:
         Oro\Bundle\OAuth2ServerBundle\Entity\Client: sha512
+    firewalls:
+        oauth2_authorization_server:
+            pattern:   '^/oauth2-token$'
+            stateless: true
+            security:  false
+
+oro_oauth2_server:
+    resource_server:
+        oauth_firewalls:
+            - api_wsse_secured
+            - frontend_api_wsse_secured
+            - wsse_secured

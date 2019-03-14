@@ -11,14 +11,19 @@ use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
  */
 class ClientCleaner
 {
+    /** @var string[] */
+    private $ownerEntityClasses;
+
     /** @var ManagerRegistry */
     private $doctrine;
 
     /**
+     * @param string[]        $ownerEntityClasses
      * @param ManagerRegistry $doctrine
      */
-    public function __construct(ManagerRegistry $doctrine)
+    public function __construct(array $ownerEntityClasses, ManagerRegistry $doctrine)
     {
+        $this->ownerEntityClasses = $ownerEntityClasses;
         $this->doctrine = $doctrine;
     }
 
@@ -28,8 +33,7 @@ class ClientCleaner
     public function cleanUp(): void
     {
         $em = $this->getEntityManager();
-        $ownerEntityClasses = $this->getClientOwnerEntityClasses();
-        foreach ($ownerEntityClasses as $ownerEntityClass) {
+        foreach ($this->ownerEntityClasses as $ownerEntityClass) {
             $ownerSubQuery = $em->createQueryBuilder()
                 ->from($ownerEntityClass, 'o')
                 ->select('o.id')
@@ -46,25 +50,6 @@ class ClientCleaner
             );
             $qb->getQuery()->execute();
         }
-    }
-
-    /**
-     * @return string[]
-     */
-    private function getClientOwnerEntityClasses(): array
-    {
-        $qb = $this->getEntityManager()->createQueryBuilder()
-            ->from(Client::class, 'e')
-            ->select('e.ownerEntityClass')
-            ->distinct();
-        $rows = $qb->getQuery()->getArrayResult();
-
-        return array_map(
-            function (array $row) {
-                return $row['ownerEntityClass'];
-            },
-            $rows
-        );
     }
 
     /**

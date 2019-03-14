@@ -1,6 +1,6 @@
 parameters:
     oro_oauth2_server.supported_client_owners: [Oro\Bundle\UserBundle\Entity\User]
-    oro_oauth2_server.supported_grant_types: [client_credentials]
+    oro_oauth2_server.supported_grant_types: []
 
 services:
     oro_oauth2_server.client_manager:
@@ -24,6 +24,7 @@ services:
         class: Oro\Bundle\OAuth2ServerBundle\Entity\Cleaner\ClientCleaner
         public: false
         arguments:
+            - '%oro_oauth2_server.supported_client_owners%'
             - '@doctrine'
 
     oro_oauth2_server.access_token_cleaner:
@@ -39,6 +40,7 @@ services:
             - '@translator'
             - '@oro_entity.entity_identifier_accessor'
             - '@oro_oauth2_server.client_manager'
+            - '@oro_oauth2_server.encryption_keys_existence_checker'
         tags:
             - { name: kernel.event_listener, event: entity_view.render.before, method: addOAuth2Clients }
 
@@ -55,7 +57,7 @@ services:
             - { name: kernel.event_listener, event: oro_datagrid.datagrid.build.before.oauth-client-grid, method: onBuildBefore }
             - { name: kernel.event_listener, event: oro_datagrid.datagrid.build.after.oauth-client-grid, method: onBuildAfter }
 
-    oro_oauth2_server.event_listener.quote_update:
+    oro_oauth2_server.event_listener.initialize_client_entity:
         class: Oro\Bundle\OAuth2ServerBundle\EventListener\InitializeClientEntityListener
         arguments:
             - '@oro_oauth2_server.client_manager'
@@ -81,3 +83,71 @@ services:
         arguments:
             - '@doctrine'
         tags: [validator.constraint_validator]
+
+    oro_oauth2_server.encryption_keys_existence_checker:
+        class: Oro\Bundle\OAuth2ServerBundle\Security\EncryptionKeysExistenceChecker
+        public: false
+        arguments:
+            - '@oro_oauth2_server.league.private_key'
+            - '@oro_oauth2_server.league.public_key'
+
+    oro_oauth2_server.league.repository.client_repository:
+        class: Oro\Bundle\OAuth2ServerBundle\League\Repositories\ClientRepository
+        arguments:
+            - '@doctrine'
+            - '@security.encoder_factory'
+
+    oro_oauth2_server.league.repository.access_token_repository:
+        class: Oro\Bundle\OAuth2ServerBundle\League\Repositories\AccessTokenRepository
+        arguments:
+            - '@doctrine'
+
+    oro_oauth2_server.league.repository.scope_repository:
+        class: Oro\Bundle\OAuth2ServerBundle\League\Repositories\ScopeRepository
+
+    oro_oauth2_server.league.authorization_server:
+        class: League\OAuth2\Server\AuthorizationServer
+        arguments:
+            - '@oro_oauth2_server.league.repository.client_repository'
+            - '@oro_oauth2_server.league.repository.access_token_repository'
+            - '@oro_oauth2_server.league.repository.scope_repository'
+            - ~ # private key; it is set by Oro\Bundle\OAuth2ServerBundle\DependencyInjection\OroOAuth2ServerExtension
+            - ~ # encryption key; it is set by Oro\Bundle\OAuth2ServerBundle\DependencyInjection\OroOAuth2ServerExtension
+
+    oro_oauth2_server.league.authorization_validator:
+        class: Oro\Bundle\OAuth2ServerBundle\League\AuthorizationValidator
+        public: false
+        arguments:
+            - '@oro_oauth2_server.league.public_key'
+            - '@oro_oauth2_server.league.repository.access_token_repository'
+
+    oro_oauth2_server.league.private_key:
+        class: Oro\Bundle\OAuth2ServerBundle\League\CryptKeyFile
+        public: false
+        arguments:
+            - ~ # private key; it is set by Oro\Bundle\OAuth2ServerBundle\DependencyInjection\OroOAuth2ServerExtension
+
+    oro_oauth2_server.league.public_key:
+        class: Oro\Bundle\OAuth2ServerBundle\League\CryptKeyFile
+        public: false
+        arguments:
+            - ~ # public key; it is set by Oro\Bundle\OAuth2ServerBundle\DependencyInjection\OroOAuth2ServerExtension
+
+    oro_oauth2_server.security.firewall_listener:
+        class: Oro\Bundle\OAuth2ServerBundle\Security\Firewall\OAuth2Listener
+        public: false
+        arguments:
+            - '@security.token_storage'
+            - '@security.authentication.manager'
+            - '@sensio_framework_extra.psr7.http_message_factory'
+            - ~ # firewall ID; it is set by Oro\Bundle\OAuth2ServerBundle\DependencyInjection\Security\Factory\OAuth2Factory
+
+    oro_oauth2_server.security.authentication_provider:
+        class: Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Provider\OAuth2Provider
+        public: false
+        arguments:
+            - ~ # user provider; it is set by Oro\Bundle\OAuth2ServerBundle\DependencyInjection\Security\Factory\OAuth2Factory
+            - ~ # firewall ID; it is set by Oro\Bundle\OAuth2ServerBundle\DependencyInjection\Security\Factory\OAuth2Factory
+            - '@oro_oauth2_server.league.authorization_validator'
+            - '@doctrine'
+            - '@security.user_checker'

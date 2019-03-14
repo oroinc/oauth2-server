@@ -1,7 +1,11 @@
 oro:
     oauth2server:
-        clients: OAuth Applications
         client:
+            entity_label: OAuth Application
+            entity_plural_label: OAuth Applications
+            id:
+                label: ID
+                description: The entity identifier.
             name:
                 label: Application Name
                 description: The name of the application.
@@ -16,12 +20,27 @@ oro:
                 description: The scopes to which the application can have access.
             identifier:
                 label: Client ID
+                description: A string that unique identifies the application.
             secret:
                 label: Client Secret
+                description: A hash of the secret that is used for the application authentication.
+            salt:
+                label: Client Secret Salt
+                description: A string that is used as a salt to encode the client secret.
+            owner_entity_class:
+                label: Owner Entity Class
+                description: The class of the entity the application belongs to.
+            owner_entity_id:
+                label: Owner Entity ID
+                description: The ID of the entity the application belongs to.
+            organization:
+                label: Organization
+                description: The organization the client issued to.
+            redirect_uris:
+                label: Redirect URIs
+                description: URIs to which it is allowed to redirect the user back to.
             action:
                 add: Add Application
-                create: Create
-                save: Save
                 activate: Activate
                 deactivate: Deactivate
             dialog:
@@ -35,3 +54,4 @@ oro:
             password: Password
             client_credentials: Client Credentials
             refresh_token: Refresh Token
+        no_encryption_keys: OAuth authorization is not available as encryption keys configuration was not complete. Please contact your administrator.

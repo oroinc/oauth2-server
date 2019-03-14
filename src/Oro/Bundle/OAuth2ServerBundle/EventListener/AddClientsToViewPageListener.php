@@ -4,6 +4,7 @@ namespace Oro\Bundle\OAuth2ServerBundle\EventListener;
 
 use Oro\Bundle\EntityBundle\ORM\EntityIdAccessor;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
+use Oro\Bundle\OAuth2ServerBundle\Security\EncryptionKeysExistenceChecker;
 use Oro\Bundle\UIBundle\Event\BeforeViewRenderEvent;
 use Symfony\Component\Translation\TranslatorInterface;
 
@@ -13,7 +14,7 @@ use Symfony\Component\Translation\TranslatorInterface;
  */
 class AddClientsToViewPageListener
 {
-    /** @var string */
+    /** @var string[] */
     private $ownerEntityClasses;
 
     /** @var TranslatorInterface */
@@ -25,22 +26,28 @@ class AddClientsToViewPageListener
     /** @var ClientManager */
     private $clientManager;
 
+    /** @var EncryptionKeysExistenceChecker */
+    private $encryptionKeysExistenceChecker;
+
     /**
-     * @param string[]            $ownerEntityClasses
-     * @param TranslatorInterface $translator
-     * @param EntityIdAccessor    $entityIdAccessor
-     * @param ClientManager       $clientManager
+     * @param string[]                       $ownerEntityClasses
+     * @param TranslatorInterface            $translator
+     * @param EntityIdAccessor               $entityIdAccessor
+     * @param ClientManager                  $clientManager
+     * @param EncryptionKeysExistenceChecker $encryptionKeysExistenceChecker
      */
     public function __construct(
         array $ownerEntityClasses,
         TranslatorInterface $translator,
         EntityIdAccessor $entityIdAccessor,
-        ClientManager $clientManager
+        ClientManager $clientManager,
+        EncryptionKeysExistenceChecker $encryptionKeysExistenceChecker
     ) {
         $this->ownerEntityClasses = $ownerEntityClasses;
         $this->translator = $translator;
         $this->entityIdAccessor = $entityIdAccessor;
         $this->clientManager = $clientManager;
+        $this->encryptionKeysExistenceChecker = $encryptionKeysExistenceChecker;
     }
 
     /**
@@ -58,15 +65,18 @@ class AddClientsToViewPageListener
         $clientsData = $event->getTwigEnvironment()->render(
             'OroOAuth2ServerBundle:Client:clients.html.twig',
             [
-                'creationGranted' => $this->clientManager->isCreationGranted($entityClass, $entityId),
-                'entityClass'     => $entityClass,
-                'entityId'        => $entityId
+                'encryptionKeysExist' =>
+                    $this->encryptionKeysExistenceChecker->isPrivateKeyExist()
+                    && $this->encryptionKeysExistenceChecker->isPublicKeyExist(),
+                'creationGranted'     => $this->clientManager->isCreationGranted($entityClass, $entityId),
+                'entityClass'         => $entityClass,
+                'entityId'            => $entityId
             ]
         );
 
         $data = $event->getData();
         $data['dataBlocks'][] = [
-            'title'     => $this->translator->trans('oro.oauth2server.clients'),
+            'title'     => $this->translator->trans('oro.oauth2server.client.entity_plural_label'),
             'priority'  => 1500, // render after all other blocks
             'subblocks' => [['data' => [$clientsData]]]
         ];

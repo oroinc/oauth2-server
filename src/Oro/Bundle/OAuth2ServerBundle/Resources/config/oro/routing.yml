@@ -1,3 +1,11 @@
+oro_oauth2_server_auth_token:
+    path: '/oauth2-token'
+    methods: [POST]
+    defaults:
+        _controller: OroOAuth2ServerBundle:AuthorizationToken:token
+    options:
+        frontend: true
+
 oro_oauth2_server_client:
     resource: "@OroOAuth2ServerBundle/Controller/ClientController.php"
     type: annotation

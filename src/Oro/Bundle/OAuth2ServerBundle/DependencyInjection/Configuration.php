@@ -18,6 +18,7 @@ class Configuration implements ConfigurationInterface
 
         $node = $rootNode->children();
         $this->appendAuthorizationServer($node);
+        $this->appendResourceServer($node);
 
         return $treeBuilder;
     }
@@ -29,14 +30,59 @@ class Configuration implements ConfigurationInterface
     {
         $children = $builder
             ->arrayNode('authorization_server')
-                ->prototype('array')
-                    ->children();
+                ->addDefaultsIfNotSet()
+                ->children();
 
         $children
             ->integerNode('access_token_lifetime')
                 ->info('The lifetime in seconds of the access token.')
                 ->min(0)
                 ->defaultValue(3600)
+            ->end()
+            ->scalarNode('private_key')
+                ->info(
+                    'The full path to the private key file that is used to sign JWT tokens.'
+                    . ' How to generate a private key:'
+                    . ' https://oauth2.thephpleague.com/installation/#generating-public-and-private-keys'
+                )
+                ->example('/var/oauth/private.key')
+                ->defaultValue('%kernel.project_dir%/var/oauth_private.key')
+                ->cannotBeEmpty()
+            ->end()
+            ->scalarNode('encryption_key')
+                ->info(
+                    'The string that is used to encrypt refresh token and authorization token payload.'
+                    . ' How to generate an encryption key:'
+                    . ' https://oauth2.thephpleague.com/installation/#string-password'
+                )
+                ->defaultValue('%secret%')
+                ->cannotBeEmpty()
+            ->end();
+    }
+
+    private function appendResourceServer(NodeBuilder $builder): void
+    {
+        $children = $builder
+            ->arrayNode('resource_server')
+                ->addDefaultsIfNotSet()
+                ->children();
+
+        $children
+             ->scalarNode('public_key')
+                ->info(
+                    'The full path to the public key file that is used to verify JWT tokens.'
+                    . ' How to generate a public key:'
+                    . ' https://oauth2.thephpleague.com/installation/#generating-public-and-private-keys'
+                )
+                ->example('/var/oauth/public.key')
+                ->defaultValue('%kernel.project_dir%/var/oauth_public.key')
+                ->cannotBeEmpty()
+            ->end()
+            ->arrayNode('oauth_firewalls')
+                ->info('The list of security firewalls for which OAuth 2.0 authorization should be enabled.')
+                ->prototype('scalar')
+                    ->cannotBeEmpty()
+                ->end()
             ->end();
     }
 }

@@ -68,7 +68,7 @@ class OroOAuth2ServerBundleInstaller implements Installation
         $table->addColumn('client_id', 'integer', ['notnull' => false]);
         $table->addColumn('identifier', 'string', ['length' => 80]);
         $table->addColumn('expires_at', 'datetime', ['comment' => '(DC2Type:datetime)']);
-        $table->addColumn('scopes', 'simple_array', ['comment' => '(DC2Type:simple_array)']);
+        $table->addColumn('scopes', 'simple_array', ['notnull' => false, 'comment' => '(DC2Type:simple_array)']);
         $table->addColumn('user_identifier', 'string', ['notnull' => false, 'length' => 128]);
         $table->addColumn('revoked', 'boolean', ['default' => '0']);
         $table->setPrimaryKey(['id']);

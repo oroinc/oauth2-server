@@ -2,6 +2,10 @@
 {% import 'OroDataGridBundle::macros.html.twig' as dataGrid %}
 
 <div class="oauth-clients-container">
+    {% if not encryptionKeysExist %}
+    <div class="alert alert-warning">{{ 'oro.oauth2server.no_encryption_keys'|trans }}</div>
+    {% endif %}
+
     {% if creationGranted %}
     <div class="filter-box btn-container clearfix">
         <div class="pull-right">

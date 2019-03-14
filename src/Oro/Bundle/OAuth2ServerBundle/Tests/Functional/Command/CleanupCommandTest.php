@@ -19,7 +19,7 @@ class CleanupCommandTest extends WebTestCase
     public function testCleanup()
     {
         $result = self::runCommand('oro:cron:oauth-server:cleanup');
-        $this->assertContains('Completed', $result);
+        self::assertContains('Completed', $result);
 
         /** @var EntityManagerInterface $em */
         $em = self::getContainer()->get('doctrine')->getManagerForClass(Client::class);
@@ -28,12 +28,10 @@ class CleanupCommandTest extends WebTestCase
         $clientRepo = $em->getRepository(Client::class);
         self::assertNotNull($clientRepo->findOneBy(['identifier' => 'client1']));
         self::assertNull($clientRepo->findOneBy(['identifier' => 'client2']));
-        self::assertNull($clientRepo->findOneBy(['identifier' => 'client3']));
 
         $accessTokenRepo = $em->getRepository(AccessToken::class);
         self::assertNotNull($accessTokenRepo->findOneBy(['identifier' => 'client1_token_not_expired']));
         self::assertNull($accessTokenRepo->findOneBy(['identifier' => 'client1_token_expired']));
         self::assertNull($accessTokenRepo->findOneBy(['identifier' => 'client2_token_not_expired']));
-        self::assertNull($accessTokenRepo->findOneBy(['identifier' => 'client3_token_not_expired']));
     }
 }
