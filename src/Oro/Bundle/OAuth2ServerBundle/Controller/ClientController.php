@@ -9,6 +9,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -84,7 +85,7 @@ class ClientController extends Controller
 
         $this->getClientManager()->deleteClient($entity);
 
-        return $this->noContent();
+        return new JsonResponse(['successful' => true]);
     }
 
     /**
@@ -105,7 +106,7 @@ class ClientController extends Controller
 
         $this->getClientManager()->activateClient($entity);
 
-        return $this->noContent();
+        return new JsonResponse(['successful' => true]);
     }
 
     /**
@@ -126,7 +127,7 @@ class ClientController extends Controller
 
         $this->getClientManager()->deactivateClient($entity);
 
-        return $this->noContent();
+        return new JsonResponse(['successful' => true]);
     }
 
     /**
