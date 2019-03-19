@@ -6,6 +6,14 @@ oro_oauth2_server_auth_token:
     options:
         frontend: true
 
+oro_oauth2_server_auth_token_options:
+    path: '/oauth2-token'
+    methods: [OPTIONS]
+    defaults:
+        _controller: OroOAuth2ServerBundle:AuthorizationToken:options
+    options:
+        frontend: true
+
 oro_oauth2_server_client:
     resource: "@OroOAuth2ServerBundle/Controller/ClientController.php"
     type: annotation

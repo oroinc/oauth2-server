@@ -9,6 +9,7 @@
         </div>
     {% endif %}
     <fieldset class="form form-horizontal">
+        {{ form_row(form.identifier) }}
         {{ form_row(form.name) }}
         {{ form_row(form.active) }}
         {# BAP-18427: uncomment this block when other grant types is implemented #}

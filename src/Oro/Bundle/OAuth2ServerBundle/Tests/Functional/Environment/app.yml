@@ -1,0 +1,5 @@
+oro_oauth2_server:
+    authorization_server:
+        cors:
+            allow_origins:
+                - 'https://oauth.test.com'

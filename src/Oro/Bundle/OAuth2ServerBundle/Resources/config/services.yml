@@ -1,6 +1,8 @@
 parameters:
     oro_oauth2_server.supported_client_owners: [Oro\Bundle\UserBundle\Entity\User]
     oro_oauth2_server.supported_grant_types: []
+    oro_oauth2_server.cors.preflight_max_age: 0
+    oro_oauth2_server.cors.allow_origins: []
 
 services:
     oro_oauth2_server.client_manager:
