@@ -25,6 +25,14 @@ oro_oauth2_server:
         # How to generate an encryption key: https://oauth2.thephpleague.com/installation/#string-password
         encryption_key: '%secret%'
 
+        # The configuration of CORS requests
+        cors:
+            # The amount of seconds the user agent is allowed to cache CORS preflight requests
+            preflight_max_age: 600
+
+            # The list of origins that are allowed to send CORS requests
+            allow_origins: [] # Example: ['https://foo.com', 'https://bar.com']
+
     resource_server:
 
         # The full path to the public key file that is used to verify JWT tokens.

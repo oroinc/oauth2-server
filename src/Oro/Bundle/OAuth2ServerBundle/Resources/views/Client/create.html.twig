@@ -41,7 +41,18 @@
             <div class="responsive-block">
                 <div>
                     <strong>{{ 'oro.oauth2server.client.identifier.label'|trans }}:</strong>
-                    <span class="text-nowrap">{{ entity.identifier }}</span>
+                    {% set client_id = 'client-id-' ~ random() %}
+                    <span class="text-nowrap" id="{{ client_id }}">{{ entity.identifier }}</span>
+                    {{- UI.clientLink({
+                        aCss: 'no-hash btn btn-icon',
+                        iCss: 'fa-copy',
+                        title: 'oro.ui.button.copy_to_clipboard.label'|trans,
+                        labelInIcon: false,
+                        pageComponent: {
+                            module: 'oroui/js/app/components/element-value-copy-to-clipboard-component',
+                            options: { elementSelector: '#' ~ client_id }
+                        }
+                    }) -}}
                 </div>
                 <div>
                     <strong>{{ 'oro.oauth2server.client.secret.label'|trans }}:</strong>

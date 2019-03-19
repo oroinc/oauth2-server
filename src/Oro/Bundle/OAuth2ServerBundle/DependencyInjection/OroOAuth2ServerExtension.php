@@ -12,6 +12,7 @@ use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader;
 use Symfony\Component\ExpressionLanguage\Expression;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
+use Symfony\Component\Yaml\Yaml;
 
 class OroOAuth2ServerExtension extends Extension implements PrependExtensionInterface
 {
@@ -19,6 +20,8 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
 
     private const SUPPORTED_GRANT_TYPES_PARAM   = 'oro_oauth2_server.supported_grant_types';
     private const SUPPORTED_CLIENT_OWNERS_PARAM = 'oro_oauth2_server.supported_client_owners';
+    private const CORS_PREFLIGHT_MAX_AGE_PARAM  = 'oro_oauth2_server.cors.preflight_max_age';
+    private const CORS_ALLOW_ORIGINS_PARAM      = 'oro_oauth2_server.cors.allow_origins';
 
     private const PRIVATE_KEY_SERVICE = 'oro_oauth2_server.league.private_key';
     private const PUBLIC_KEY_SERVICE  = 'oro_oauth2_server.league.public_key';
@@ -51,6 +54,14 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
     {
         if ($container instanceof ExtendedContainerBuilder) {
             $this->configureSecurityFirewalls($container);
+        }
+
+        if ('test' === $container->getParameter('kernel.environment')) {
+            $fileLocator = new FileLocator(__DIR__ . '/../Tests/Functional/Environment');
+            $configData = Yaml::parse(file_get_contents($fileLocator->locate('app.yml')));
+            foreach ($configData as $name => $config) {
+                $container->prependExtensionConfig($name, $config);
+            }
         }
     }
 
@@ -104,6 +115,9 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
             ClientCredentialsGrant::class,
             $accessTokenLifetime
         );
+
+        $container->setParameter(self::CORS_PREFLIGHT_MAX_AGE_PARAM, $config['cors']['preflight_max_age']);
+        $container->setParameter(self::CORS_ALLOW_ORIGINS_PARAM, $config['cors']['allow_origins']);
     }
 
     /**

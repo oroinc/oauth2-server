@@ -29,26 +29,38 @@ class OAuthServerTest extends RestJsonApiTestCase
     }
 
     /**
+     * @param string $method
+     * @param string $uri
+     * @param array  $parameters
+     * @param array  $server
+     *
+     * @return Response
+     */
+    private function sendRequest(string $method, string $uri, array $parameters = [], array $server = []): Response
+    {
+        $this->client->request($method, $uri, $parameters, [], $server);
+        self::assertSessionNotStarted($method, $uri);
+
+        return $this->client->getResponse();
+    }
+
+    /**
      * @param int $expectedStatusCode
      *
      * @return array
      */
     private function sendAccessTokenRequest(int $expectedStatusCode = Response::HTTP_OK): array
     {
-        $method = 'POST';
-        $uri = $this->getUrl('oro_oauth2_server_auth_token');
-        $this->client->request(
-            $method,
-            $uri,
+        $response = $this->sendRequest(
+            'POST',
+            $this->getUrl('oro_oauth2_server_auth_token'),
             [
                 'grant_type'    => 'client_credentials',
                 'client_id'     => LoadOAuthClient::OAUTH_CLIENT_ID,
                 'client_secret' => LoadOAuthClient::OAUTH_CLIENT_SECRET
             ]
         );
-        self::assertSessionNotStarted($method, $uri);
 
-        $response = $this->client->getResponse();
         self::assertResponseStatusCodeEquals($response, $expectedStatusCode);
         if (Response::HTTP_OK === $expectedStatusCode) {
             self::assertResponseContentTypeEquals($response, 'application/json; charset=UTF-8');
@@ -154,5 +166,80 @@ class OAuthServerTest extends RestJsonApiTestCase
         );
 
         self::assertResponseStatusCodeEquals($response, Response::HTTP_UNAUTHORIZED);
+    }
+
+    public function testOptionsRequest()
+    {
+        $response = $this->sendRequest(
+            'OPTIONS',
+            $this->getUrl('oro_oauth2_server_auth_token_options')
+        );
+
+        self::assertResponseStatusCodeEquals($response, Response::HTTP_OK);
+        self::assertAllowResponseHeader($response, 'OPTIONS, POST');
+        self::assertResponseHeaderNotExists($response, 'Access-Control-Allow-Origin');
+        self::assertResponseHeaderNotExists($response, 'Access-Control-Allow-Methods');
+        self::assertResponseHeaderNotExists($response, 'Access-Control-Allow-Headers');
+        self::assertResponseHeaderNotExists($response, 'Access-Control-Expose-Headers');
+        self::assertResponseHeaderNotExists($response, 'Access-Control-Max-Age');
+        self::assertResponseHeaderNotExists($response, 'Access-Control-Allow-Credentials');
+    }
+
+    public function methodsProvider()
+    {
+        return [
+            ['ANOTHER'],
+            ['OPTIONS'],
+            ['GET'],
+            ['POST'],
+            ['PATCH'],
+            ['DELETE']
+        ];
+    }
+
+    /**
+     * @dataProvider methodsProvider
+     */
+    public function testOptionsPreflightRequest($requestMethod)
+    {
+        $response = $this->sendRequest(
+            'OPTIONS',
+            $this->getUrl('oro_oauth2_server_auth_token_options'),
+            [],
+            [
+                'HTTP_Origin'                        => 'https://oauth.test.com',
+                'HTTP_Access-Control-Request-Method' => $requestMethod
+            ]
+        );
+
+        self::assertResponseHeader($response, 'Access-Control-Allow-Origin', 'https://oauth.test.com');
+        self::assertResponseHeader($response, 'Access-Control-Allow-Methods', 'OPTIONS, POST');
+        self::assertResponseHeader($response, 'Access-Control-Allow-Headers', 'Content-Type');
+        self::assertResponseHeaderNotExists($response, 'Access-Control-Expose-Headers');
+        self::assertResponseHeader($response, 'Access-Control-Max-Age', 600);
+        self::assertResponseHeaderNotExists($response, 'Access-Control-Allow-Credentials');
+        self::assertResponseHeader($response, 'Cache-Control', 'max-age=600, public');
+        self::assertResponseHeader($response, 'Vary', 'Origin');
+        self::assertResponseHeaderNotExists($response, 'Allow');
+    }
+
+    public function testOptionsAsCorsButNotPreflightRequest()
+    {
+        $response = $this->sendRequest(
+            'OPTIONS',
+            $this->getUrl('oro_oauth2_server_auth_token_options'),
+            [],
+            [
+                'HTTP_Origin' => 'https://oauth.test.com'
+            ]
+        );
+
+        self::assertResponseHeader($response, 'Access-Control-Allow-Origin', 'https://oauth.test.com');
+        self::assertResponseHeaderNotExists($response, 'Access-Control-Allow-Methods');
+        self::assertResponseHeaderNotExists($response, 'Access-Control-Allow-Headers');
+        self::assertResponseHeaderNotExists($response, 'Access-Control-Expose-Headers');
+        self::assertResponseHeaderNotExists($response, 'Access-Control-Max-Age');
+        self::assertResponseHeaderNotExists($response, 'Access-Control-Allow-Credentials');
+        self::assertResponseHeader($response, 'Allow', 'OPTIONS, POST');
     }
 }

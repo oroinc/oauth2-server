@@ -57,9 +57,28 @@ class Configuration implements ConfigurationInterface
                 )
                 ->defaultValue('%secret%')
                 ->cannotBeEmpty()
+            ->end()
+            ->arrayNode('cors')
+                ->info('The configuration of CORS requests')
+                ->addDefaultsIfNotSet()
+                ->children()
+                    ->integerNode('preflight_max_age')
+                        ->info('The amount of seconds the user agent is allowed to cache CORS preflight requests')
+                        ->defaultValue(600)
+                        ->min(0)
+                    ->end()
+                    ->arrayNode('allow_origins')
+                        ->info('The list of origins that are allowed to send CORS requests')
+                        ->example(['https://foo.com', 'https://bar.com'])
+                        ->prototype('scalar')->cannotBeEmpty()->end()
+                    ->end()
+                ->end()
             ->end();
     }
 
+    /**
+     * @param NodeBuilder $builder
+     */
     private function appendResourceServer(NodeBuilder $builder): void
     {
         $children = $builder

@@ -45,6 +45,7 @@ class ClientType extends AbstractType
         $builder
             ->addEventListener(FormEvents::POST_SET_DATA, function (FormEvent $event) {
                 $this->addOrganizationField($event);
+                $this->addIdentifierField($event);
             })
             ->add('name', TextType::class, [
                 'label'    => 'oro.oauth2server.client.name.label',
@@ -124,16 +125,33 @@ class ClientType extends AbstractType
             $client->getOwnerEntityId()
         );
         if ($this->organizationsProvider->isOrganizationSelectorRequired($organizations)) {
-            $event->getForm()->add(
-                'organization',
-                EntityType::class,
-                [
-                    'label'                => 'oro.organization.entity_label',
-                    'class'                => Organization::class,
-                    'choices'              => $this->organizationsProvider->sortOrganizations($organizations),
-                    'translatable_options' => false
-                ]
-            );
+            $event->getForm()->add('organization', EntityType::class, [
+                'label'                => 'oro.organization.entity_label',
+                'class'                => Organization::class,
+                'choices'              => $this->organizationsProvider->sortOrganizations($organizations),
+                'translatable_options' => false
+            ]);
         }
+    }
+
+    /**
+     * Adds read-only identifier field to an existing client edit form.
+     *
+     * @param FormEvent $event
+     */
+    private function addIdentifierField(FormEvent $event): void
+    {
+        /** @var Client $client */
+        $client = $event->getData();
+        if (null === $client->getId()) {
+            return;
+        }
+
+        $event->getForm()->add('identifier', TextType::class, [
+            'label'    => 'oro.oauth2server.client.identifier.label',
+            'tooltip'  => 'oro.oauth2server.client.identifier.description',
+            'required' => false,
+            'disabled' => true
+        ]);
     }
 }
