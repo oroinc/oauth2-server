@@ -83,7 +83,6 @@ datagrids:
                 label: oro.oauth2server.client.action.activate
                 icon: check
                 link: activate_link
-                requestType: POST
                 defaultMessages:
                     success: oro.oauth2server.client.activate_success
             deactivate:
@@ -91,7 +90,6 @@ datagrids:
                 label: oro.oauth2server.client.action.deactivate
                 icon: close
                 link: deactivate_link
-                requestType: POST
                 confirmation: true
                 defaultMessages:
                     confirm_title: oro.oauth2server.client.deactivate_confirm_title
@@ -102,7 +100,6 @@ datagrids:
                 label: oro.grid.action.delete
                 link: delete_link
                 icon: trash
-                requestType: DELETE
                 defaultMessages:
                     confirm_content: oro.oauth2server.client.delete_confirm_message
                     success: oro.oauth2server.client.delete_success

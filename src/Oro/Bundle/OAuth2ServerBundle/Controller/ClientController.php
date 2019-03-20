@@ -5,6 +5,7 @@ namespace Oro\Bundle\OAuth2ServerBundle\Controller;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
 use Oro\Bundle\OAuth2ServerBundle\Form\Type\ClientType;
+use Oro\Bundle\SecurityBundle\Annotation\CsrfProtection;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -74,6 +75,7 @@ class ClientController extends Controller
      *     methods={"DELETE"},
      *     requirements={"id"="\d+"}
      * )
+     * @CsrfProtection()
      *
      * @param Client $entity
      *
@@ -95,6 +97,7 @@ class ClientController extends Controller
      *     methods={"POST"},
      *     requirements={"id"="\d+"}
      * )
+     * @CsrfProtection()
      *
      * @param Client $entity
      *
@@ -116,6 +119,7 @@ class ClientController extends Controller
      *     methods={"POST"},
      *     requirements={"id"="\d+"}
      * )
+     * @CsrfProtection()
      *
      * @param Client $entity
      *
@@ -146,14 +150,6 @@ class ClientController extends Controller
             null,
             $this->getFormTemplateDataProvider()
         );
-    }
-
-    /**
-     * @return Response
-     */
-    private function noContent(): Response
-    {
-        return new Response('', Response::HTTP_NO_CONTENT);
     }
 
     /**
