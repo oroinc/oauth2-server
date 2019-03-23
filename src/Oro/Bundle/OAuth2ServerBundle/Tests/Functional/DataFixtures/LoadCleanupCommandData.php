@@ -59,13 +59,13 @@ class LoadCleanupCommandData extends AbstractFixture implements ContainerAwareIn
         $manager->persist($client2);
 
         $manager->persist(
-            $this->createAccessToken($client1, 'client1_token_not_expired', new \DateTime('now + 1 second'))
+            $this->createAccessToken($client1, 'client1_token_not_expired', new \DateTime('now + 1 minute'))
         );
         $manager->persist(
             $this->createAccessToken($client1, 'client1_token_expired', new \DateTime('now - 1 second'))
         );
         $manager->persist(
-            $this->createAccessToken($client2, 'client2_token_not_expired', new \DateTime('now + 1 second'))
+            $this->createAccessToken($client2, 'client2_token_not_expired', new \DateTime('now + 1 minute'))
         );
 
         $manager->flush();
