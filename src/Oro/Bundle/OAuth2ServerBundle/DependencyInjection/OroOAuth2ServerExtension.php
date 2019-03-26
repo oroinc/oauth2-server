@@ -84,7 +84,7 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
                 self::SUPPORTED_CLIENT_OWNERS_PARAM,
                 array_merge(
                     $container->getParameter(self::SUPPORTED_CLIENT_OWNERS_PARAM),
-                    ['Oro\Bundle\CustomerBundle\Entity\CustomerUser']
+                    ['customerUser' => 'Oro\Bundle\CustomerBundle\Entity\CustomerUser']
                 )
             );
         }

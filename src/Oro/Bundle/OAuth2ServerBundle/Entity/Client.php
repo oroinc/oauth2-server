@@ -3,6 +3,8 @@
 namespace Oro\Bundle\OAuth2ServerBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Oro\Bundle\EntityConfigBundle\Metadata\Annotation\Config;
+use Oro\Bundle\EntityConfigBundle\Metadata\Annotation\ConfigField;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 
 /**
@@ -18,6 +20,7 @@ use Oro\Bundle\OrganizationBundle\Entity\Organization;
  *          @ORM\Index(name="oro_oauth2_client_owner_idx", columns={"owner_entity_class", "owner_entity_id"})
  *      }
  * )
+ * @Config()
  */
 class Client
 {
@@ -48,6 +51,13 @@ class Client
      * @var string
      *
      * @ORM\Column(name="secret", type="string", length=128)
+     * @ConfigField(
+     *      defaultValues={
+     *          "email"={
+     *              "available_in_template"=false
+     *          }
+     *      }
+     * )
      */
     private $secret;
 
@@ -55,6 +65,13 @@ class Client
      * @var string
      *
      * @ORM\Column(name="salt", type="string", length=50)
+     * @ConfigField(
+     *      defaultValues={
+     *          "email"={
+     *              "available_in_template"=false
+     *          }
+     *      }
+     * )
      */
     private $salt;
 

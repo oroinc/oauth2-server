@@ -1,5 +1,6 @@
 @regression
 @ticket-BAP-16477
+@ticket-BAP-18430
 Feature: Manage OAuth Applications
   In order to use OAuth authorization
   As an Administrator
@@ -19,6 +20,17 @@ Feature: Manage OAuth Applications
     And should see "Please copy Client Secret and save it somewhere safe. For security reasons, we cannot show it to you again."
     And should see "Client ID"
     And should see "Client Secret"
+    And An email containing the following was sent:
+      | Subject | OAuth application added to your account |
+      | To      | admin@example.com                       |
+    And Email should contains the following text:
+      """
+      Hello, John Doe.
+
+      A new OAuth application "First App" was recently added to your account.
+      This application is authorized to use Web API.
+      Please contact the administrator if you are not aware of this change to your account.
+      """
     When I click "Close"
     Then I should see "First App" in "OAuth Applications Grid" with following data:
       | Application Name | First App |
