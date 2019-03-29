@@ -40,19 +40,21 @@ class ClientEntityVariablesProvider implements EntityVariablesProviderInterface
     /**
      * {@inheritdoc}
      */
-    public function getVariableDefinitions(string $entityClass = null): array
+    public function getVariableDefinitions(): array
     {
-        if (!$entityClass) {
-            return [
-                Client::class => $this->getClientEntityVariableDefinitions()
-            ];
-        }
+        return [
+            Client::class => $this->getClientEntityVariableDefinitions()
+        ];
+    }
 
-        if (Client::class === $entityClass) {
-            return $this->getClientEntityVariableDefinitions();
-        }
-
-        return [];
+    /**
+     * {@inheritdoc}
+     */
+    public function getVariableGetters(): array
+    {
+        return [
+            Client::class => $this->getClientEntityVariableGetters()
+        ];
     }
 
     /**
@@ -65,16 +67,6 @@ class ClientEntityVariablesProvider implements EntityVariablesProviderInterface
         }
 
         return [];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getVariableGetters(): array
-    {
-        return [
-            Client::class => $this->getClientEntityVariableGetters()
-        ];
     }
 
     /**

@@ -14,24 +14,18 @@ class ClientEntityVariableProcessorTest extends \PHPUnit\Framework\TestCase
     /** @var ManagerRegistry|\PHPUnit\Framework\MockObject\MockObject */
     private $doctrine;
 
+    /** @var TemplateData|\PHPUnit\Framework\MockObject\MockObject */
+    private $data;
+
     /** @var ClientEntityVariableProcessor */
     private $processor;
 
     protected function setUp()
     {
         $this->doctrine = $this->createMock(ManagerRegistry::class);
+        $this->data = $this->createMock(TemplateData::class);
 
         $this->processor = new ClientEntityVariableProcessor($this->doctrine);
-    }
-
-    /**
-     * @param array $data
-     *
-     * @return TemplateData
-     */
-    private function getTemplateData(array $data): TemplateData
-    {
-        return new TemplateData($data, 'system', 'entity', 'computed');
     }
 
     public function testProcessForOwnerEntity()
@@ -43,8 +37,20 @@ class ClientEntityVariableProcessorTest extends \PHPUnit\Framework\TestCase
         $entity->setOwnerEntity($ownerClass, $ownerId);
 
         $variable = 'entity.user';
+        $parentVariable = 'entity';
         $definition = ['related_entity_name' => $ownerClass];
-        $data = $this->getTemplateData(['entity' => $entity]);
+
+        $this->data->expects(self::once())
+            ->method('getParentVariablePath')
+            ->with($variable)
+            ->willReturn($parentVariable);
+        $this->data->expects(self::once())
+            ->method('getEntityVariable')
+            ->with($parentVariable)
+            ->willReturn($entity);
+        $this->data->expects(self::once())
+            ->method('setComputedVariable')
+            ->with($variable, self::identicalTo($owner));
 
         $em = $this->createMock(EntityManagerInterface::class);
         $this->doctrine->expects(self::once())
@@ -56,9 +62,7 @@ class ClientEntityVariableProcessorTest extends \PHPUnit\Framework\TestCase
             ->with($ownerClass, $ownerId)
             ->willReturn($owner);
 
-        $this->processor->process($variable, $definition, $data);
-
-        self::assertSame($owner, $data->getComputedVariable($variable));
+        $this->processor->process($variable, $definition, $this->data);
     }
 
     public function testProcessWhenOwnerEntityIsDifferentThanDefinedInVariable()
@@ -69,15 +73,25 @@ class ClientEntityVariableProcessorTest extends \PHPUnit\Framework\TestCase
         $entity->setOwnerEntity($ownerClass, $ownerId);
 
         $variable = 'entity.user';
+        $parentVariable = 'entity';
         $definition = ['related_entity_name' => 'Test\AnotherOwner'];
-        $data = $this->getTemplateData(['entity' => $entity]);
+
+        $this->data->expects(self::once())
+            ->method('getParentVariablePath')
+            ->with($variable)
+            ->willReturn($parentVariable);
+        $this->data->expects(self::once())
+            ->method('getEntityVariable')
+            ->with($parentVariable)
+            ->willReturn($entity);
+        $this->data->expects(self::once())
+            ->method('setComputedVariable')
+            ->with($variable, self::isNull());
 
         $this->doctrine->expects(self::never())
             ->method('getManagerForClass');
 
-        $this->processor->process($variable, $definition, $data);
-
-        self::assertNull($data->getComputedVariable($variable));
+        $this->processor->process($variable, $definition, $this->data);
     }
 
     public function testProcessWhenOwnerEntityIsNull()
@@ -85,14 +99,24 @@ class ClientEntityVariableProcessorTest extends \PHPUnit\Framework\TestCase
         $entity = new Client();
 
         $variable = 'entity.user';
+        $parentVariable = 'entity';
         $definition = ['related_entity_name' => User::class];
-        $data = $this->getTemplateData(['entity' => $entity]);
+
+        $this->data->expects(self::once())
+            ->method('getParentVariablePath')
+            ->with($variable)
+            ->willReturn($parentVariable);
+        $this->data->expects(self::once())
+            ->method('getEntityVariable')
+            ->with($parentVariable)
+            ->willReturn($entity);
+        $this->data->expects(self::once())
+            ->method('setComputedVariable')
+            ->with($variable, self::isNull());
 
         $this->doctrine->expects(self::never())
             ->method('getManagerForClass');
 
-        $this->processor->process($variable, $definition, $data);
-
-        self::assertNull($data->getComputedVariable($variable));
+        $this->processor->process($variable, $definition, $this->data);
     }
 }

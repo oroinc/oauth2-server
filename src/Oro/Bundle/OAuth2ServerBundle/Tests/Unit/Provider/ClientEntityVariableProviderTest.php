@@ -45,43 +45,14 @@ class ClientEntityVariableProviderTest extends \PHPUnit\Framework\TestCase
         );
     }
 
-    /**
-     * @dataProvider variableDefinitionsDataProvider
-     */
-    public function testGetVariableDefinitions(?string $entityClass, array $expectedData)
+    public function testGetVariableDefinitions()
     {
         $this->entityConfigProvider->addEntityConfig(User::class, ['label' => 'user_label']);
         $this->entityConfigProvider->addEntityConfig(Organization::class, ['label' => 'organization_label']);
 
-        self::assertEquals($expectedData, $this->provider->getVariableDefinitions($entityClass));
-    }
-
-    /**
-     * @return array
-     */
-    public function variableDefinitionsDataProvider()
-    {
-        return [
-            'null entity class'       => [
-                null,
-                'expectedData' => [
-                    Client::class => [
-                        'user'         => [
-                            'type'                => RelationType::TO_ONE,
-                            'label'               => 'translated_user_label',
-                            'related_entity_name' => User::class
-                        ],
-                        'organization' => [
-                            'type'                => RelationType::TO_ONE,
-                            'label'               => 'translated_organization_label',
-                            'related_entity_name' => Organization::class
-                        ]
-                    ]
-                ]
-            ],
-            'Client entity class'     => [
-                Client::class,
-                'expectedData' => [
+        self::assertEquals(
+            [
+                Client::class => [
                     'user'         => [
                         'type'                => RelationType::TO_ONE,
                         'label'               => 'translated_user_label',
@@ -94,11 +65,8 @@ class ClientEntityVariableProviderTest extends \PHPUnit\Framework\TestCase
                     ]
                 ]
             ],
-            'not Client entity class' => [
-                'stdClass',
-                'expectedData' => []
-            ]
-        ];
+            $this->provider->getVariableDefinitions()
+        );
     }
 
     public function testGetVariableProcessorsForClientEntity()
@@ -116,11 +84,6 @@ class ClientEntityVariableProviderTest extends \PHPUnit\Framework\TestCase
             ],
             $this->provider->getVariableProcessors(Client::class)
         );
-    }
-
-    public function testGetVariableProcessorsForAnotherEntity()
-    {
-        self::assertSame([], $this->provider->getVariableProcessors(\stdClass::class));
     }
 
     public function testGetVariableGetters()
@@ -141,5 +104,10 @@ class ClientEntityVariableProviderTest extends \PHPUnit\Framework\TestCase
             ],
             $this->provider->getVariableGetters()
         );
+    }
+
+    public function testGetVariableProcessorsForAnotherEntity()
+    {
+        self::assertSame([], $this->provider->getVariableProcessors(\stdClass::class));
     }
 }

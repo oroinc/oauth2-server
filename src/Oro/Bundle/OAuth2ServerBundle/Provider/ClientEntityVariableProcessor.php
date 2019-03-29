@@ -29,7 +29,7 @@ class ClientEntityVariableProcessor implements VariableProcessorInterface
     public function process(string $variable, array $processorArguments, TemplateData $data): void
     {
         /** @var Client $entity */
-        $entity = $data->getEntityData();
+        $entity = $data->getEntityVariable($data->getParentVariablePath($variable));
         $ownerEntityClass = $entity->getOwnerEntityClass();
         $ownerEntity = null;
         if ($processorArguments['related_entity_name'] === $ownerEntityClass) {

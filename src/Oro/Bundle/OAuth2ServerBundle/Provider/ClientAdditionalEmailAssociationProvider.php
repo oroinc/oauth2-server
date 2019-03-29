@@ -23,24 +23,24 @@ class ClientAdditionalEmailAssociationProvider implements AdditionalEmailAssocia
     private $entityConfigProvider;
 
     /** @var ManagerRegistry */
-    private $registry;
+    private $doctrine;
 
     /**
      * @param array               $ownerEntityClasses
      * @param TranslatorInterface $translator
      * @param ConfigProvider      $entityConfigProvider
-     * @param ManagerRegistry     $registry
+     * @param ManagerRegistry     $doctrine
      */
     public function __construct(
         array $ownerEntityClasses,
         TranslatorInterface $translator,
         ConfigProvider $entityConfigProvider,
-        ManagerRegistry $registry
+        ManagerRegistry $doctrine
     ) {
         $this->ownerEntityClasses = $ownerEntityClasses;
         $this->translator = $translator;
         $this->entityConfigProvider = $entityConfigProvider;
-        $this->registry = $registry;
+        $this->doctrine = $doctrine;
     }
 
     /**
@@ -53,10 +53,10 @@ class ClientAdditionalEmailAssociationProvider implements AdditionalEmailAssocia
         }
 
         $result = [];
-        foreach ($this->ownerEntityClasses as $fieldName => $className) {
+        foreach ($this->ownerEntityClasses as $fieldName => $ownerEntityClass) {
             $result[$fieldName] = [
-                $this->translator->trans($this->entityConfigProvider->getConfig($className)->get('label')),
-                $className
+                'label'        => $this->translator->trans($this->getAssociationLabel($ownerEntityClass)),
+                'target_class' => $ownerEntityClass
             ];
         }
 
@@ -84,7 +84,17 @@ class ClientAdditionalEmailAssociationProvider implements AdditionalEmailAssocia
             return null;
         }
 
-        return $this->registry->getRepository($entity->getOwnerEntityClass())
+        return $this->doctrine->getRepository($entity->getOwnerEntityClass())
             ->find($entity->getOwnerEntityId());
+    }
+
+    /**
+     * @param string $ownerEntityClass
+     *
+     * @return string
+     */
+    private function getAssociationLabel(string $ownerEntityClass): string
+    {
+        return $this->entityConfigProvider->getConfig($ownerEntityClass)->get('label');
     }
 }

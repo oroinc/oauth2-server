@@ -58,8 +58,8 @@ class ClientAdditionalEmailAssociationProviderTest extends \PHPUnit\Framework\Te
 
         self::assertEquals(
             [
-                'user'         => ['translated_user_label', User::class],
-                'organization' => ['translated_organization_label', Organization::class]
+                'user'         => ['label' => 'translated_user_label', 'target_class' => User::class],
+                'organization' => ['label' => 'translated_organization_label', 'target_class' => Organization::class]
             ],
             $this->provider->getAssociations(Client::class)
         );
