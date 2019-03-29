@@ -41,31 +41,35 @@
             <div class="responsive-block">
                 <div>
                     <strong>{{ 'oro.oauth2server.client.identifier.label'|trans }}:</strong>
-                    {% set client_id = 'client-id-' ~ random() %}
+                    {% set client_id = 'client-id-'|uniqid %}
                     <span class="text-nowrap" id="{{ client_id }}">{{ entity.identifier }}</span>
                     {{- UI.clientLink({
-                        aCss: 'no-hash btn btn-icon',
+                        aCss: 'btn btn-icon',
                         iCss: 'fa-copy',
                         title: 'oro.ui.button.copy_to_clipboard.label'|trans,
                         labelInIcon: false,
                         pageComponent: {
-                            module: 'oroui/js/app/components/element-value-copy-to-clipboard-component',
-                            options: { elementSelector: '#' ~ client_id }
+                            view: {
+                                view: 'oroui/js/app/views/element-value-copy-to-clipboard-view',
+                                elementSelector: '#' ~ client_id
+                            }
                         }
                     }) -}}
                 </div>
                 <div>
                     <strong>{{ 'oro.oauth2server.client.secret.label'|trans }}:</strong>
-                    {% set client_secret_id = 'client-secret-' ~ random() %}
+                    {% set client_secret_id = 'client-secret-'|uniqid %}
                     <span class="text-nowrap" id="{{ client_secret_id }}">{{ entity.plainSecret }}</span>
                     {{- UI.clientLink({
-                        aCss: 'no-hash btn btn-icon',
+                        aCss: 'btn btn-icon',
                         iCss: 'fa-copy',
                         title: 'oro.ui.button.copy_to_clipboard.label'|trans,
                         labelInIcon: false,
                         pageComponent: {
-                            module: 'oroui/js/app/components/element-value-copy-to-clipboard-component',
-                            options: { elementSelector: '#' ~ client_secret_id }
+                            view: {
+                                view: 'oroui/js/app/views/element-value-copy-to-clipboard-view',
+                                elementSelector: '#' ~ client_secret_id
+                            }
                         }
                     }) -}}
                 </div>
