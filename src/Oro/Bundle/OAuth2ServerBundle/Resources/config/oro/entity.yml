@@ -1,0 +1,6 @@
+oro_entity:
+    exclusions:
+        - { entity: Oro\Bundle\OAuth2ServerBundle\Entity\Client, field: secret }
+        - { entity: Oro\Bundle\OAuth2ServerBundle\Entity\Client, field: salt }
+        - { entity: Oro\Bundle\OAuth2ServerBundle\Entity\Client, field: ownerEntityClass }
+        - { entity: Oro\Bundle\OAuth2ServerBundle\Entity\Client, field: ownerEntityId }

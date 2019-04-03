@@ -1,0 +1,11 @@
+@name = customer_user_oauth_application_created
+@entityName = Oro\Bundle\OAuth2ServerBundle\Entity\Client
+@subject = OAuth application added to your account
+@isSystem = 1
+@isEditable = 1
+
+<h1>Hello, {{ entity.customerUser }}.</h1>
+
+<p>A new OAuth application "{{ entity.name }}" was recently added to your account.</p>
+<p>This application is authorized to use Web API.</p>
+<p>Please contact the administrator if you are not aware of this change to your account.</p>
