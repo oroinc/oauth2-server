@@ -106,11 +106,7 @@ class OAuthServerTest extends RestJsonApiTestCase
         $responseContent = $this->sendAccessTokenRequest(Response::HTTP_UNAUTHORIZED);
 
         self::assertEquals(
-            [
-                'error' => 'invalid_client',
-                'message' => 'Client authentication failed',
-                'error_description' => 'Client authentication failed'
-            ],
+            ['error' => 'invalid_client', 'message' => 'Client authentication failed'],
             $responseContent
         );
     }
