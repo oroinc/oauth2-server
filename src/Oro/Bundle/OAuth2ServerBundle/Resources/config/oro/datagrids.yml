@@ -106,4 +106,4 @@ datagrids:
         action_configuration: ['@oro_oauth2_server.client_action_visibility_provider', getActionsVisibility]
         options:
             entity_pagination: false
-            entityHint: applications
+            entityHint: oro.oauth2server.client.datagrid.entity_hint

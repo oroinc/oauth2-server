@@ -48,6 +48,8 @@ oro:
                 edit_title: Edit OAuth Application
             created_message: OAuth application has been created.
             created_warning_message: Please copy <strong>Client Secret</strong> and save it somewhere safe. For security reasons, we cannot show it to you again.
+            datagrid:
+                entity_hint: Applications
         scopes:
             all: all
         grant_types:
