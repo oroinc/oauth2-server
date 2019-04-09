@@ -124,6 +124,13 @@ class Client
      * @var string
      *
      * @ORM\Column(name="owner_entity_class", type="string", length=255)
+     * @ConfigField(
+     *      defaultValues={
+     *          "email"={
+     *              "available_in_template"=false
+     *          }
+     *      }
+     * )
      */
     private $ownerEntityClass;
 
@@ -131,6 +138,13 @@ class Client
      * @var int
      *
      * @ORM\Column(name="owner_entity_id", type="integer")
+     * @ConfigField(
+     *      defaultValues={
+     *          "email"={
+     *              "available_in_template"=false
+     *          }
+     *      }
+     * )
      */
     private $ownerEntityId;
 
