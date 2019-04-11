@@ -50,6 +50,8 @@ oro:
             created_warning_message: Please copy <strong>Client Secret</strong> and save it somewhere safe. For security reasons, we cannot show it to you again.
             datagrid:
                 entity_hint: Applications
+        scopes:
+            all: all
         grant_types:
             authorization_code: Authorization Code
             implicit: Implicit

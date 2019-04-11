@@ -1,4 +1,14 @@
 oro_behat_extension:
+    suites:
+        OroOAuth2ServerBundle:
+            contexts:
+                - Oro\Bundle\TestFrameworkBundle\Tests\Behat\Context\OroMainContext
+                - OroFormBundle::FormContext
+                - OroDataGridBundle::GridContext
+                - OroEmailBundle::EmailContext
+            paths:
+                - '@OroOAuth2ServerBundle/Tests/Behat/Features'
+
     elements:
         Add OAuth Application:
             selector:

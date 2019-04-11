@@ -1,5 +1,5 @@
 parameters:
-    oro_oauth2_server.supported_client_owners: [Oro\Bundle\UserBundle\Entity\User]
+    oro_oauth2_server.supported_client_owners: {user: Oro\Bundle\UserBundle\Entity\User}
     oro_oauth2_server.supported_grant_types: []
     oro_oauth2_server.cors.preflight_max_age: 0
     oro_oauth2_server.cors.allow_origins: []
@@ -153,3 +153,25 @@ services:
             - '@oro_oauth2_server.league.authorization_validator'
             - '@doctrine'
             - '@security.user_checker'
+
+    oro_oauth2_server.additional_email_association_provider.client_owner:
+        class: Oro\Bundle\OAuth2ServerBundle\Provider\ClientAdditionalEmailAssociationProvider
+        public: false
+        arguments:
+            - '%oro_oauth2_server.supported_client_owners%'
+            - '@translator'
+            - '@oro_entity_config.provider.entity'
+            - '@doctrine'
+        tags:
+            - { name: oro_notification.additional_email_association_provider }
+
+    oro_oauth2_server.client_entity_virtual_relation_provider:
+        class: Oro\Bundle\OAuth2ServerBundle\Provider\ClientEntityVirtualRelationProvider
+        public: false
+        arguments:
+            - '%oro_oauth2_server.supported_client_owners%'
+            - '@oro_entity.doctrine_helper'
+            - '@translator'
+            - '@oro_entity_config.provider.entity'
+        tags:
+            - { name: oro_entity.virtual_relation_provider, priority: 150 }
