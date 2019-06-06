@@ -9,6 +9,7 @@ use Oro\Bundle\OAuth2ServerBundle\Security\EncryptionKeysExistenceChecker;
 use Oro\Bundle\UIBundle\Event\BeforeViewRenderEvent;
 use Oro\Bundle\UserBundle\Entity\User;
 use Symfony\Component\Translation\TranslatorInterface;
+use Twig\Environment;
 
 class AddClientsToViewPageListenerTest extends \PHPUnit\Framework\TestCase
 {
@@ -45,7 +46,7 @@ class AddClientsToViewPageListenerTest extends \PHPUnit\Framework\TestCase
 
     public function testAddOAuth2ClientsForNotSupportedOwner()
     {
-        $environment = $this->createMock(\Twig_Environment::class);
+        $environment = $this->createMock(Environment::class);
         $data = ['dataBlocks' => [['title' => 'test']]];
 
         $this->encryptionKeysExistenceChecker->expects(self::never())
@@ -69,7 +70,7 @@ class AddClientsToViewPageListenerTest extends \PHPUnit\Framework\TestCase
 
     public function testAddOAuth2ClientsForSupportedOwner()
     {
-        $environment = $this->createMock(\Twig_Environment::class);
+        $environment = $this->createMock(Environment::class);
         $data = ['dataBlocks' => [['title' => 'test']]];
         $entity = $this->createMock(User::class);
         $entityClass = User::class;
@@ -123,7 +124,7 @@ class AddClientsToViewPageListenerTest extends \PHPUnit\Framework\TestCase
 
     public function testAddOAuth2ClientsForSupportedOwnerWhenNoPublicKey()
     {
-        $environment = $this->createMock(\Twig_Environment::class);
+        $environment = $this->createMock(Environment::class);
         $data = ['dataBlocks' => [['title' => 'test']]];
         $entity = $this->createMock(User::class);
         $entityClass = User::class;
@@ -177,7 +178,7 @@ class AddClientsToViewPageListenerTest extends \PHPUnit\Framework\TestCase
 
     public function testAddOAuth2ClientsForSupportedOwnerWhenNoPrivateKey()
     {
-        $environment = $this->createMock(\Twig_Environment::class);
+        $environment = $this->createMock(Environment::class);
         $data = ['dataBlocks' => [['title' => 'test']]];
         $entity = $this->createMock(User::class);
         $entityClass = User::class;
