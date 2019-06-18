@@ -35,6 +35,7 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
 
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('services.yml');
+        $loader->load('controllers.yml');
 
         if ('test' === $container->getParameter('kernel.environment')) {
             $keysFileLocator = new FileLocator(__DIR__ . '/../Tests/Functional/Environment/keys');

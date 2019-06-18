@@ -15,6 +15,9 @@ services:
             - '@oro_security.owner.entity_owner_accessor'
             - '@oro_entity.entity_identifier_accessor'
 
+    Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager:
+        alias: oro_oauth2_server.client_manager
+
     Oro\Bundle\OAuth2ServerBundle\Command\CleanupCommand:
         public: false
         arguments:

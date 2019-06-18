@@ -2,13 +2,16 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Controller;
 
+use Oro\Bundle\EntityBundle\Tools\EntityRoutingHelper;
+use Oro\Bundle\FormBundle\Model\UpdateHandlerFacade;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
 use Oro\Bundle\OAuth2ServerBundle\Form\Type\ClientType;
 use Oro\Bundle\SecurityBundle\Annotation\CsrfProtection;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,8 +20,21 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * This controller covers widget-related functionality for OAuth 2.0 Client entity.
  */
-class ClientController extends Controller
+class ClientController extends AbstractController
 {
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedServices()
+    {
+        return array_merge(parent::getSubscribedServices(), [
+            EntityRoutingHelper::class,
+            UpdateHandlerFacade::class,
+            ClientManager::class,
+            FormFactoryInterface::class
+        ]);
+    }
+
     /**
      * @Route(
      *     "/create",
@@ -33,7 +49,7 @@ class ClientController extends Controller
      */
     public function createAction(Request $request): array
     {
-        $entityRoutingHelper = $this->get('oro_entity.routing_helper');
+        $entityRoutingHelper = $this->get(EntityRoutingHelper::class);
         $ownerEntityClass = $entityRoutingHelper->getEntityClassName($request);
         $ownerEntityId = (int)$entityRoutingHelper->getEntityId($request);
 
@@ -142,7 +158,7 @@ class ClientController extends Controller
      */
     private function update(Request $request, Client $entity): array
     {
-        return $this->get('oro_form.update_handler')->update(
+        return $this->get(UpdateHandlerFacade::class)->update(
             $entity,
             $this->getForm($entity),
             null,
@@ -167,7 +183,7 @@ class ClientController extends Controller
      */
     private function getClientManager(): ClientManager
     {
-        return $this->get('oro_oauth2_server.client_manager');
+        return $this->get(ClientManager::class);
     }
 
     /**
@@ -177,7 +193,7 @@ class ClientController extends Controller
      */
     private function getForm(Client $entity): FormInterface
     {
-        return $this->container->get('form.factory')
+        return $this->get(FormFactoryInterface::class)
             ->createNamed('oro_oauth2_client', ClientType::class, $entity);
     }
 
