@@ -17,6 +17,7 @@ use Oro\Component\Testing\Unit\PreloadedExtension;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\Test\TypeTestCase;
 
 class ClientTypeTest extends TypeTestCase
@@ -43,7 +44,7 @@ class ClientTypeTest extends TypeTestCase
         return [
             new PreloadedExtension(
                 [
-                    new ClientType(['grant1', 'grant2'], $this->organizationsProvider),
+                    new ClientType($this->organizationsProvider),
                     new EntityType($this->doctrine)
                 ],
                 [
@@ -59,6 +60,17 @@ class ClientTypeTest extends TypeTestCase
                 ]
             )
         ];
+    }
+
+    /**
+     * @param Client $client
+     * @param array  $options
+     *
+     * @return FormInterface
+     */
+    private function createClientType(Client $client, array $options = []): FormInterface
+    {
+        return $this->factory->create(ClientType::class, $client, $options);
     }
 
     /**
@@ -86,8 +98,7 @@ class ClientTypeTest extends TypeTestCase
         $submittedData = [
             'name'   => 'test name',
             'active' => 1,
-            // BAP-18427: uncomment this block when other grant types is implemented
-            //'grants' => ['grant2']
+            'grants' => 'grant2'
         ];
 
         $this->organizationsProvider->expects(self::once())
@@ -98,7 +109,7 @@ class ClientTypeTest extends TypeTestCase
         $this->organizationsProvider->expects(self::never())
             ->method('isOrganizationSelectorRequired');
 
-        $form = $this->factory->create(ClientType::class, $client);
+        $form = $this->createClientType($client, ['grant_types' => ['grant1', 'grant2']]);
         $form->submit($submittedData);
         self::assertTrue($form->isSynchronized());
         self::assertTrue($form->isSubmitted());
@@ -106,8 +117,7 @@ class ClientTypeTest extends TypeTestCase
 
         self::assertEquals('test name', $client->getName());
         self::assertTrue($client->isActive());
-        // BAP-18427: uncomment this block when other grant types is implemented
-        //self::assertEquals(['grant2'], $client->getGrants());
+        self::assertEquals(['grant2'], $client->getGrants());
     }
 
     public function testSubmitForNewClientWhenMultiOrganizationIsSupportedAndClientOwnerBelongsToOneOrganizationOnly()
@@ -117,8 +127,7 @@ class ClientTypeTest extends TypeTestCase
         $submittedData = [
             'name'   => 'test name',
             'active' => 1,
-            // BAP-18427: uncomment this block when other grant types is implemented
-            //'grants' => ['grant2']
+            'grants' => 'grant2'
         ];
         $organization1 = $this->getOrganization(10, 'org1');
 
@@ -134,7 +143,7 @@ class ClientTypeTest extends TypeTestCase
             ->with([$organization1])
             ->willReturn(false);
 
-        $form = $this->factory->create(ClientType::class, $client);
+        $form = $this->createClientType($client, ['grant_types' => ['grant1', 'grant2']]);
         $form->submit($submittedData);
         self::assertTrue($form->isSynchronized());
         self::assertTrue($form->isSubmitted());
@@ -142,8 +151,7 @@ class ClientTypeTest extends TypeTestCase
 
         self::assertEquals('test name', $client->getName());
         self::assertTrue($client->isActive());
-        // BAP-18427: uncomment this block when other grant types is implemented
-        //self::assertEquals(['grant2'], $client->getGrants());
+        self::assertEquals(['grant2'], $client->getGrants());
     }
 
     public function testSubmitForNewClientWhenMultiOrganizationIsSupportedAndClientOwnerBelongsToSeveralOrganizations()
@@ -154,8 +162,7 @@ class ClientTypeTest extends TypeTestCase
             'organization' => 20,
             'name'         => 'test name',
             'active'       => 1,
-            // BAP-18427: uncomment this block when other grant types is implemented
-            //'grants'       => ['grant2']
+            'grants'       => 'grant2'
         ];
         $organization1 = $this->getOrganization(10, 'org1');
         $organization2 = $this->getOrganization(20, 'org2');
@@ -203,7 +210,7 @@ class ClientTypeTest extends TypeTestCase
                 [$organization2, ['id' => $organization2->getId()]]
             ]);
 
-        $form = $this->factory->create(ClientType::class, $client);
+        $form = $this->createClientType($client, ['grant_types' => ['grant1', 'grant2']]);
         $form->submit($submittedData);
         self::assertTrue($form->isSynchronized());
         self::assertTrue($form->isSubmitted());
@@ -211,8 +218,7 @@ class ClientTypeTest extends TypeTestCase
 
         self::assertEquals('test name', $client->getName());
         self::assertTrue($client->isActive());
-        // BAP-18427: uncomment this block when other grant types is implemented
-        //self::assertEquals(['grant2'], $client->getGrants());
+        self::assertEquals(['grant2'], $client->getGrants());
         self::assertSame($organization2, $client->getOrganization());
     }
 
@@ -226,8 +232,7 @@ class ClientTypeTest extends TypeTestCase
         $submittedData = [
             'name'   => 'test name',
             'active' => 1,
-            // BAP-18427: uncomment this block when other grant types is implemented
-            //'grants' => ['grant2']
+            'grants' => 'grant2'
         ];
 
         $this->organizationsProvider->expects(self::never())
@@ -237,7 +242,7 @@ class ClientTypeTest extends TypeTestCase
         $this->organizationsProvider->expects(self::never())
             ->method('isOrganizationSelectorRequired');
 
-        $form = $this->factory->create(ClientType::class, $client);
+        $form = $this->createClientType($client, ['grant_types' => ['grant1', 'grant2']]);
         $form->submit($submittedData);
         self::assertTrue($form->isSynchronized());
         self::assertTrue($form->isSubmitted());
@@ -245,7 +250,97 @@ class ClientTypeTest extends TypeTestCase
 
         self::assertEquals('test name', $client->getName());
         self::assertTrue($client->isActive());
-        // BAP-18427: uncomment this block when other grant types is implemented
-        //self::assertEquals(['grant2'], $client->getGrants());
+        self::assertEquals(['grant2'], $client->getGrants());
+    }
+
+    /**
+     * @expectedException \Symfony\Component\OptionsResolver\Exception\MissingOptionsException
+     * @expectedExceptionMessage The required option "grant_types" is missing.
+     */
+    public function testSubmitWhenNoGrantTypes()
+    {
+        $this->createClientType(new Client());
+    }
+
+    /**
+     * @expectedException \Symfony\Component\OptionsResolver\Exception\InvalidOptionsException
+     * @expectedExceptionMessage The option "grant_types" must not be empty.
+     */
+    public function testSubmitWhenEmptyGrantTypes()
+    {
+        $this->createClientType(new Client(), ['grant_types' => []]);
+    }
+
+    public function testSubmitWhenOneGrantTypeAndVisibleGrantTypes()
+    {
+        $client = new Client();
+        $submittedData = [
+            'name'   => 'test name',
+            'active' => 1
+        ];
+
+        $this->organizationsProvider->expects(self::once())
+            ->method('isMultiOrganizationSupported')
+            ->willReturn(false);
+
+        $form = $this->createClientType($client, ['grant_types' => ['grant1'], 'show_grants' => true]);
+        $form->submit($submittedData);
+        self::assertTrue($form->isSynchronized());
+        self::assertTrue($form->isSubmitted());
+        self::assertFalse($form->has('organization'));
+        self::assertTrue($form->has('grants'));
+
+        self::assertEquals('test name', $client->getName());
+        self::assertTrue($client->isActive());
+        self::assertEquals(['grant1'], $client->getGrants());
+    }
+
+    public function testSubmitWhenOneGrantTypeAndInvisibleGrantTypes()
+    {
+        $client = new Client();
+        $submittedData = [
+            'name'   => 'test name',
+            'active' => 1,
+            'grants' => 'grant1'
+        ];
+
+        $this->organizationsProvider->expects(self::once())
+            ->method('isMultiOrganizationSupported')
+            ->willReturn(false);
+
+        $form = $this->createClientType($client, ['grant_types' => ['grant1']]);
+        $form->submit($submittedData);
+        self::assertTrue($form->isSynchronized());
+        self::assertTrue($form->isSubmitted());
+        self::assertFalse($form->has('organization'));
+        self::assertTrue($form->has('grants'));
+
+        self::assertEquals('test name', $client->getName());
+        self::assertTrue($client->isActive());
+        self::assertEquals(['grant1'], $client->getGrants());
+    }
+
+    public function testSubmitWhenSeveralGrantTypeAndInvisibleGrantTypes()
+    {
+        $client = new Client();
+        $submittedData = [
+            'name'   => 'test name',
+            'active' => 1
+        ];
+
+        $this->organizationsProvider->expects(self::once())
+            ->method('isMultiOrganizationSupported')
+            ->willReturn(false);
+
+        $form = $this->createClientType($client, ['grant_types' => ['grant1', 'grant2'], 'show_grants' => false]);
+        $form->submit($submittedData);
+        self::assertTrue($form->isSynchronized());
+        self::assertTrue($form->isSubmitted());
+        self::assertFalse($form->has('organization'));
+        self::assertFalse($form->has('grants'));
+
+        self::assertEquals('test name', $client->getName());
+        self::assertTrue($client->isActive());
+        self::assertNull($client->getGrants());
     }
 }

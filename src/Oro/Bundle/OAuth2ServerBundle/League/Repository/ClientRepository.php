@@ -1,18 +1,17 @@
 <?php
 
-namespace Oro\Bundle\OAuth2ServerBundle\League\Repositories;
+namespace Oro\Bundle\OAuth2ServerBundle\League\Repository;
 
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\Common\Persistence\ObjectRepository;
 use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Repositories\ClientRepositoryInterface;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
-use Oro\Bundle\OAuth2ServerBundle\League\Entities\ClientEntity;
+use Oro\Bundle\OAuth2ServerBundle\League\Entity\ClientEntity;
 use Symfony\Component\Security\Core\Encoder\EncoderFactoryInterface;
-use Symfony\Component\Security\Core\Encoder\PasswordEncoderInterface;
 
 /**
- * The implementation of client entity repository for "league/oauth2-server" library.
+ * The implementation of the client entity repository for "league/oauth2-server" library.
  */
 class ClientRepository implements ClientRepositoryInterface
 {
@@ -43,7 +42,6 @@ class ClientRepository implements ClientRepositoryInterface
     ): ?ClientEntityInterface {
         /** @var Client $client */
         $client = $this->getRepository()->findOneBy(['identifier' => $clientIdentifier]);
-
         if (null === $client) {
             return null;
         }
@@ -56,20 +54,24 @@ class ClientRepository implements ClientRepositoryInterface
             return null;
         }
 
-        $secretEncoder = $this->getSecretEncoder($client);
-        if (!$secretEncoder->isPasswordValid($client->getSecret(), (string) $clientSecret, $client->getSalt())) {
+        if ($mustValidateSecret && !$this->isPasswordValid($client, $clientSecret)) {
+            return null;
+        }
+
+        if (!$client->getOrganization()->isEnabled()) {
             return null;
         }
 
         $clientEntity = new ClientEntity();
         $clientEntity->setIdentifier($client->getIdentifier());
-        $clientEntity->setRedirectUri(array_map('strval', $client->getRedirectUris()));
+        $clientEntity->setRedirectUri(\array_map('strval', $client->getRedirectUris()));
+        $clientEntity->setFrontend($client->isFrontend());
 
         return $clientEntity;
     }
 
     /**
-     * @param Client $client
+     * @param Client      $client
      * @param string|null $grant
      *
      * @return bool
@@ -81,12 +83,35 @@ class ClientRepository implements ClientRepositoryInterface
         }
 
         $grants = $client->getGrants();
-
         if (empty($grants)) {
             return true;
         }
 
-        return \in_array($grant, $client->getGrants(), true);
+        // "refresh_token" grant should be supported for clients that support
+        // "password" and "authorization_code" grants
+        if ('refresh_token' === $grant
+            && (
+                \in_array('password', $grants, true)
+                || \in_array('authorization_code', $grants, true)
+            )
+        ) {
+            return true;
+        }
+
+        return \in_array($grant, $grants, true);
+    }
+
+    /**
+     * @param Client      $client
+     * @param string|null $clientSecret
+     *
+     * @return bool
+     */
+    private function isPasswordValid(Client $client, ?string $clientSecret): bool
+    {
+        return $this->encoderFactory
+            ->getEncoder($client)
+            ->isPasswordValid($client->getSecret(), (string)$clientSecret, $client->getSalt());
     }
 
     /**
@@ -95,15 +120,5 @@ class ClientRepository implements ClientRepositoryInterface
     private function getRepository(): ObjectRepository
     {
         return $this->doctrine->getRepository(Client::class);
-    }
-
-    /**
-     * @param Client $client
-     *
-     * @return PasswordEncoderInterface
-     */
-    private function getSecretEncoder(Client $client): PasswordEncoderInterface
-    {
-        return $this->encoderFactory->getEncoder($client);
     }
 }

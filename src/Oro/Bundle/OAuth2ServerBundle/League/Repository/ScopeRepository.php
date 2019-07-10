@@ -1,14 +1,14 @@
 <?php
 
-namespace Oro\Bundle\OAuth2ServerBundle\League\Repositories;
+namespace Oro\Bundle\OAuth2ServerBundle\League\Repository;
 
 use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Entities\ScopeEntityInterface;
 use League\OAuth2\Server\Repositories\ScopeRepositoryInterface;
-use Oro\Bundle\OAuth2ServerBundle\League\Entities\ScopeEntity;
+use Oro\Bundle\OAuth2ServerBundle\League\Entity\ScopeEntity;
 
 /**
- * The implementation of scope entity repository for "league/oauth2-server" library.
+ * The implementation of the scope entity repository for "league/oauth2-server" library.
  */
 class ScopeRepository implements ScopeRepositoryInterface
 {

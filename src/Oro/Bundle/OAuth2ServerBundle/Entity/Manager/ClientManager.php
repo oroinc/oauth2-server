@@ -4,13 +4,9 @@ namespace Oro\Bundle\OAuth2ServerBundle\Entity\Manager;
 
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\EntityManagerInterface;
-use Oro\Bundle\EntityBundle\ORM\EntityIdAccessor;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
-use Oro\Bundle\OrganizationBundle\Entity\Organization;
-use Oro\Bundle\SecurityBundle\Acl\Domain\DomainObjectReference;
 use Oro\Bundle\SecurityBundle\Authentication\TokenAccessorInterface;
-use Oro\Bundle\SecurityBundle\Owner\EntityOwnerAccessor;
-use Symfony\Component\Security\Acl\Util\ClassUtils;
+use Oro\Bundle\UserBundle\Entity\User;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\Encoder\EncoderFactoryInterface;
 use Symfony\Component\Security\Core\Encoder\PasswordEncoderInterface;
@@ -32,54 +28,36 @@ class ClientManager
     /** @var AuthorizationCheckerInterface */
     private $authorizationChecker;
 
-    /** @var EntityOwnerAccessor */
-    private $entityOwnerAccessor;
-
-    /** @var EntityIdAccessor */
-    private $entityIdAccessor;
-
     /**
      * @param ManagerRegistry               $doctrine
      * @param EncoderFactoryInterface       $encoderFactory
      * @param TokenAccessorInterface        $tokenAccessor
      * @param AuthorizationCheckerInterface $authorizationChecker
-     * @param EntityOwnerAccessor           $entityOwnerAccessor
-     * @param EntityIdAccessor              $entityIdAccessor
      */
     public function __construct(
         ManagerRegistry $doctrine,
         EncoderFactoryInterface $encoderFactory,
         TokenAccessorInterface $tokenAccessor,
-        AuthorizationCheckerInterface $authorizationChecker,
-        EntityOwnerAccessor $entityOwnerAccessor,
-        EntityIdAccessor $entityIdAccessor
+        AuthorizationCheckerInterface $authorizationChecker
     ) {
         $this->doctrine = $doctrine;
         $this->encoderFactory = $encoderFactory;
         $this->tokenAccessor = $tokenAccessor;
         $this->authorizationChecker = $authorizationChecker;
-        $this->entityOwnerAccessor = $entityOwnerAccessor;
-        $this->entityIdAccessor = $entityIdAccessor;
     }
 
     /**
      * Checks whether access to creation of Client entity is granted.
      *
-     * @param string $ownerEntityClass
-     * @param int    $ownerEntityId
-     *
      * @return bool
      */
-    public function isCreationGranted(string $ownerEntityClass, int $ownerEntityId): bool
+    public function isCreationGranted(): bool
     {
-        return $this->hasModificationPermissions(
-            $ownerEntityClass,
-            $ownerEntityId
-        );
+        return $this->authorizationChecker->isGranted('CREATE', Client::class);
     }
 
     /**
-     * Checks whether access to modification and deletion of the given Client entity is granted.
+     * Checks whether access to modification of the given Client entity is granted.
      *
      * @param Client $entity
      *
@@ -87,11 +65,19 @@ class ClientManager
      */
     public function isModificationGranted(Client $entity): bool
     {
-        return $this->hasModificationPermissions(
-            $entity->getOwnerEntityClass(),
-            $entity->getOwnerEntityId(),
-            $entity
-        );
+        return $this->authorizationChecker->isGranted('EDIT', $entity);
+    }
+
+    /**
+     * Checks whether access to deletion of the given Client entity is granted.
+     *
+     * @param Client $entity
+     *
+     * @return bool
+     */
+    public function isDeletionGranted(Client $entity): bool
+    {
+        return $this->authorizationChecker->isGranted('DELETE', $entity);
     }
 
     /**
@@ -100,6 +86,8 @@ class ClientManager
      *
      * @param Client $client The entity to update
      * @param bool   $flush  Whether to store the entity to the database (default true)
+     *
+     * @SuppressWarnings(PHPMD.NPathComplexity)
      */
     public function updateClient(Client $client, bool $flush = true): void
     {
@@ -113,10 +101,9 @@ class ClientManager
         if (!$client->getRedirectUris() && null !== $client->getRedirectUris()) {
             $client->setRedirectUris(null);
         }
-
-        // BAP-18427: remove this block when other grant types is implemented
-        if (!$client->getGrants()) {
-            $client->setGrants(['client_credentials']);
+        $ownerEntityClass = $client->getOwnerEntityClass();
+        if ($ownerEntityClass && $ownerEntityClass !== User::class) {
+            $client->setFrontend(true);
         }
 
         if ($flush) {
@@ -209,100 +196,6 @@ class ClientManager
         }
 
         return str_shuffle(substr($randomString, 0, $maxLength));
-    }
-
-    /**
-     * @param string      $ownerEntityClass
-     * @param int         $ownerEntityId
-     * @param Client|null $entity
-     *
-     * @return bool
-     */
-    private function hasModificationPermissions(
-        string $ownerEntityClass,
-        int $ownerEntityId,
-        Client $entity = null
-    ): bool {
-        $currentUser = $this->tokenAccessor->getUser();
-        if ($currentUser instanceof $ownerEntityClass
-            && $this->entityIdAccessor->getIdentifier($currentUser) === $ownerEntityId
-        ) {
-            return true;
-        }
-
-        $owner = $this->getEntityManager()->find($ownerEntityClass, $ownerEntityId);
-        if (null === $owner) {
-            return false;
-        }
-
-        if (null === $entity) {
-            return $this->hasPermissionsToManageClient($owner);
-        }
-
-        $organization = $entity->getOrganization();
-        if (null === $organization) {
-            return $this->hasPermissionsToManageClient($owner);
-        }
-
-        $result = true;
-        $ownerOwner = $this->entityOwnerAccessor->getOwner($owner);
-        $ownerOrganization = $this->entityOwnerAccessor->getOrganization($owner);
-        if (null !== $ownerOrganization) {
-            if ($ownerOrganization->getId() === $organization->getId()) {
-                $result = $this->hasPermissionsToManageClient($owner);
-            } else {
-                $result = $this->hasPermissionsToManageClient(
-                    $this->getDomainObjectReference($owner, $ownerOwner, $ownerOrganization)
-                );
-            }
-        } elseif ($ownerOwner instanceof Organization) {
-            if ($ownerOwner->getId() === $organization->getId()) {
-                $result = $this->hasPermissionsToManageClient($owner);
-            } else {
-                $result = $this->hasPermissionsToManageClient(
-                    $this->getDomainObjectReference($owner, $ownerOwner, null)
-                );
-            }
-        }
-
-        return $result;
-    }
-
-    /**
-     * @param object $subject
-     *
-     * @return bool
-     */
-    private function hasPermissionsToManageClient($subject): bool
-    {
-        return
-            $this->authorizationChecker->isGranted('MANAGE_API_KEY', $subject)
-            && $this->authorizationChecker->isGranted('EDIT', $subject);
-    }
-
-    /**
-     * @param object      $entity
-     * @param object      $owner
-     * @param object|null $organization
-     *
-     * @return DomainObjectReference
-     */
-    private function getDomainObjectReference($entity, $owner, $organization): DomainObjectReference
-    {
-        if (null === $organization) {
-            return new DomainObjectReference(
-                ClassUtils::getRealClass($entity),
-                $this->entityIdAccessor->getIdentifier($entity),
-                $this->entityIdAccessor->getIdentifier($owner)
-            );
-        }
-
-        return new DomainObjectReference(
-            ClassUtils::getRealClass($entity),
-            $this->entityIdAccessor->getIdentifier($entity),
-            $this->entityIdAccessor->getIdentifier($owner),
-            $this->entityIdAccessor->getIdentifier($organization)
-        );
     }
 
     /**

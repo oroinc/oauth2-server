@@ -5,7 +5,8 @@ namespace Oro\Bundle\OAuth2ServerBundle\Validator\Constraints;
 use Symfony\Component\Validator\Constraint;
 
 /**
- * This constraint can be used to check if OAuth 2.0 client name is unique for a specific owner and organization.
+ * This constraint can be used to check if OAuth 2.0 client name is unique for a specific organization
+ * and owner (if it is defined for the client).
  */
 class UniqueClientName extends Constraint
 {

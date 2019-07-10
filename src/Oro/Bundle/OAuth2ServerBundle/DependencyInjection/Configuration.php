@@ -37,7 +37,16 @@ class Configuration implements ConfigurationInterface
             ->integerNode('access_token_lifetime')
                 ->info('The lifetime in seconds of the access token.')
                 ->min(0)
-                ->defaultValue(3600)
+                ->defaultValue(3600) // 1 hour
+            ->end()
+            ->integerNode('refresh_token_lifetime')
+                ->info('The lifetime in seconds of the refresh token.')
+                ->min(0)
+                ->defaultValue(18144000) // 30 days
+            ->end()
+            ->booleanNode('enable_refresh_token')
+                ->info('Determines if refresh token grant is enabled.')
+                ->defaultValue(true)
             ->end()
             ->scalarNode('private_key')
                 ->info(

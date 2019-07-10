@@ -12,7 +12,8 @@ use Symfony\Component\Validator\Exception\RuntimeException;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
 /**
- * Validates that OAuth 2.0 client name is unique for a specific owner and organization.
+ * Validates that OAuth 2.0 client name is unique for a specific organization
+ * and owner (if it is defined for the client).
  */
 class UniqueClientNameValidator extends ConstraintValidator
 {
@@ -48,16 +49,11 @@ class UniqueClientNameValidator extends ConstraintValidator
         if (null === $organization) {
             throw new RuntimeException('The organization must be defined.');
         }
-        $ownerEntityClass = $value->getOwnerEntityClass();
-        if (null === $ownerEntityClass) {
-            throw new RuntimeException('The owner entity class must be defined.');
-        }
-        $ownerEntityId = $value->getOwnerEntityId();
-        if (null === $ownerEntityId) {
-            throw new RuntimeException('The owner entity ID must be defined.');
-        }
 
-        if ($this->isClientExist($ownerEntityClass, $ownerEntityId, $organization, $name, $value->getId())) {
+        $ownerEntityClass = $value->getOwnerEntityClass();
+        $ownerEntityId = $value->getOwnerEntityId();
+        $clientEntityId = $value->getId();
+        if ($this->isClientExist($organization, $name, $ownerEntityClass, $ownerEntityId, $clientEntityId)) {
             $this->context->buildViolation($constraint->message, ['{{ name }}' => $name])
                 ->atPath('name')
                 ->addViolation();
@@ -65,35 +61,34 @@ class UniqueClientNameValidator extends ConstraintValidator
     }
 
     /**
-     * @param string       $ownerEntityClass
-     * @param int          $ownerEntityId
      * @param Organization $organization
      * @param string       $name
-     * @param int?null     $id
+     * @param string|null  $ownerEntityClass
+     * @param int|null     $ownerEntityId
+     * @param int|null     $id
      *
      * @return bool
      */
     private function isClientExist(
-        string $ownerEntityClass,
-        int $ownerEntityId,
         Organization $organization,
         string $name,
+        ?string $ownerEntityClass,
+        ?int $ownerEntityId,
         ?int $id
     ): bool {
         $qb = $this->getEntityManager()->createQueryBuilder()
             ->select('e.id')
             ->from(Client::class, 'e')
             ->setMaxResults(1)
-            ->where(
-                'e.ownerEntityClass = :ownerEntityClass AND e.ownerEntityId = :ownerEntityId'
-                . ' AND e.organization = :organization AND e.name= :name'
-            )
-            ->setParameters([
-                'ownerEntityClass' => $ownerEntityClass,
-                'ownerEntityId'    => $ownerEntityId,
-                'organization'     => $organization,
-                'name'             => $name
-            ]);
+            ->where('e.organization = :organization AND e.name = :name')
+            ->setParameter('organization', $organization)
+            ->setParameter('name', $name);
+        if ($ownerEntityClass) {
+            $qb
+                ->andWhere('e.ownerEntityClass = :ownerEntityClass AND e.ownerEntityId = :ownerEntityId')
+                ->setParameter('ownerEntityClass', $ownerEntityClass)
+                ->setParameter('ownerEntityId', $ownerEntityId);
+        }
         if (null !== $id) {
             $qb->andWhere('e.id <> :id')->setParameter('id', $id);
         }

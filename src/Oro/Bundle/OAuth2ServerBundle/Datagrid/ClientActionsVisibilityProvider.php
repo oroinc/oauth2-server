@@ -3,6 +3,7 @@
 namespace Oro\Bundle\OAuth2ServerBundle\Datagrid;
 
 use Oro\Bundle\DataGridBundle\Datasource\ResultRecordInterface;
+use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
 
 /**
@@ -29,20 +30,24 @@ class ClientActionsVisibilityProvider
      */
     public function getActionsVisibility(ResultRecordInterface $record, array $actions)
     {
-        $isModificationGranted = $this->clientManager->isModificationGranted($record->getRootEntity());
+        /** @var Client $client */
+        $client = $record->getRootEntity();
+        $isModificationGranted = $this->clientManager->isModificationGranted($client);
+        $isDeletionGranted = $this->clientManager->isDeletionGranted($client);
         $isActive = (bool)$record->getValue('active');
 
         $visibility = [];
-        foreach ($actions as $action => $actionConfig) {
-            $visible = $isModificationGranted;
-            if ($visible) {
-                if ('activate' === $action) {
-                    $visible = !$isActive;
-                } elseif ('deactivate' === $action) {
-                    $visible = $isActive;
-                }
-            }
-            $visibility[$action] = $visible;
+        if (isset($actions['update'])) {
+            $visibility['update'] = $isModificationGranted;
+        }
+        if (isset($actions['activate'])) {
+            $visibility['activate'] = $isModificationGranted && !$isActive;
+        }
+        if (isset($actions['deactivate'])) {
+            $visibility['deactivate'] = $isModificationGranted && $isActive;
+        }
+        if (isset($actions['delete'])) {
+            $visibility['delete'] = $isDeletionGranted;
         }
 
         return $visibility;

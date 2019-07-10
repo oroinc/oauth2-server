@@ -49,16 +49,19 @@ class ClientController extends AbstractController
      */
     public function createAction(Request $request): array
     {
-        $entityRoutingHelper = $this->get(EntityRoutingHelper::class);
-        $ownerEntityClass = $entityRoutingHelper->getEntityClassName($request);
-        $ownerEntityId = (int)$entityRoutingHelper->getEntityId($request);
-
-        if (!$this->getClientManager()->isCreationGranted($ownerEntityClass, $ownerEntityId)) {
+        if (!$this->getClientManager()->isCreationGranted()) {
             throw $this->createAccessDeniedException();
         }
 
+
         $entity = new Client();
-        $entity->setOwnerEntity($ownerEntityClass, $ownerEntityId);
+
+        $entityRoutingHelper = $this->get(EntityRoutingHelper::class);
+        $ownerEntityClass = $entityRoutingHelper->getEntityClassName($request);
+        if ($ownerEntityClass) {
+            $ownerEntityId = (int)$entityRoutingHelper->getEntityId($request);
+            $entity->setOwnerEntity($ownerEntityClass, $ownerEntityId);
+        }
 
         return $this->update($request, $entity);
     }
@@ -99,7 +102,9 @@ class ClientController extends AbstractController
      */
     public function deleteAction(Client $entity): Response
     {
-        $this->checkModificationAccess($entity);
+        if (!$this->getClientManager()->isDeletionGranted($entity)) {
+            throw $this->createAccessDeniedException();
+        }
 
         $this->getClientManager()->deleteClient($entity);
 
@@ -194,7 +199,12 @@ class ClientController extends AbstractController
     private function getForm(Client $entity): FormInterface
     {
         return $this->get(FormFactoryInterface::class)
-            ->createNamed('oro_oauth2_client', ClientType::class, $entity);
+            ->createNamed(
+                'oro_oauth2_client',
+                ClientType::class,
+                $entity,
+                ['grant_types' => ['client_credentials']]
+            );
     }
 
     /**

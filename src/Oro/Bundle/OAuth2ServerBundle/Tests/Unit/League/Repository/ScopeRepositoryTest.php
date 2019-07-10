@@ -1,10 +1,10 @@
 <?php
 
-namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Security\Authentication\Token;
+namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\League\Repository;
 
-use Oro\Bundle\OAuth2ServerBundle\League\Entities\ClientEntity;
-use Oro\Bundle\OAuth2ServerBundle\League\Entities\ScopeEntity;
-use Oro\Bundle\OAuth2ServerBundle\League\Repositories\ScopeRepository;
+use Oro\Bundle\OAuth2ServerBundle\League\Entity\ClientEntity;
+use Oro\Bundle\OAuth2ServerBundle\League\Entity\ScopeEntity;
+use Oro\Bundle\OAuth2ServerBundle\League\Repository\ScopeRepository;
 
 class ScopeRepositoryTest extends \PHPUnit\Framework\TestCase
 {

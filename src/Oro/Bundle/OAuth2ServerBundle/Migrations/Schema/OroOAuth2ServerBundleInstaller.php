@@ -13,7 +13,7 @@ class OroOAuth2ServerBundleInstaller implements Installation
      */
     public function getMigrationVersion()
     {
-        return 'v1_1';
+        return 'v1_2';
     }
 
     /**
@@ -24,10 +24,12 @@ class OroOAuth2ServerBundleInstaller implements Installation
         /** Tables generation **/
         $this->createClientTable($schema);
         $this->createAccessTokenTable($schema);
+        $this->createRefreshTokenTable($schema);
 
         /** Foreign keys generation **/
         $this->addClientForeignKeys($schema);
         $this->addAccessTokenForeignKeys($schema);
+        $this->addRefreshTokenForeignKeys($schema);
     }
 
     /**
@@ -41,15 +43,16 @@ class OroOAuth2ServerBundleInstaller implements Installation
         $table->addColumn('id', 'integer', ['autoincrement' => true]);
         $table->addColumn('name', 'string', ['length' => 255]);
         $table->addColumn('identifier', 'string', ['length' => 32]);
-        $table->addColumn('secret', 'string', ['length' => 128]);
+        $table->addColumn('secret', 'string', ['length' => 128, 'notnull' => false]);
         $table->addColumn('salt', 'string', ['length' => 50]);
         $table->addColumn('grants', 'simple_array', ['comment' => '(DC2Type:simple_array)']);
         $table->addColumn('scopes', 'simple_array', ['notnull' => false, 'comment' => '(DC2Type:simple_array)']);
         $table->addColumn('redirect_uris', 'simple_array', ['notnull' => false, 'comment' => '(DC2Type:simple_array)']);
         $table->addColumn('active', 'boolean', ['default' => '1']);
+        $table->addColumn('frontend', 'boolean', ['default' => '0']);
         $table->addColumn('organization_id', 'integer', ['notnull' => false]);
-        $table->addColumn('owner_entity_class', 'string', ['length' => 255]);
-        $table->addColumn('owner_entity_id', 'integer');
+        $table->addColumn('owner_entity_class', 'string', ['length' => 255, 'notnull' => false]);
+        $table->addColumn('owner_entity_id', 'integer', ['notnull' => false]);
         $table->setPrimaryKey(['id']);
         $table->addUniqueIndex(['identifier'], 'oro_oauth2_client_uidx');
         $table->addIndex(['organization_id'], 'IDX_2A8C454232C8A3DE');
@@ -103,6 +106,40 @@ class OroOAuth2ServerBundleInstaller implements Installation
         $table->addForeignKeyConstraint(
             $schema->getTable('oro_oauth2_client'),
             ['client_id'],
+            ['id'],
+            ['onDelete' => 'CASCADE']
+        );
+    }
+
+    /**
+     * Create oro_oauth2_refresh_token table
+     *
+     * @param Schema $schema
+     */
+    protected function createRefreshTokenTable(Schema $schema)
+    {
+        $table = $schema->createTable('oro_oauth2_refresh_token');
+        $table->addColumn('id', 'integer', ['autoincrement' => true]);
+        $table->addColumn('identifier', 'string', ['length' => 80]);
+        $table->addColumn('expires_at', 'datetime', ['comment' => '(DC2Type:datetime)']);
+        $table->addColumn('access_token_id', 'integer', ['notnull' => false]);
+        $table->addColumn('revoked', 'boolean', ['default' => '0']);
+        $table->setPrimaryKey(['id']);
+        $table->addUniqueIndex(['identifier'], 'oro_oauth2_refresh_token_uidx');
+        $table->addIndex(['access_token_id'], 'IDX_5C4260E32CCB2688', []);
+    }
+
+    /**
+     * Add oro_oauth2_refresh_token foreign keys.
+     *
+     * @param Schema $schema
+     */
+    protected function addRefreshTokenForeignKeys(Schema $schema)
+    {
+        $table = $schema->getTable('oro_oauth2_refresh_token');
+        $table->addForeignKeyConstraint(
+            $schema->getTable('oro_oauth2_access_token'),
+            ['access_token_id'],
             ['id'],
             ['onDelete' => 'CASCADE']
         );

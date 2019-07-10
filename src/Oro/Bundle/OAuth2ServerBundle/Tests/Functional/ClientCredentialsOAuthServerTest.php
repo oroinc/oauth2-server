@@ -2,15 +2,14 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Tests\Functional;
 
-use Oro\Bundle\ApiBundle\Tests\Functional\RestJsonApiTestCase;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
-use Oro\Bundle\OAuth2ServerBundle\Tests\Functional\DataFixtures\LoadOAuthClient;
+use Oro\Bundle\OAuth2ServerBundle\Tests\Functional\DataFixtures\LoadClientCredentialsClient;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @dbIsolationPerTest
  */
-class OAuthServerTest extends RestJsonApiTestCase
+class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
 {
     /**
      * {@inheritdoc}
@@ -18,30 +17,7 @@ class OAuthServerTest extends RestJsonApiTestCase
     protected function setUp()
     {
         $this->initClient();
-        $this->loadFixtures([LoadOAuthClient::class]);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function checkWsseAuthHeader(array &$server)
-    {
-    }
-
-    /**
-     * @param string $method
-     * @param string $uri
-     * @param array  $parameters
-     * @param array  $server
-     *
-     * @return Response
-     */
-    private function sendRequest(string $method, string $uri, array $parameters = [], array $server = []): Response
-    {
-        $this->client->request($method, $uri, $parameters, [], $server);
-        self::assertSessionNotStarted($method, $uri);
-
-        return $this->client->getResponse();
+        $this->loadFixtures([LoadClientCredentialsClient::class]);
     }
 
     /**
@@ -51,24 +27,14 @@ class OAuthServerTest extends RestJsonApiTestCase
      */
     private function sendAccessTokenRequest(int $expectedStatusCode = Response::HTTP_OK): array
     {
-        $response = $this->sendRequest(
-            'POST',
-            $this->getUrl('oro_oauth2_server_auth_token'),
+        return $this->sendTokenRequest(
             [
                 'grant_type'    => 'client_credentials',
-                'client_id'     => LoadOAuthClient::OAUTH_CLIENT_ID,
-                'client_secret' => LoadOAuthClient::OAUTH_CLIENT_SECRET
-            ]
+                'client_id'     => LoadClientCredentialsClient::OAUTH_CLIENT_ID,
+                'client_secret' => LoadClientCredentialsClient::OAUTH_CLIENT_SECRET
+            ],
+            $expectedStatusCode
         );
-
-        self::assertResponseStatusCodeEquals($response, $expectedStatusCode);
-        if (Response::HTTP_OK === $expectedStatusCode) {
-            self::assertResponseContentTypeEquals($response, 'application/json; charset=UTF-8');
-        } elseif ($expectedStatusCode >= Response::HTTP_BAD_REQUEST) {
-            self::assertResponseContentTypeEquals($response, 'application/json');
-        }
-
-        return self::jsonToArray($response->getContent());
     }
 
     /**
@@ -93,13 +59,13 @@ class OAuthServerTest extends RestJsonApiTestCase
         $accessTokenSecondPart = self::jsonToArray(base64_decode($accessTokenSecondPart));
         self::assertEquals('JWT', $accessTokenFirstPart['typ']);
         self::assertEquals('RS256', $accessTokenFirstPart['alg']);
-        self::assertEquals(LoadOAuthClient::OAUTH_CLIENT_ID, $accessTokenSecondPart['aud']);
+        self::assertEquals(LoadClientCredentialsClient::OAUTH_CLIENT_ID, $accessTokenSecondPart['aud']);
     }
 
     public function testGetAuthTokenForDeactivatedClient()
     {
         /** @var Client $client */
-        $client = $this->getReference(LoadOAuthClient::OAUTH_CLIENT_REFERENCE);
+        $client = $this->getReference(LoadClientCredentialsClient::OAUTH_CLIENT_REFERENCE);
         $client->setActive(false);
         $this->getEntityManager()->flush();
 
@@ -158,7 +124,7 @@ class OAuthServerTest extends RestJsonApiTestCase
         $authorizationHeader = $this->getBearerAuthHeaderValue();
 
         /** @var Client $client */
-        $client = $this->getReference(LoadOAuthClient::OAUTH_CLIENT_REFERENCE);
+        $client = $this->getReference(LoadClientCredentialsClient::OAUTH_CLIENT_REFERENCE);
         $client->setActive(false);
         $this->getEntityManager()->flush();
 

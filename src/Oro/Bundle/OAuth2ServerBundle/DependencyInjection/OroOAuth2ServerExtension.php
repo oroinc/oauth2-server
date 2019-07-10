@@ -4,12 +4,17 @@ namespace Oro\Bundle\OAuth2ServerBundle\DependencyInjection;
 
 use League\OAuth2\Server\CryptKey;
 use League\OAuth2\Server\Grant\ClientCredentialsGrant;
+use League\OAuth2\Server\Grant\PasswordGrant;
+use League\OAuth2\Server\Grant\RefreshTokenGrant;
+use Oro\Bundle\OAuth2ServerBundle\League\Repository\FrontendRefreshTokenRepository;
+use Oro\Bundle\OAuth2ServerBundle\League\Repository\FrontendUserRepository;
 use Oro\Component\DependencyInjection\ExtendedContainerBuilder;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader;
+use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\ExpressionLanguage\Expression;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 use Symfony\Component\Yaml\Yaml;
@@ -25,6 +30,11 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
 
     private const PRIVATE_KEY_SERVICE = 'oro_oauth2_server.league.private_key';
     private const PUBLIC_KEY_SERVICE  = 'oro_oauth2_server.league.public_key';
+
+    private const AUTHORIZATION_SERVER_SERVICE     = 'oro_oauth2_server.league.authorization_server';
+    private const USER_REPOSITORY_SERVICE          = 'oro_oauth2_server.league.repository.user_repository';
+    private const REFRESH_TOKEN_REPOSITORY_SERVICE = 'oro_oauth2_server.league.repository.refresh_token_repository';
+    private const FRONTEND_USER_LOADER_SERVICE     = 'oro_customer.security.user_loader';
 
     /**
      * {@inheritdoc}
@@ -44,6 +54,7 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
         }
 
         $this->configureSupportedClientOwners($container);
+        $this->configureUserRepository($container);
         $this->configureAuthorizationServer($container, $config['authorization_server']);
         $this->configureResourceServer($container, $config['resource_server']);
     }
@@ -93,6 +104,23 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
 
     /**
      * @param ContainerBuilder $container
+     */
+    private function configureUserRepository(ContainerBuilder $container): void
+    {
+        // replace user and refresh token repositories with the repositories that can handle customer users here
+        // to avoid creation of a bridge for the customer-portal package
+        if (class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {
+            $container->getDefinition(self::USER_REPOSITORY_SERVICE)
+                ->setClass(FrontendUserRepository::class)
+                ->addArgument(new Reference(self::FRONTEND_USER_LOADER_SERVICE));
+            $container->getDefinition(self::REFRESH_TOKEN_REPOSITORY_SERVICE)
+                ->setClass(FrontendRefreshTokenRepository::class)
+                ->addArgument(new Reference(self::FRONTEND_USER_LOADER_SERVICE));
+        }
+    }
+
+    /**
+     * @param ContainerBuilder $container
      * @param array            $config
      */
     private function configureAuthorizationServer(ContainerBuilder $container, array $config): void
@@ -104,18 +132,43 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
             CryptKey::class,
             [new Expression(sprintf('service("%s").getKeyPath()', self::PRIVATE_KEY_SERVICE)), null, false]
         );
-        $authorizationServer = $container->getDefinition('oro_oauth2_server.league.authorization_server')
+        $authorizationServer = $container->getDefinition(self::AUTHORIZATION_SERVER_SERVICE)
             ->setArgument(3, $privateKey)
             ->setArgument(4, $config['encryption_key']);
 
-        $accessTokenLifetime = sprintf('PT%dS', $config['access_token_lifetime']);
+        $accessTokenLifetime = $this->getTokenLifetime($config['access_token_lifetime']);
+        $refreshTokenEnabled = $config['enable_refresh_token'];
+        $refreshTokenLifetime = $refreshTokenEnabled
+            ? $this->getTokenLifetime($config['refresh_token_lifetime'])
+            : null;
+
         $this->enableGrantType(
             $container,
             $authorizationServer,
             'client_credentials',
-            ClientCredentialsGrant::class,
+            $this->getClientCredentialsGrant(),
             $accessTokenLifetime
         );
+
+        $this->enableGrantType(
+            $container,
+            $authorizationServer,
+            'password',
+            $this->getPasswordGrant(),
+            $accessTokenLifetime,
+            $refreshTokenLifetime
+        );
+
+        if ($refreshTokenEnabled) {
+            $this->enableGrantType(
+                $container,
+                $authorizationServer,
+                'refresh_token',
+                $this->getRefreshTokenGrant(),
+                $accessTokenLifetime,
+                $refreshTokenLifetime
+            );
+        }
 
         $container->setParameter(self::CORS_PREFLIGHT_MAX_AGE_PARAM, $config['cors']['preflight_max_age']);
         $container->setParameter(self::CORS_ALLOW_ORIGINS_PARAM, $config['cors']['allow_origins']);
@@ -132,28 +185,75 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
     }
 
     /**
+     * @param int $lifetimeInSeconds
+     *
+     * @return string
+     */
+    private function getTokenLifetime(int $lifetimeInSeconds): string
+    {
+        return sprintf('PT%dS', $lifetimeInSeconds);
+    }
+
+    /**
      * @param ContainerBuilder $container
      * @param Definition       $authorizationServer
-     * @param string           $grantType
-     * @param string           $grantTypeClass
+     * @param string           $grantTypeName
+     * @param Definition       $grantType
      * @param string           $accessTokenLifetime
+     * @param string|null      $refreshTokenLifetime
      */
     private function enableGrantType(
         ContainerBuilder $container,
         Definition $authorizationServer,
-        string $grantType,
-        string $grantTypeClass,
-        string $accessTokenLifetime
+        string $grantTypeName,
+        Definition $grantType,
+        string $accessTokenLifetime,
+        string $refreshTokenLifetime = null
     ): void {
+        if ($refreshTokenLifetime) {
+            $grantType->addMethodCall('setRefreshTokenTTL', [
+                new Definition(\DateInterval::class, [$refreshTokenLifetime])
+            ]);
+        }
+
         $authorizationServer->addMethodCall('enableGrantType', [
-            new Definition($grantTypeClass),
+            $grantType,
             new Definition(\DateInterval::class, [$accessTokenLifetime])
         ]);
 
         $container->setParameter(
             self::SUPPORTED_GRANT_TYPES_PARAM,
-            array_merge($container->getParameter(self::SUPPORTED_GRANT_TYPES_PARAM), [$grantType])
+            array_merge($container->getParameter(self::SUPPORTED_GRANT_TYPES_PARAM), [$grantTypeName])
         );
+    }
+
+    /**
+     * @return Definition
+     */
+    private function getClientCredentialsGrant(): Definition
+    {
+        return new Definition(ClientCredentialsGrant::class);
+    }
+
+    /**
+     * @return Definition
+     */
+    private function getPasswordGrant(): Definition
+    {
+        return new Definition(PasswordGrant::class, [
+            new Reference(self::USER_REPOSITORY_SERVICE),
+            new Reference(self::REFRESH_TOKEN_REPOSITORY_SERVICE)
+        ]);
+    }
+
+    /**
+     * @return Definition
+     */
+    private function getRefreshTokenGrant(): Definition
+    {
+        return new Definition(RefreshTokenGrant::class, [
+            new Reference(self::REFRESH_TOKEN_REPOSITORY_SERVICE)
+        ]);
     }
 
     /**

@@ -1,6 +1,6 @@
 <?php
 
-namespace Oro\Bundle\OAuth2ServerBundle\League\Entities;
+namespace Oro\Bundle\OAuth2ServerBundle\League\Entity;
 
 use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Entities\Traits\ClientTrait;
@@ -12,6 +12,9 @@ use League\OAuth2\Server\Entities\Traits\EntityTrait;
 class ClientEntity implements ClientEntityInterface
 {
     use EntityTrait, ClientTrait;
+
+    /** @var bool */
+    private $frontend = false;
 
     /**
      * @param string $name
@@ -27,5 +30,21 @@ class ClientEntity implements ClientEntityInterface
     public function setRedirectUri($redirectUri): void
     {
         $this->redirectUri = $redirectUri;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isFrontend(): bool
+    {
+        return $this->frontend;
+    }
+
+    /**
+     * @param bool $frontend
+     */
+    public function setFrontend(bool $frontend): void
+    {
+        $this->frontend = $frontend;
     }
 }

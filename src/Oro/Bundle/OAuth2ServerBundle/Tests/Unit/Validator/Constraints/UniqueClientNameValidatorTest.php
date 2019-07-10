@@ -33,15 +33,22 @@ class UniqueClientNameValidatorTest extends ConstraintValidatorTestCase
     }
 
     /**
-     * @param string       $ownerEntityClass
-     * @param int          $ownerEntityId
      * @param Organization $organization
      * @param string       $name
+     * @param string|null  $ownerEntityClass
+     * @param int|null     $ownerEntityId
+     * @param int|null     $clientEntityId
      *
      * @return QueryBuilder|\PHPUnit\Framework\MockObject\MockObject
+     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
-    private function expectGetValidationQueryBuilder($ownerEntityClass, $ownerEntityId, $organization, $name)
-    {
+    private function expectGetValidationQueryBuilder(
+        $organization,
+        $name,
+        $ownerEntityClass = null,
+        $ownerEntityId = null,
+        $clientEntityId = null
+    ) {
         $em = $this->createMock(EntityManagerInterface::class);
         $this->doctrine->expects(self::once())
             ->method('getManagerForClass')
@@ -65,34 +72,102 @@ class UniqueClientNameValidatorTest extends ConstraintValidatorTestCase
             ->willReturnSelf();
         $qb->expects(self::once())
             ->method('where')
-            ->with(
-                'e.ownerEntityClass = :ownerEntityClass AND e.ownerEntityId = :ownerEntityId'
-                . ' AND e.organization = :organization AND e.name= :name'
-            )
+            ->with('e.organization = :organization AND e.name = :name')
             ->willReturnSelf();
-        $qb->expects(self::once())
-            ->method('setParameters')
-            ->with([
-                'ownerEntityClass' => $ownerEntityClass,
-                'ownerEntityId'    => $ownerEntityId,
-                'organization'     => $organization,
-                'name'             => $name
-            ])
-            ->willReturnSelf();
+        if (!$ownerEntityClass && null === $clientEntityId) {
+            $qb->expects(self::exactly(2))
+                ->method('setParameter')
+                ->withConsecutive(
+                    ['organization', $organization],
+                    ['name', $name]
+                )
+                ->willReturnOnConsecutiveCalls(
+                    self::returnSelf(),
+                    self::returnSelf()
+                );
+        } elseif (!$ownerEntityClass) {
+            $qb->expects(self::once())
+                ->method('andWhere')
+                ->with('e.id <> :id')
+                ->willReturnSelf();
+            $qb->expects(self::exactly(3))
+                ->method('setParameter')
+                ->withConsecutive(
+                    ['organization', $organization],
+                    ['name', $name],
+                    ['id', $clientEntityId]
+                )
+                ->willReturnOnConsecutiveCalls(
+                    self::returnSelf(),
+                    self::returnSelf(),
+                    self::returnSelf()
+                );
+        } elseif (null === $clientEntityId) {
+            $qb->expects(self::once())
+                ->method('andWhere')
+                ->with('e.ownerEntityClass = :ownerEntityClass AND e.ownerEntityId = :ownerEntityId')
+                ->willReturnSelf();
+            $qb->expects(self::exactly(4))
+                ->method('setParameter')
+                ->withConsecutive(
+                    ['organization', $organization],
+                    ['name', $name],
+                    ['ownerEntityClass', $ownerEntityClass],
+                    ['ownerEntityId', $ownerEntityId]
+                )
+                ->willReturnOnConsecutiveCalls(
+                    self::returnSelf(),
+                    self::returnSelf(),
+                    self::returnSelf(),
+                    self::returnSelf()
+                );
+        } else {
+            $qb->expects(self::exactly(2))
+                ->method('andWhere')
+                ->withConsecutive(
+                    ['e.ownerEntityClass = :ownerEntityClass AND e.ownerEntityId = :ownerEntityId'],
+                    ['e.id <> :id']
+                )
+                ->willReturnOnConsecutiveCalls(
+                    self::returnSelf(),
+                    self::returnSelf()
+                );
+            $qb->expects(self::exactly(5))
+                ->method('setParameter')
+                ->withConsecutive(
+                    ['organization', $organization],
+                    ['name', $name],
+                    ['ownerEntityClass', $ownerEntityClass],
+                    ['ownerEntityId', $ownerEntityId],
+                    ['id', $clientEntityId]
+                )
+                ->willReturnOnConsecutiveCalls(
+                    self::returnSelf(),
+                    self::returnSelf(),
+                    self::returnSelf(),
+                    self::returnSelf(),
+                    self::returnSelf()
+                );
+        }
 
         return $qb;
     }
 
     /**
-     * @param string       $ownerEntityClass
-     * @param int          $ownerEntityId
      * @param Organization $organization
      * @param string       $name
      * @param array        $rows
+     * @param string|null  $ownerEntityClass
+     * @param int|null     $ownerEntityId
      */
-    private function expectValidationQuery($ownerEntityClass, $ownerEntityId, $organization, $name, $rows)
-    {
-        $qb = $this->expectGetValidationQueryBuilder($ownerEntityClass, $ownerEntityId, $organization, $name);
+    private function expectValidationQuery(
+        $organization,
+        $name,
+        $rows,
+        $ownerEntityClass = null,
+        $ownerEntityId = null
+    ) {
+        $qb = $this->expectGetValidationQueryBuilder($organization, $name, $ownerEntityClass, $ownerEntityId);
         $query = $this->createMock(AbstractQuery::class);
         $qb->expects(self::once())
             ->method('getQuery')
@@ -149,40 +224,21 @@ class UniqueClientNameValidatorTest extends ConstraintValidatorTestCase
         $this->validator->validate($client, new UniqueClientName());
     }
 
-    /**
-     * @expectedException \Symfony\Component\Validator\Exception\RuntimeException
-     * @expectedExceptionMessage The owner entity class must be defined.
-     */
     public function testNoOwnerEntityClass()
     {
         $client = new Client();
         $client->setName('test');
         $client->setOrganization($this->createMock(Organization::class));
 
-        $this->validator->validate($client, new UniqueClientName());
-    }
-
-    /**
-     * @expectedException \Symfony\Component\Validator\Exception\RuntimeException
-     * @expectedExceptionMessage The owner entity ID must be defined.
-     */
-    public function testNoOwnerEntityId()
-    {
-        $client = $this->createMock(Client::class);
-        $client->expects(self::once())
-            ->method('getName')
-            ->willReturn('test');
-        $client->expects(self::once())
-            ->method('getOrganization')
-            ->willReturn($this->createMock(Organization::class));
-        $client->expects(self::once())
-            ->method('getOwnerEntityClass')
-            ->willReturn('Test\OwnerEntity');
-        $client->expects(self::once())
-            ->method('getOwnerEntityId')
-            ->willReturn(null);
+        $this->expectValidationQuery(
+            $client->getOrganization(),
+            $client->getName(),
+            []
+        );
 
         $this->validator->validate($client, new UniqueClientName());
+
+        $this->assertNoViolation();
     }
 
     public function testNameIsUniqueForNewClient()
@@ -193,11 +249,11 @@ class UniqueClientNameValidatorTest extends ConstraintValidatorTestCase
         $client->setOrganization($this->createMock(Organization::class));
 
         $this->expectValidationQuery(
-            $client->getOwnerEntityClass(),
-            $client->getOwnerEntityId(),
             $client->getOrganization(),
             $client->getName(),
-            []
+            [],
+            $client->getOwnerEntityClass(),
+            $client->getOwnerEntityId()
         );
 
         $this->validator->validate($client, new UniqueClientName());
@@ -216,19 +272,12 @@ class UniqueClientNameValidatorTest extends ConstraintValidatorTestCase
         $client->setOrganization($this->createMock(Organization::class));
 
         $qb = $this->expectGetValidationQueryBuilder(
+            $client->getOrganization(),
+            $client->getName(),
             $client->getOwnerEntityClass(),
             $client->getOwnerEntityId(),
-            $client->getOrganization(),
-            $client->getName()
+            $client->getId()
         );
-        $qb->expects(self::once())
-            ->method('andWhere')
-            ->with('e.id <> :id')
-            ->willReturnSelf();
-        $qb->expects(self::once())
-            ->method('setParameter')
-            ->with('id', $client->getId())
-            ->willReturnSelf();
         $query = $this->createMock(AbstractQuery::class);
         $qb->expects(self::once())
             ->method('getQuery')
@@ -250,11 +299,11 @@ class UniqueClientNameValidatorTest extends ConstraintValidatorTestCase
         $client->setOrganization($this->createMock(Organization::class));
 
         $this->expectValidationQuery(
-            $client->getOwnerEntityClass(),
-            $client->getOwnerEntityId(),
             $client->getOrganization(),
             $client->getName(),
-            [['id' => 1]]
+            [['id' => 1]],
+            $client->getOwnerEntityClass(),
+            $client->getOwnerEntityId()
         );
 
         $constraint = new UniqueClientName();

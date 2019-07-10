@@ -5,9 +5,12 @@ namespace Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Provider;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use League\OAuth2\Server\AuthorizationValidators\AuthorizationValidatorInterface;
 use League\OAuth2\Server\Exception\OAuthServerException;
+use Oro\Bundle\CustomerBundle\Entity\CustomerUser;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\OAuth2Token;
 use Oro\Bundle\UserBundle\Entity\AbstractUser;
+use Oro\Bundle\UserBundle\Entity\User;
+use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\Security\Core\Authentication\Provider\AuthenticationProviderInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
@@ -76,35 +79,80 @@ class OAuth2Provider implements AuthenticationProviderInterface
             throw new AuthenticationException('The resource server rejected the request.', 0, $e);
         }
 
-        $clientId = $request->getAttribute('oauth_client_id');
-        /** @var Client $client */
-        $client = $this->doctrine->getRepository(Client::class)->findOneBy(['identifier' => $clientId]);
-        if (!$client->isActive()) {
-            throw new AuthenticationException('Client is not active.');
-        }
-
-        $ownerClass = $client->getOwnerEntityClass();
-        if (!$this->userProvider->supportsClass($ownerClass)) {
-            throw new AuthenticationException('Wrong client owner type.');
-        }
-
-        /** @var AbstractUser $user */
-        $user = $this->doctrine->getRepository($client->getOwnerEntityClass())->find($client->getOwnerEntityId());
-        if (!$user) {
-            throw new AuthenticationException('Client owner was not found.');
-        }
-        $this->userChecker->checkPreAuth($user);
-        $this->userChecker->checkPostAuth($user);
-
+        $client = $this->getClient($request->getAttribute('oauth_client_id'));
         $organization = $client->getOrganization();
         if (!$organization->isEnabled()) {
-            throw new AuthenticationException('Organization is not enabled.');
+            throw new AuthenticationException('The OAuth client organization is not enabled.');
         }
+
+        $user = $this->getUser($client, $request);
+        $this->userChecker->checkPreAuth($user);
+        $this->userChecker->checkPostAuth($user);
         if (!$user->getOrganizations()->contains($organization)) {
-            throw new AuthenticationException('User is not set to given organization.');
+            throw new AuthenticationException('The user is not set to given OAuth client organization.');
         }
 
         return new OAuth2Token($user, $organization);
+    }
+
+    /**
+     * @param string $clientId
+     *
+     * @return Client
+     */
+    private function getClient(?string $clientId): Client
+    {
+        if (!$clientId) {
+            throw new AuthenticationException('The OAuth client ID is not specified.');
+        }
+
+        $client = $this->doctrine->getRepository(Client::class)
+            ->findOneBy(['identifier' => $clientId]);
+
+        if (null === $client) {
+            throw new AuthenticationException('The OAuth client does not exist.');
+        }
+        if (!$client->isActive()) {
+            throw new AuthenticationException('The OAuth client is not active.');
+        }
+
+        return $client;
+    }
+
+    /**
+     * @param Client                 $client
+     * @param ServerRequestInterface $request
+     *
+     * @return AbstractUser
+     */
+    private function getUser(Client $client, ServerRequestInterface $request): AbstractUser
+    {
+        $ownerClass = $client->getOwnerEntityClass();
+        $ownerId = $client->getOwnerEntityId();
+
+        if (null !== $ownerClass && null !== $ownerId) {
+            $user = $this->doctrine->getRepository($ownerClass)->find($ownerId);
+            if (null === $user) {
+                throw new AuthenticationException(\sprintf(
+                    'The user does not exist. Class: %s. Id: %s',
+                    $ownerClass,
+                    $ownerId
+                ));
+            }
+        } else {
+            $ownerClass = $client->isFrontend()
+                ? CustomerUser::class
+                : User::class;
+            if (!$this->userProvider->supportsClass($ownerClass)) {
+                throw new AuthenticationException(\sprintf(
+                    'The user provider does not support users of the type "%s".',
+                    $ownerClass
+                ));
+            }
+            $user = $this->userProvider->loadUserByUsername($request->getAttribute('oauth_user_id'));
+        }
+
+        return $user;
     }
 
     /**

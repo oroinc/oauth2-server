@@ -16,7 +16,13 @@ oro_oauth2_server:
     authorization_server:
 
         # The lifetime in seconds of the access token.
-        access_token_lifetime: 3600
+        access_token_lifetime: 3600 # 1 hour
+        
+        # The lifetime in seconds of the refresh token.
+        refresh_token_lifetime: 18144000 # 30 days
+        
+        # Determines if refresh token grant is enabled.
+        enable_refresh_token: true
 
         # The full path to the private key file that is used to sign JWT tokens.
         private_key: '%kernel.project_dir%/var/oauth_private.key'
@@ -47,6 +53,49 @@ for details how to generate the keys.
 ## Manage OAuth Applications
 
 The OAuth applications can be added and managed on the user view page.
+
+## Create OAuth Application via Data Fixtures
+
+The OAuth applications can be added using data fixtures. For example:
+
+``` php
+<?php
+
+namespace Oro\Bundle\OAuth2ServerBundle\Migrations\Data\ORM;
+
+use Doctrine\Common\DataFixtures\AbstractFixture;
+use Doctrine\Common\Persistence\ObjectManager;
+use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
+use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
+use Oro\Bundle\OrganizationBundle\Entity\Organization;
+use Symfony\Component\DependencyInjection\ContainerAwareInterface;
+use Symfony\Component\DependencyInjection\ContainerAwareTrait;
+
+class LoadOAuthApplication extends AbstractFixture implements ContainerAwareInterface
+{
+    use ContainerAwareTrait;
+
+    /**
+     * {@inheritdoc}
+     */
+    public function load(ObjectManager $manager)
+    {
+        $client = new Client();
+        $client->setOrganization($manager->getRepository(Organization::class)->getFirst());
+        $client->setName('My Application');
+        $client->setGrants(['password']);
+        $client->setIdentifier('my_client_id');
+        $client->setPlainSecret('my_client_secret');
+
+        $this->container->get(ClientManager::class)->updateClient($client, false);
+
+        $manager->persist($client);
+        $manager->flush();
+    }
+}
+```
+
+To load data fixtures you can use either `oro:migration:data:load` or `oro:platform:update` commands.
 
 ## Usage
 

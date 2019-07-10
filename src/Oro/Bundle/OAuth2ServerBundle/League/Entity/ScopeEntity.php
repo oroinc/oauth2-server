@@ -1,6 +1,6 @@
 <?php
 
-namespace Oro\Bundle\OAuth2ServerBundle\League\Entities;
+namespace Oro\Bundle\OAuth2ServerBundle\League\Entity;
 
 use League\OAuth2\Server\Entities\ScopeEntityInterface;
 use League\OAuth2\Server\Entities\Traits\EntityTrait;

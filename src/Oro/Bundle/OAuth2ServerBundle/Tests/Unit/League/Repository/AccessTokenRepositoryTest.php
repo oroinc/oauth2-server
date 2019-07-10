@@ -1,16 +1,16 @@
 <?php
 
-namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Security\Authentication\Token;
+namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\League\Repository;
 
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Oro\Bundle\OAuth2ServerBundle\Entity\AccessToken;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
-use Oro\Bundle\OAuth2ServerBundle\League\Entities\AccessTokenEntity;
-use Oro\Bundle\OAuth2ServerBundle\League\Entities\ClientEntity;
-use Oro\Bundle\OAuth2ServerBundle\League\Entities\ScopeEntity;
-use Oro\Bundle\OAuth2ServerBundle\League\Repositories\AccessTokenRepository;
+use Oro\Bundle\OAuth2ServerBundle\League\Entity\AccessTokenEntity;
+use Oro\Bundle\OAuth2ServerBundle\League\Entity\ClientEntity;
+use Oro\Bundle\OAuth2ServerBundle\League\Entity\ScopeEntity;
+use Oro\Bundle\OAuth2ServerBundle\League\Repository\AccessTokenRepository;
 
 class AccessTokenRepositoryTest extends \PHPUnit\Framework\TestCase
 {

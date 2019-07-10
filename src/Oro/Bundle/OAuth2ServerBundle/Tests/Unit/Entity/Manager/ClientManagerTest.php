@@ -4,14 +4,10 @@ namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Entity\Manager;
 
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\EntityManagerInterface;
-use Oro\Bundle\EntityBundle\ORM\EntityIdAccessor;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
-use Oro\Bundle\SecurityBundle\Acl\Domain\DomainObjectReference;
 use Oro\Bundle\SecurityBundle\Authentication\TokenAccessorInterface;
-use Oro\Bundle\SecurityBundle\Owner\EntityOwnerAccessor;
-use Oro\Bundle\UserBundle\Entity\User;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\Encoder\EncoderFactoryInterface;
 use Symfony\Component\Security\Core\Encoder\PasswordEncoderInterface;
@@ -30,12 +26,6 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
     /** @var AuthorizationCheckerInterface|\PHPUnit\Framework\MockObject\MockObject */
     private $authorizationChecker;
 
-    /** @var EntityOwnerAccessor|\PHPUnit\Framework\MockObject\MockObject */
-    private $entityOwnerAccessor;
-
-    /** @var EntityIdAccessor|\PHPUnit\Framework\MockObject\MockObject */
-    private $entityIdAccessor;
-
     /** @var ClientManager */
     private $clientManager;
 
@@ -45,16 +35,12 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
         $this->encoderFactory = $this->createMock(EncoderFactoryInterface::class);
         $this->tokenAccessor = $this->createMock(TokenAccessorInterface::class);
         $this->authorizationChecker = $this->createMock(AuthorizationCheckerInterface::class);
-        $this->entityOwnerAccessor = $this->createMock(EntityOwnerAccessor::class);
-        $this->entityIdAccessor = $this->createMock(EntityIdAccessor::class);
 
         $this->clientManager = new ClientManager(
             $this->doctrine,
             $this->encoderFactory,
             $this->tokenAccessor,
-            $this->authorizationChecker,
-            $this->entityOwnerAccessor,
-            $this->entityIdAccessor
+            $this->authorizationChecker
         );
     }
 
@@ -146,454 +132,42 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-    /**
-     * @return array
-     */
-    public static function isGrantedDataProvider()
+    public function testIsCreationGranted()
     {
-        return [
-            'granted'               => [['MANAGE_API_KEY' => true, 'EDIT' => true, 'result' => true]],
-            'EDIT denied'           => [['MANAGE_API_KEY' => true, 'EDIT' => false, 'result' => false]],
-            'MANAGE_API_KEY denied' => [['MANAGE_API_KEY' => false, 'EDIT' => true, 'result' => false]]
-        ];
+        $isGranted = true;
+
+        $this->authorizationChecker->expects(self::once())
+            ->method('isGranted')
+            ->with('CREATE', Client::class)
+            ->willReturn($isGranted);
+
+        self::assertSame($isGranted, $this->clientManager->isCreationGranted());
     }
 
-    public function testIsCreationGrantedWhenOwnerEntityEqualsToLoggedInUser()
+    public function testIsModificationGranted()
     {
-        $ownerEntityClass = User::class;
-        $ownerEntityId = 123;
-
-        $currentUser = $this->createMock(User::class);
-        $this->tokenAccessor->expects(self::once())
-            ->method('getUser')
-            ->willReturn($currentUser);
-        $this->entityIdAccessor->expects(self::once())
-            ->method('getIdentifier')
-            ->with(self::identicalTo($currentUser))
-            ->willReturn($ownerEntityId);
-        $this->doctrine->expects(self::never())
-            ->method('getManagerForClass');
-        $this->authorizationChecker->expects(self::never())
-            ->method('isGranted');
-
-        self::assertTrue($this->clientManager->isCreationGranted($ownerEntityClass, $ownerEntityId));
-    }
-
-    public function testIsModificationGrantedWhenOwnerEntityEqualsToLoggedInUser()
-    {
-        $ownerEntityClass = User::class;
-        $ownerEntityId = 123;
-
-        $currentUser = $this->createMock(User::class);
-        $this->tokenAccessor->expects(self::once())
-            ->method('getUser')
-            ->willReturn($currentUser);
-        $this->entityIdAccessor->expects(self::once())
-            ->method('getIdentifier')
-            ->with(self::identicalTo($currentUser))
-            ->willReturn($ownerEntityId);
-        $this->doctrine->expects(self::never())
-            ->method('getManagerForClass');
-        $this->authorizationChecker->expects(self::never())
-            ->method('isGranted');
-
+        $isGranted = true;
         $client = $this->getClient();
-        $client->setOwnerEntity($ownerEntityClass, $ownerEntityId);
-        self::assertTrue($this->clientManager->isModificationGranted($client));
+
+        $this->authorizationChecker->expects(self::once())
+            ->method('isGranted')
+            ->with('EDIT', self::identicalTo($client))
+            ->willReturn($isGranted);
+
+        self::assertSame($isGranted, $this->clientManager->isModificationGranted($client));
     }
 
-    public function testIsCreationGrantedWhenOwnerEntityIsNotExistingUser()
+    public function testIsDeletionGranted()
     {
-        $ownerEntityClass = User::class;
-        $ownerEntityId = 123;
-
-        $currentUser = $this->createMock(User::class);
-        $this->tokenAccessor->expects(self::once())
-            ->method('getUser')
-            ->willReturn($currentUser);
-        $this->entityIdAccessor->expects(self::once())
-            ->method('getIdentifier')
-            ->with(self::identicalTo($currentUser))
-            ->willReturn(100);
-        $em = $this->expectGetEntityManager();
-        $em->expects(self::once())
-            ->method('find')
-            ->with($ownerEntityClass, $ownerEntityId)
-            ->willReturn(null);
-        $this->authorizationChecker->expects(self::never())
-            ->method('isGranted');
-
-        self::assertFalse($this->clientManager->isCreationGranted($ownerEntityClass, $ownerEntityId));
-    }
-
-    public function testIsModificationGrantedWhenOwnerEntityIsNotExistingUser()
-    {
-        $ownerEntityClass = User::class;
-        $ownerEntityId = 123;
-
-        $currentUser = $this->createMock(User::class);
-        $this->tokenAccessor->expects(self::once())
-            ->method('getUser')
-            ->willReturn($currentUser);
-        $this->entityIdAccessor->expects(self::once())
-            ->method('getIdentifier')
-            ->with(self::identicalTo($currentUser))
-            ->willReturn(100);
-        $em = $this->expectGetEntityManager();
-        $em->expects(self::once())
-            ->method('find')
-            ->with($ownerEntityClass, $ownerEntityId)
-            ->willReturn(null);
-        $this->authorizationChecker->expects(self::never())
-            ->method('isGranted');
-
+        $isGranted = true;
         $client = $this->getClient();
-        $client->setOwnerEntity($ownerEntityClass, $ownerEntityId);
-        self::assertFalse($this->clientManager->isModificationGranted($client));
-    }
 
-    /**
-     * @dataProvider isGrantedDataProvider
-     */
-    public function testIsCreationGrantedWhenOwnerEntityIsUserButItDoesNotEqualToLoggedInUser($grants)
-    {
-        $ownerEntityClass = User::class;
-        $ownerEntityId = 123;
-        $owner = $this->createMock($ownerEntityClass);
+        $this->authorizationChecker->expects(self::once())
+            ->method('isGranted')
+            ->with('DELETE', self::identicalTo($client))
+            ->willReturn($isGranted);
 
-        $currentUser = $this->createMock(User::class);
-        $this->tokenAccessor->expects(self::once())
-            ->method('getUser')
-            ->willReturn($currentUser);
-        $this->entityIdAccessor->expects(self::once())
-            ->method('getIdentifier')
-            ->with(self::identicalTo($currentUser))
-            ->willReturn(100);
-        $em = $this->expectGetEntityManager();
-        $em->expects(self::once())
-            ->method('find')
-            ->with($ownerEntityClass, $ownerEntityId)
-            ->willReturn($owner);
-        $this->expectIsGranted($grants, $owner);
-
-        self::assertSame(
-            $grants['result'],
-            $this->clientManager->isCreationGranted($ownerEntityClass, $ownerEntityId)
-        );
-    }
-
-    /**
-     * @dataProvider isGrantedDataProvider
-     */
-    public function testIsModificationGrantedWhenClientEntityDoesNotHaveOrganization($grants)
-    {
-        $ownerEntityClass = User::class;
-        $ownerEntityId = 123;
-        $owner = $this->createMock($ownerEntityClass);
-
-        $currentUser = $this->createMock(User::class);
-        $this->tokenAccessor->expects(self::once())
-            ->method('getUser')
-            ->willReturn($currentUser);
-        $this->entityIdAccessor->expects(self::once())
-            ->method('getIdentifier')
-            ->with(self::identicalTo($currentUser))
-            ->willReturn(100);
-        $em = $this->expectGetEntityManager();
-        $em->expects(self::once())
-            ->method('find')
-            ->with($ownerEntityClass, $ownerEntityId)
-            ->willReturn($owner);
-        $this->expectIsGranted($grants, $owner);
-
-        $client = $this->getClient();
-        $client->setOwnerEntity($ownerEntityClass, $ownerEntityId);
-        self::assertSame(
-            $grants['result'],
-            $this->clientManager->isModificationGranted($client)
-        );
-    }
-
-    /**
-     * @dataProvider isGrantedDataProvider
-     */
-    public function testIsModificationGrantedWhenOwnerEntityHasSameOrganizationAsClientEntity($grants)
-    {
-        $organizationId = 234;
-        $organization = $this->createMock(Organization::class);
-        $organization->expects(self::any())
-            ->method('getId')
-            ->willReturn($organizationId);
-
-        $ownerEntityClass = User::class;
-        $ownerEntityId = 123;
-        $owner = $this->createMock($ownerEntityClass);
-        $ownerOrganization = $this->createMock(Organization::class);
-        $ownerOrganization->expects(self::any())
-            ->method('getId')
-            ->willReturn($organizationId);
-        $ownerOwner = new \stdClass();
-
-        $currentUser = $this->createMock(User::class);
-        $this->tokenAccessor->expects(self::once())
-            ->method('getUser')
-            ->willReturn($currentUser);
-        $this->entityIdAccessor->expects(self::once())
-            ->method('getIdentifier')
-            ->with(self::identicalTo($currentUser))
-            ->willReturn(100);
-        $em = $this->expectGetEntityManager();
-        $em->expects(self::once())
-            ->method('find')
-            ->with($ownerEntityClass, $ownerEntityId)
-            ->willReturn($owner);
-
-        $this->entityOwnerAccessor->expects(self::once())
-            ->method('getOwner')
-            ->with(self::identicalTo($owner))
-            ->willReturn($ownerOwner);
-        $this->entityOwnerAccessor->expects(self::once())
-            ->method('getOrganization')
-            ->with(self::identicalTo($owner))
-            ->willReturn($ownerOrganization);
-        $this->expectIsGranted($grants, $owner);
-
-        $client = $this->getClient();
-        $client->setOwnerEntity($ownerEntityClass, $ownerEntityId);
-        $client->setOrganization($organization);
-        self::assertSame(
-            $grants['result'],
-            $this->clientManager->isModificationGranted($client)
-        );
-    }
-
-    /**
-     * @dataProvider isGrantedDataProvider
-     */
-    public function testIsModificationGrantedWhenOwnerEntityAndClientEntityHaveDifferentOrganizations($grants)
-    {
-        $organizationId = 234;
-        $organization = $this->createMock(Organization::class);
-        $organization->expects(self::any())
-            ->method('getId')
-            ->willReturn($organizationId);
-
-        $ownerEntityClass = User::class;
-        $ownerEntityId = 123;
-        $owner = $this->createMock($ownerEntityClass);
-        $ownerOrganizationId = 345;
-        $ownerOrganization = $this->createMock(Organization::class);
-        $ownerOrganization->expects(self::any())
-            ->method('getId')
-            ->willReturn($ownerOrganizationId);
-        $ownerOwnerId = 200;
-        $ownerOwner = new \stdClass();
-
-        $currentUser = $this->createMock(User::class);
-        $this->tokenAccessor->expects(self::once())
-            ->method('getUser')
-            ->willReturn($currentUser);
-        $this->entityIdAccessor->expects(self::at(0))
-            ->method('getIdentifier')
-            ->with(self::identicalTo($currentUser))
-            ->willReturn(100);
-        $em = $this->expectGetEntityManager();
-        $em->expects(self::once())
-            ->method('find')
-            ->with($ownerEntityClass, $ownerEntityId)
-            ->willReturn($owner);
-
-        $this->entityOwnerAccessor->expects(self::once())
-            ->method('getOwner')
-            ->with(self::identicalTo($owner))
-            ->willReturn($ownerOwner);
-        $this->entityOwnerAccessor->expects(self::once())
-            ->method('getOrganization')
-            ->with(self::identicalTo($owner))
-            ->willReturn($ownerOrganization);
-        $this->entityIdAccessor->expects(self::at(1))
-            ->method('getIdentifier')
-            ->with(self::identicalTo($owner))
-            ->willReturn($ownerEntityId);
-        $this->entityIdAccessor->expects(self::at(2))
-            ->method('getIdentifier')
-            ->with(self::identicalTo($ownerOwner))
-            ->willReturn($ownerOwnerId);
-        $this->entityIdAccessor->expects(self::at(3))
-            ->method('getIdentifier')
-            ->with(self::identicalTo($ownerOrganization))
-            ->willReturn($ownerOrganizationId);
-        $this->expectIsGranted(
-            $grants,
-            new DomainObjectReference(get_class($owner), $ownerEntityId, $ownerOwnerId, $ownerOrganizationId)
-        );
-
-        $client = $this->getClient();
-        $client->setOwnerEntity($ownerEntityClass, $ownerEntityId);
-        $client->setOrganization($organization);
-        self::assertSame(
-            $grants['result'],
-            $this->clientManager->isModificationGranted($client)
-        );
-    }
-
-    /**
-     * @dataProvider isGrantedDataProvider
-     */
-    public function testIsModificationGrantedWhenOwnerEntityHasOrgOwnershipAndSameOrgAsClientEntity($grants)
-    {
-        $organizationId = 234;
-        $organization = $this->createMock(Organization::class);
-        $organization->expects(self::any())
-            ->method('getId')
-            ->willReturn($organizationId);
-
-        $ownerEntityClass = User::class;
-        $ownerEntityId = 123;
-        $owner = $this->createMock($ownerEntityClass);
-        $ownerOrganization = $this->createMock(Organization::class);
-        $ownerOrganization->expects(self::any())
-            ->method('getId')
-            ->willReturn($organizationId);
-
-        $currentUser = $this->createMock(User::class);
-        $this->tokenAccessor->expects(self::once())
-            ->method('getUser')
-            ->willReturn($currentUser);
-        $this->entityIdAccessor->expects(self::once())
-            ->method('getIdentifier')
-            ->with(self::identicalTo($currentUser))
-            ->willReturn(100);
-        $em = $this->expectGetEntityManager();
-        $em->expects(self::once())
-            ->method('find')
-            ->with($ownerEntityClass, $ownerEntityId)
-            ->willReturn($owner);
-
-        $this->entityOwnerAccessor->expects(self::once())
-            ->method('getOwner')
-            ->with(self::identicalTo($owner))
-            ->willReturn($ownerOrganization);
-        $this->entityOwnerAccessor->expects(self::once())
-            ->method('getOrganization')
-            ->with(self::identicalTo($owner))
-            ->willReturn(null);
-        $this->expectIsGranted($grants, $owner);
-
-        $client = $this->getClient();
-        $client->setOwnerEntity($ownerEntityClass, $ownerEntityId);
-        $client->setOrganization($organization);
-        self::assertSame(
-            $grants['result'],
-            $this->clientManager->isModificationGranted($client)
-        );
-    }
-
-    /**
-     * @dataProvider isGrantedDataProvider
-     */
-    public function testIsModificationGrantedWhenOwnerEntityHasOrgOwnershipAndDifferentOrgThenClientEntity($grants)
-    {
-        $organizationId = 234;
-        $organization = $this->createMock(Organization::class);
-        $organization->expects(self::any())
-            ->method('getId')
-            ->willReturn($organizationId);
-
-        $ownerEntityClass = User::class;
-        $ownerEntityId = 123;
-        $owner = $this->createMock($ownerEntityClass);
-        $ownerOrganizationId = 345;
-        $ownerOrganization = $this->createMock(Organization::class);
-        $ownerOrganization->expects(self::any())
-            ->method('getId')
-            ->willReturn($ownerOrganizationId);
-
-        $currentUser = $this->createMock(User::class);
-        $this->tokenAccessor->expects(self::once())
-            ->method('getUser')
-            ->willReturn($currentUser);
-        $this->entityIdAccessor->expects(self::at(0))
-            ->method('getIdentifier')
-            ->with(self::identicalTo($currentUser))
-            ->willReturn(100);
-        $em = $this->expectGetEntityManager();
-        $em->expects(self::once())
-            ->method('find')
-            ->with($ownerEntityClass, $ownerEntityId)
-            ->willReturn($owner);
-
-        $this->entityOwnerAccessor->expects(self::once())
-            ->method('getOwner')
-            ->with(self::identicalTo($owner))
-            ->willReturn($ownerOrganization);
-        $this->entityOwnerAccessor->expects(self::once())
-            ->method('getOrganization')
-            ->with(self::identicalTo($owner))
-            ->willReturn(null);
-        $this->entityIdAccessor->expects(self::at(1))
-            ->method('getIdentifier')
-            ->with(self::identicalTo($owner))
-            ->willReturn($ownerEntityId);
-        $this->entityIdAccessor->expects(self::at(2))
-            ->method('getIdentifier')
-            ->with(self::identicalTo($ownerOrganization))
-            ->willReturn($ownerOrganizationId);
-        $this->expectIsGranted(
-            $grants,
-            new DomainObjectReference(get_class($owner), $ownerEntityId, $ownerOrganizationId, null)
-        );
-
-        $client = $this->getClient();
-        $client->setOwnerEntity($ownerEntityClass, $ownerEntityId);
-        $client->setOrganization($organization);
-        self::assertSame(
-            $grants['result'],
-            $this->clientManager->isModificationGranted($client)
-        );
-    }
-
-    public function testIsModificationGrantedWhenOwnerEntityDoesNotHaveOwnership()
-    {
-        $organizationId = 234;
-        $organization = $this->createMock(Organization::class);
-        $organization->expects(self::any())
-            ->method('getId')
-            ->willReturn($organizationId);
-
-        $ownerEntityClass = User::class;
-        $ownerEntityId = 123;
-        $owner = $this->createMock($ownerEntityClass);
-
-        $currentUser = $this->createMock(User::class);
-        $this->tokenAccessor->expects(self::once())
-            ->method('getUser')
-            ->willReturn($currentUser);
-        $this->entityIdAccessor->expects(self::at(0))
-            ->method('getIdentifier')
-            ->with(self::identicalTo($currentUser))
-            ->willReturn(100);
-        $em = $this->expectGetEntityManager();
-        $em->expects(self::once())
-            ->method('find')
-            ->with($ownerEntityClass, $ownerEntityId)
-            ->willReturn($owner);
-
-        $this->entityOwnerAccessor->expects(self::once())
-            ->method('getOwner')
-            ->with(self::identicalTo($owner))
-            ->willReturn(null);
-        $this->entityOwnerAccessor->expects(self::once())
-            ->method('getOrganization')
-            ->with(self::identicalTo($owner))
-            ->willReturn(null);
-        $this->authorizationChecker->expects(self::never())
-            ->method('isGranted');
-
-        $client = $this->getClient();
-        $client->setOwnerEntity($ownerEntityClass, $ownerEntityId);
-        $client->setOrganization($organization);
-        self::assertTrue($this->clientManager->isModificationGranted($client));
+        self::assertSame($isGranted, $this->clientManager->isDeletionGranted($client));
     }
 
     public function testUpdateClientWithFlush()
@@ -631,9 +205,7 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
         self::assertEquals($encodedSecret, $client->getSecret());
         self::assertRandomString($client->getSalt(), 50);
         self::assertSame($organization, $client->getOrganization());
-        // BAP-18427: uncomment this block when other grant types is implemented
-        //self::assertNull($client->getGrants());
-        self::assertEquals(['client_credentials'], $client->getGrants());
+        self::assertNull($client->getGrants());
         self::assertNull($client->getScopes());
         self::assertNull($client->getRedirectUris());
     }
@@ -649,9 +221,7 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
         self::assertNull($client->getPlainSecret());
         self::assertNull($client->getSecret());
         self::assertNull($client->getSalt());
-        // BAP-18427: uncomment this block when other grant types is implemented
-        //self::assertNull($client->getGrants());
-        self::assertEquals(['client_credentials'], $client->getGrants());
+        self::assertNull($client->getGrants());
         self::assertNull($client->getScopes());
         self::assertNull($client->getRedirectUris());
     }
@@ -676,9 +246,7 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
         self::assertEquals($encodedSecret, $client->getSecret());
         self::assertRandomString($client->getSalt(), 50);
         self::assertNotEquals($existingSalt, $client->getSalt());
-        // BAP-18427: uncomment this block when other grant types is implemented
-        //self::assertNull($client->getGrants());
-        self::assertEquals(['client_credentials'], $client->getGrants());
+        self::assertNull($client->getGrants());
         self::assertNull($client->getScopes());
         self::assertNull($client->getRedirectUris());
     }

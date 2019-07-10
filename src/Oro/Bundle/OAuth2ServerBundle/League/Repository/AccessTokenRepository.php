@@ -1,6 +1,6 @@
 <?php
 
-namespace Oro\Bundle\OAuth2ServerBundle\League\Repositories;
+namespace Oro\Bundle\OAuth2ServerBundle\League\Repository;
 
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\EntityManagerInterface;
@@ -10,11 +10,11 @@ use League\OAuth2\Server\Exception\UniqueTokenIdentifierConstraintViolationExcep
 use League\OAuth2\Server\Repositories\AccessTokenRepositoryInterface;
 use Oro\Bundle\OAuth2ServerBundle\Entity\AccessToken;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
-use Oro\Bundle\OAuth2ServerBundle\League\Entities\AccessTokenEntity;
-use Oro\Bundle\OAuth2ServerBundle\League\Entities\ScopeEntity;
+use Oro\Bundle\OAuth2ServerBundle\League\Entity\AccessTokenEntity;
+use Oro\Bundle\OAuth2ServerBundle\League\Entity\ScopeEntity;
 
 /**
- * The implementation of the access token repository for "league/oauth2-server" library.
+ * The implementation of the access token entity repository for "league/oauth2-server" library.
  */
 class AccessTokenRepository implements AccessTokenRepositoryInterface
 {

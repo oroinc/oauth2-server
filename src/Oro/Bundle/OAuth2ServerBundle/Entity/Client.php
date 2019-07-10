@@ -20,7 +20,20 @@ use Oro\Bundle\OrganizationBundle\Entity\Organization;
  *          @ORM\Index(name="oro_oauth2_client_owner_idx", columns={"owner_entity_class", "owner_entity_id"})
  *      }
  * )
- * @Config()
+ * @Config(
+ *  defaultValues={
+ *      "ownership"={
+ *          "owner_type"="ORGANIZATION",
+ *          "owner_field_name"="organization",
+ *          "owner_column_name"="organization_id"
+ *      },
+ *      "security"={
+ *          "type"="ACL",
+ *          "permissions"="VIEW;CREATE;EDIT;DELETE",
+ *          "group_name"=""
+ *      }
+ *  }
+ * )
  */
 class Client
 {
@@ -50,7 +63,7 @@ class Client
     /**
      * @var string
      *
-     * @ORM\Column(name="secret", type="string", length=128)
+     * @ORM\Column(name="secret", type="string", length=128, nullable=true)
      * @ConfigField(
      *      defaultValues={
      *          "email"={
@@ -113,6 +126,13 @@ class Client
     private $active = true;
 
     /**
+     * @var bool
+     *
+     * @ORM\Column(name="frontend", type="boolean", options={"default"=false})
+     */
+    private $frontend = false;
+
+    /**
      * @var Organization
      *
      * @ORM\ManyToOne(targetEntity="Oro\Bundle\OrganizationBundle\Entity\Organization")
@@ -123,7 +143,7 @@ class Client
     /**
      * @var string
      *
-     * @ORM\Column(name="owner_entity_class", type="string", length=255)
+     * @ORM\Column(name="owner_entity_class", type="string", length=255, nullable=true)
      * @ConfigField(
      *      defaultValues={
      *          "email"={
@@ -137,7 +157,7 @@ class Client
     /**
      * @var int
      *
-     * @ORM\Column(name="owner_entity_id", type="integer")
+     * @ORM\Column(name="owner_entity_id", type="integer", nullable=true)
      * @ConfigField(
      *      defaultValues={
      *          "email"={
@@ -420,5 +440,25 @@ class Client
         $this->ownerEntityId = $entityId;
 
         return $this;
+    }
+
+    /**
+     * Indicates whether the client is intended to be used on storefront or management console.
+     *
+     * @return bool
+     */
+    public function isFrontend()
+    {
+        return $this->frontend;
+    }
+
+    /**
+     * Sets the flag that indicates whether the client is intended to be used on storefront or management console.
+     *
+     * @param bool $frontend
+     */
+    public function setFrontend(bool $frontend)
+    {
+        $this->frontend = $frontend;
     }
 }

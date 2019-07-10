@@ -27,6 +27,7 @@ class ClientActionsVisibilityProviderTest extends \PHPUnit\Framework\TestCase
         $client = $this->createMock(Client::class);
         $record = $this->createMock(ResultRecordInterface::class);
         $actions = [
+            'update'     => [],
             'activate'   => [],
             'deactivate' => [],
             'delete'     => []
@@ -43,12 +44,17 @@ class ClientActionsVisibilityProviderTest extends \PHPUnit\Framework\TestCase
             ->method('isModificationGranted')
             ->with(self::identicalTo($client))
             ->willReturn(false);
+        $this->clientManager->expects(self::once())
+            ->method('isDeletionGranted')
+            ->with(self::identicalTo($client))
+            ->willReturn(true);
 
         self::assertEquals(
             [
+                'update'     => false,
                 'activate'   => false,
                 'deactivate' => false,
-                'delete'     => false
+                'delete'     => true
             ],
             $this->visibilityProvider->getActionsVisibility($record, $actions)
         );
@@ -59,6 +65,7 @@ class ClientActionsVisibilityProviderTest extends \PHPUnit\Framework\TestCase
         $client = $this->createMock(Client::class);
         $record = $this->createMock(ResultRecordInterface::class);
         $actions = [
+            'update'     => [],
             'activate'   => [],
             'deactivate' => [],
             'delete'     => []
@@ -75,9 +82,14 @@ class ClientActionsVisibilityProviderTest extends \PHPUnit\Framework\TestCase
             ->method('isModificationGranted')
             ->with(self::identicalTo($client))
             ->willReturn(true);
+        $this->clientManager->expects(self::once())
+            ->method('isDeletionGranted')
+            ->with(self::identicalTo($client))
+            ->willReturn(true);
 
         self::assertEquals(
             [
+                'update'     => true,
                 'activate'   => false,
                 'deactivate' => true,
                 'delete'     => true
@@ -91,6 +103,7 @@ class ClientActionsVisibilityProviderTest extends \PHPUnit\Framework\TestCase
         $client = $this->createMock(Client::class);
         $record = $this->createMock(ResultRecordInterface::class);
         $actions = [
+            'update'     => [],
             'activate'   => [],
             'deactivate' => [],
             'delete'     => []
@@ -107,12 +120,93 @@ class ClientActionsVisibilityProviderTest extends \PHPUnit\Framework\TestCase
             ->method('isModificationGranted')
             ->with(self::identicalTo($client))
             ->willReturn(true);
+        $this->clientManager->expects(self::once())
+            ->method('isDeletionGranted')
+            ->with(self::identicalTo($client))
+            ->willReturn(true);
 
         self::assertEquals(
             [
+                'update'     => true,
                 'activate'   => true,
                 'deactivate' => false,
                 'delete'     => true
+            ],
+            $this->visibilityProvider->getActionsVisibility($record, $actions)
+        );
+    }
+
+    public function testGetActionsVisibilityForClientDeletionIsDenied()
+    {
+        $client = $this->createMock(Client::class);
+        $record = $this->createMock(ResultRecordInterface::class);
+        $actions = [
+            'update'     => [],
+            'activate'   => [],
+            'deactivate' => [],
+            'delete'     => []
+        ];
+
+        $record->expects(self::once())
+            ->method('getRootEntity')
+            ->willReturn($client);
+        $record->expects(self::once())
+            ->method('getValue')
+            ->with('active')
+            ->willReturn(true);
+        $this->clientManager->expects(self::once())
+            ->method('isModificationGranted')
+            ->with(self::identicalTo($client))
+            ->willReturn(true);
+        $this->clientManager->expects(self::once())
+            ->method('isDeletionGranted')
+            ->with(self::identicalTo($client))
+            ->willReturn(false);
+
+        self::assertEquals(
+            [
+                'update'     => true,
+                'activate'   => false,
+                'deactivate' => true,
+                'delete'     => false
+            ],
+            $this->visibilityProvider->getActionsVisibility($record, $actions)
+        );
+    }
+
+    public function testGetActionsVisibilityWhenClientModificationAndDeletionAreDenied()
+    {
+        $client = $this->createMock(Client::class);
+        $record = $this->createMock(ResultRecordInterface::class);
+        $actions = [
+            'update'     => [],
+            'activate'   => [],
+            'deactivate' => [],
+            'delete'     => []
+        ];
+
+        $record->expects(self::once())
+            ->method('getRootEntity')
+            ->willReturn($client);
+        $record->expects(self::once())
+            ->method('getValue')
+            ->with('active')
+            ->willReturn(true);
+        $this->clientManager->expects(self::once())
+            ->method('isModificationGranted')
+            ->with(self::identicalTo($client))
+            ->willReturn(false);
+        $this->clientManager->expects(self::once())
+            ->method('isDeletionGranted')
+            ->with(self::identicalTo($client))
+            ->willReturn(false);
+
+        self::assertEquals(
+            [
+                'update'     => false,
+                'activate'   => false,
+                'deactivate' => false,
+                'delete'     => false
             ],
             $this->visibilityProvider->getActionsVisibility($record, $actions)
         );

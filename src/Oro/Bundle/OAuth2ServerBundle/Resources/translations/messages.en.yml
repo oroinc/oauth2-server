@@ -39,6 +39,9 @@ oro:
             redirect_uris:
                 label: Redirect URIs
                 description: URIs to which it is allowed to redirect the user back to.
+            frontend:
+                label: Store front
+                description: Indicates that client should work with sore front
             action:
                 add: Add Application
                 activate: Activate

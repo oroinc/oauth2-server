@@ -8,6 +8,7 @@ use Doctrine\Common\Persistence\ObjectManager;
 use Oro\Bundle\OAuth2ServerBundle\Entity\AccessToken;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
+use Oro\Bundle\OAuth2ServerBundle\Entity\RefreshToken;
 use Oro\Bundle\TestFrameworkBundle\Tests\Functional\DataFixtures\LoadBusinessUnit;
 use Oro\Bundle\TestFrameworkBundle\Tests\Functional\DataFixtures\LoadOrganization;
 use Oro\Bundle\UserBundle\Entity\User;
@@ -58,14 +59,65 @@ class LoadCleanupCommandData extends AbstractFixture implements ContainerAwareIn
         $client2 = $this->createClient('client2', User::class, $user1->getId() + 9999);
         $manager->persist($client2);
 
+        $notExpiredAccessToken = $this->createAccessToken(
+            $client1,
+            'client1_token_not_expired',
+            new \DateTime('now + 1 minute')
+        );
+        $manager->persist($notExpiredAccessToken);
+        $expiredAccessToken = $this->createAccessToken(
+            $client1,
+            'client1_token_expired',
+            new \DateTime('now - 1 second')
+        );
+        $manager->persist($expiredAccessToken);
+        $expiredAccessTokenWithNotExpiredRefreshToken = $this->createAccessToken(
+            $client1,
+            'client1_token_expired_refresh_token_not_expired',
+            new \DateTime('now - 1 second')
+        );
+        $manager->persist($expiredAccessTokenWithNotExpiredRefreshToken);
+        $accessTokenForClientThatShouldBeRemoved = $this->createAccessToken(
+            $client2,
+            'client2_token_not_expired',
+            new \DateTime('now + 1 minute')
+        );
+        $manager->persist($accessTokenForClientThatShouldBeRemoved);
+
         $manager->persist(
-            $this->createAccessToken($client1, 'client1_token_not_expired', new \DateTime('now + 1 minute'))
+            $this->createRefreshToken(
+                'expired_refresh_token',
+                new \DateTime('now - 1 second'),
+                $notExpiredAccessToken
+            )
         );
         $manager->persist(
-            $this->createAccessToken($client1, 'client1_token_expired', new \DateTime('now - 1 second'))
+            $this->createRefreshToken(
+                'not_expired_refresh_token',
+                new \DateTime('now + 1 minute'),
+                $notExpiredAccessToken
+            )
         );
         $manager->persist(
-            $this->createAccessToken($client2, 'client2_token_not_expired', new \DateTime('now + 1 minute'))
+            $this->createRefreshToken(
+                'expired_refresh_token_for_expired_access_token',
+                new \DateTime('now - 1 second'),
+                $expiredAccessTokenWithNotExpiredRefreshToken
+            )
+        );
+        $manager->persist(
+            $this->createRefreshToken(
+                'not_expired_refresh_token_for_expired_access_token',
+                new \DateTime('now + 1 minute'),
+                $expiredAccessTokenWithNotExpiredRefreshToken
+            )
+        );
+        $manager->persist(
+            $this->createRefreshToken(
+                'refresh_token_for_client_that_should_be_removed',
+                new \DateTime('now + 1 minute'),
+                $accessTokenForClientThatShouldBeRemoved
+            )
         );
 
         $manager->flush();
@@ -76,7 +128,7 @@ class LoadCleanupCommandData extends AbstractFixture implements ContainerAwareIn
      *
      * @return User
      */
-    protected function createUser(string $key): User
+    private function createUser(string $key): User
     {
         $user = new User();
         $user->setOrganization($this->getReference('organization'));
@@ -98,7 +150,7 @@ class LoadCleanupCommandData extends AbstractFixture implements ContainerAwareIn
      *
      * @return Client
      */
-    protected function createClient(string $identifier, string $ownerEntityClass, int $ownerEntityId): Client
+    private function createClient(string $identifier, string $ownerEntityClass, int $ownerEntityId): Client
     {
         $client = new Client();
         $client->setOrganization($this->getReference('organization'));
@@ -119,8 +171,23 @@ class LoadCleanupCommandData extends AbstractFixture implements ContainerAwareIn
      *
      * @return AccessToken
      */
-    protected function createAccessToken(Client $client, string $identifier, \DateTime $expiresAt): AccessToken
+    private function createAccessToken(Client $client, string $identifier, \DateTime $expiresAt): AccessToken
     {
         return new AccessToken($identifier, $expiresAt, ['all'], $client);
+    }
+
+    /**
+     * @param string      $identifier
+     * @param \DateTime   $expiresAt
+     * @param AccessToken $accessToken
+     *
+     * @return RefreshToken
+     */
+    private function createRefreshToken(
+        string $identifier,
+        \DateTime $expiresAt,
+        AccessToken $accessToken
+    ): RefreshToken {
+        return new RefreshToken($identifier, $expiresAt, $accessToken);
     }
 }

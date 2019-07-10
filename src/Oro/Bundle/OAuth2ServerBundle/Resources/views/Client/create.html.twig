@@ -15,8 +15,13 @@
         {% endif %}
         {{ form_row(form.name) }}
         {{ form_row(form.active) }}
-        {# BAP-18427: uncomment this block when other grant types is implemented #}
-        {#{{ form_row(form.grants) }}#}
+        {% if form.grants is defined %}
+            {% if 'hidden' in form.grants.vars.block_prefixes|keys %}
+                <div data-validation-ignore="true">{{ form_row(form.grants) }}</div>
+            {% else %}
+                {{ form_row(form.grants) }}
+            {% endif %}
+        {% endif %}
         {{ form_rest(form) }}
         <div class="widget-actions form-actions">
             <button class="btn" type="reset">{{ 'Cancel'|trans }}</button>

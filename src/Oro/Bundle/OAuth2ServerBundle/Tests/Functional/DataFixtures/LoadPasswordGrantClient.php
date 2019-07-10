@@ -8,16 +8,16 @@ use Doctrine\Common\Persistence\ObjectManager;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
 use Oro\Bundle\TestFrameworkBundle\Tests\Functional\DataFixtures\LoadOrganization;
-use Oro\Bundle\TestFrameworkBundle\Tests\Functional\DataFixtures\LoadUser;
-use Oro\Bundle\UserBundle\Entity\User;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
-class LoadOAuthClient extends AbstractFixture implements ContainerAwareInterface, DependentFixtureInterface
+class LoadPasswordGrantClient extends AbstractFixture implements
+    ContainerAwareInterface,
+    DependentFixtureInterface
 {
-    public const OAUTH_CLIENT_ID        = 'OxvBGZ4Z0gG6Maihm2amg80LcSpJez3W';
+    public const OAUTH_CLIENT_ID        = 'OxvBGZ4Z0gG6Maihm2amg80LcSpJez3';
     public const OAUTH_CLIENT_SECRET    = 'fL4VT7mO0PC3l0m9woNTt7fAm6nxvajlMvd5n5s9JkFtEEaK0BwDua_-BY4KVxFqjmvE';
-    public const OAUTH_CLIENT_REFERENCE = 'oauthClient';
+    public const OAUTH_CLIENT_REFERENCE = 'OAuthClient';
 
     /** @var ClientManager */
     private $clientManager;
@@ -36,8 +36,7 @@ class LoadOAuthClient extends AbstractFixture implements ContainerAwareInterface
     public function getDependencies()
     {
         return [
-            LoadOrganization::class,
-            LoadUser::class
+            LoadOrganization::class
         ];
     }
 
@@ -46,14 +45,10 @@ class LoadOAuthClient extends AbstractFixture implements ContainerAwareInterface
      */
     public function load(ObjectManager $manager)
     {
-        /** @var User $owner */
-        $owner = $this->getReference('user');
-
         $client = new Client();
         $client->setOrganization($this->getReference('organization'));
-        $client->setName('test application');
-        $client->setGrants(['client_credentials']);
-        $client->setOwnerEntity(get_class($owner), $owner->getId());
+        $client->setName('test application backend');
+        $client->setGrants(['password']);
         $client->setIdentifier(self::OAUTH_CLIENT_ID);
         $client->setPlainSecret(self::OAUTH_CLIENT_SECRET);
 

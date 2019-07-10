@@ -23,6 +23,7 @@ services:
         arguments:
             - '@oro_oauth2_server.client_cleaner'
             - '@oro_oauth2_server.access_token_cleaner'
+            - '@oro_oauth2_server.refresh_token_cleaner'
         tags: [console.command]
 
     oro_oauth2_server.client_cleaner:
@@ -34,6 +35,12 @@ services:
 
     oro_oauth2_server.access_token_cleaner:
         class: Oro\Bundle\OAuth2ServerBundle\Entity\Cleaner\AccessTokenCleaner
+        public: false
+        arguments:
+            - '@doctrine'
+
+    oro_oauth2_server.refresh_token_cleaner:
+        class: Oro\Bundle\OAuth2ServerBundle\Entity\Cleaner\RefreshTokenCleaner
         public: false
         arguments:
             - '@doctrine'
@@ -62,6 +69,12 @@ services:
             - { name: kernel.event_listener, event: oro_datagrid.datagrid.build.before.oauth-client-grid, method: onBuildBefore }
             - { name: kernel.event_listener, event: oro_datagrid.datagrid.build.after.oauth-client-grid, method: onBuildAfter }
 
+    oro_oauth2_server.event_listener.datagrid.clients.add_grants:
+        class: Oro\Bundle\OAuth2ServerBundle\Datagrid\EventListener\GrantClientDatagridListener
+        tags:
+            - { name: kernel.event_listener, event: oro_datagrid.datagrid.build.before.oauth-client-grid, method: onBuildBefore }
+            - { name: kernel.event_listener, event: oro_datagrid.datagrid.build.after.oauth-client-grid, method: onBuildAfter }
+
     oro_oauth2_server.event_listener.initialize_client_entity:
         class: Oro\Bundle\OAuth2ServerBundle\EventListener\InitializeClientEntityListener
         arguments:
@@ -79,7 +92,6 @@ services:
     Oro\Bundle\OAuth2ServerBundle\Form\Type\ClientType:
         public: false
         arguments:
-            - '%oro_oauth2_server.supported_grant_types%'
             - '@oro_oauth2_server.client_owner_organizations_provider'
         tags: [form.type]
 
@@ -97,18 +109,37 @@ services:
             - '@oro_oauth2_server.league.public_key'
 
     oro_oauth2_server.league.repository.client_repository:
-        class: Oro\Bundle\OAuth2ServerBundle\League\Repositories\ClientRepository
+        class: Oro\Bundle\OAuth2ServerBundle\League\Repository\ClientRepository
+        public: false
         arguments:
             - '@doctrine'
             - '@security.encoder_factory'
 
     oro_oauth2_server.league.repository.access_token_repository:
-        class: Oro\Bundle\OAuth2ServerBundle\League\Repositories\AccessTokenRepository
+        class: Oro\Bundle\OAuth2ServerBundle\League\Repository\AccessTokenRepository
+        public: false
         arguments:
             - '@doctrine'
 
+    oro_oauth2_server.league.repository.refresh_token_repository:
+        class: Oro\Bundle\OAuth2ServerBundle\League\Repository\RefreshTokenRepository
+        public: false
+        arguments:
+            - '@doctrine'
+            - '@oro_user.security.user_loader'
+            - '@oro_oauth2_server.security.user_checker'
+
+    oro_oauth2_server.league.repository.user_repository:
+        class: Oro\Bundle\OAuth2ServerBundle\League\Repository\UserRepository
+        public: false
+        arguments:
+            - '@oro_user.security.user_loader'
+            - '@security.encoder_factory'
+            - '@oro_oauth2_server.security.user_checker'
+
     oro_oauth2_server.league.repository.scope_repository:
-        class: Oro\Bundle\OAuth2ServerBundle\League\Repositories\ScopeRepository
+        class: Oro\Bundle\OAuth2ServerBundle\League\Repository\ScopeRepository
+        public: false
 
     oro_oauth2_server.league.authorization_server:
         class: League\OAuth2\Server\AuthorizationServer
@@ -137,6 +168,13 @@ services:
         public: false
         arguments:
             - ~ # public key; it is set by Oro\Bundle\OAuth2ServerBundle\DependencyInjection\OroOAuth2ServerExtension
+
+    oro_oauth2_server.security.user_checker:
+        class: Oro\Bundle\OAuth2ServerBundle\Security\OAuthUserChecker
+        public: false
+        arguments:
+            - '@security.user_checker'
+            - '@translator'
 
     oro_oauth2_server.security.firewall_listener:
         class: Oro\Bundle\OAuth2ServerBundle\Security\Firewall\OAuth2Listener
