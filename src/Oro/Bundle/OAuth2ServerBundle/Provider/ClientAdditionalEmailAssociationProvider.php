@@ -6,7 +6,7 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 use Oro\Bundle\EntityConfigBundle\Provider\ConfigProvider;
 use Oro\Bundle\NotificationBundle\Provider\AdditionalEmailAssociationProviderInterface;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
-use Symfony\Component\Translation\TranslatorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Provides additional associations related to OAuth 2.0 client for email notifications.

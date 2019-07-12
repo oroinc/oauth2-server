@@ -3,7 +3,7 @@
 namespace Oro\Bundle\OAuth2ServerBundle\Formatter;
 
 use Oro\Bundle\UIBundle\Formatter\FormatterInterface;
-use Symfony\Component\Translation\TranslatorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * The formatter for OAuth 2.0 scopes.

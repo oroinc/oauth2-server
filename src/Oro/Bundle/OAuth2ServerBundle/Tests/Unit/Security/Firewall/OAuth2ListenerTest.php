@@ -46,7 +46,7 @@ class OAuth2ListenerTest extends \PHPUnit\Framework\TestCase
         $event = new GetResponseEvent(
             $this->createMock(HttpKernelInterface::class),
             $request,
-            HttpKernelInterface::class
+            HttpKernelInterface::MASTER_REQUEST
         );
 
         $this->httpMessageFactory->expects($this->once())
@@ -70,7 +70,7 @@ class OAuth2ListenerTest extends \PHPUnit\Framework\TestCase
         $event = new GetResponseEvent(
             $this->createMock(HttpKernelInterface::class),
             $request,
-            HttpKernelInterface::class
+            HttpKernelInterface::MASTER_REQUEST
         );
 
         $this->httpMessageFactory->expects($this->once())
@@ -94,7 +94,7 @@ class OAuth2ListenerTest extends \PHPUnit\Framework\TestCase
         $event = new GetResponseEvent(
             $this->createMock(HttpKernelInterface::class),
             $request,
-            HttpKernelInterface::class
+            HttpKernelInterface::MASTER_REQUEST
         );
 
         $expectedToken = new OAuth2Token();

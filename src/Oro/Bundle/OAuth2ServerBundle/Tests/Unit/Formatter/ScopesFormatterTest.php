@@ -3,7 +3,7 @@
 namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Formatter;
 
 use Oro\Bundle\OAuth2ServerBundle\Formatter\ScopesFormatter;
-use Symfony\Component\Translation\TranslatorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class ScopesFormatterTest extends \PHPUnit\Framework\TestCase
 {

@@ -6,7 +6,7 @@ use League\OAuth2\Server\Exception\OAuthServerException;
 use Oro\Bundle\UserBundle\Entity\UserInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Core\User\UserCheckerInterface;
-use Symfony\Component\Translation\TranslatorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Checks whether an user can log in to the system.

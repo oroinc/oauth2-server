@@ -8,7 +8,7 @@ use Oro\Bundle\OAuth2ServerBundle\EventListener\AddClientsToViewPageListener;
 use Oro\Bundle\OAuth2ServerBundle\Security\EncryptionKeysExistenceChecker;
 use Oro\Bundle\UIBundle\Event\BeforeViewRenderEvent;
 use Oro\Bundle\UserBundle\Entity\User;
-use Symfony\Component\Translation\TranslatorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Environment;
 
 class AddClientsToViewPageListenerTest extends \PHPUnit\Framework\TestCase

@@ -6,7 +6,7 @@ use Oro\Bundle\EntityBundle\Twig\Sandbox\EntityVariablesProviderInterface;
 use Oro\Bundle\EntityConfigBundle\Provider\ConfigProvider;
 use Oro\Bundle\EntityExtendBundle\Extend\RelationType;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
-use Symfony\Component\Translation\TranslatorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Provides definitions of variables for OAuth 2.0 client entity.
