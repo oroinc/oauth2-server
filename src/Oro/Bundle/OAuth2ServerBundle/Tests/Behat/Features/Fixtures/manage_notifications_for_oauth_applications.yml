@@ -3,6 +3,7 @@ Oro\Bundle\OAuth2ServerBundle\Entity\Client:
         name: Test OAuth Application
         identifier: test_app
         grants: [client_credentials]
-        setSecret: [test_secret, test_salt]
-        setOwnerEntity: ['Oro\Bundle\UserBundle\Entity\User', '<(@admin->id)>']
+        __calls:
+            - setSecret: [test_secret, test_salt]
+            - setOwnerEntity: ['Oro\\Bundle\\UserBundle\\Entity\\User', '<(@admin->getId())>']
         organization: '@organization'
