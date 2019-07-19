@@ -58,6 +58,7 @@ services:
 
     oro_oauth2_server.client_action_visibility_provider:
         class: Oro\Bundle\OAuth2ServerBundle\Datagrid\ClientActionsVisibilityProvider
+        public: true
         arguments:
             - '@oro_oauth2_server.client_manager'
 
