@@ -68,6 +68,22 @@ class AddClientsToViewPageListenerTest extends \PHPUnit\Framework\TestCase
         self::assertEquals($data, $event->getData());
     }
 
+    public function testAddOAuth2ClientsWhenUserHasNoViewPermissionToOauthApplications()
+    {
+        $environment = $this->createMock(Environment::class);
+        $data = ['dataBlocks' => [['title' => 'test']]];
+        $entity = $this->createMock(User::class);
+
+        $this->clientManager->expects(self::once())
+            ->method('isViewGranted')
+            ->willReturn(false);
+
+        $event = new BeforeViewRenderEvent($environment, $data, $entity);
+        $this->listener->addOAuth2Clients($event);
+
+        self::assertEquals($data, $event->getData());
+    }
+
     public function testAddOAuth2ClientsForSupportedOwner()
     {
         $environment = $this->createMock(Environment::class);
@@ -89,6 +105,9 @@ class AddClientsToViewPageListenerTest extends \PHPUnit\Framework\TestCase
             ->method('isCreationGranted')
             ->with($entityClass)
             ->willReturn($creationGranted);
+        $this->clientManager->expects(self::once())
+            ->method('isViewGranted')
+            ->willReturn(true);
         $this->entityIdAccessor->expects(self::once())
             ->method('getIdentifier')
             ->with(self::identicalTo($entity))
@@ -139,6 +158,9 @@ class AddClientsToViewPageListenerTest extends \PHPUnit\Framework\TestCase
         $this->encryptionKeysExistenceChecker->expects(self::once())
             ->method('isPublicKeyExist')
             ->willReturn(false);
+        $this->clientManager->expects(self::once())
+            ->method('isViewGranted')
+            ->willReturn(true);
         $this->clientManager->expects(self::once())
             ->method('isCreationGranted')
             ->with($entityClass)
@@ -192,6 +214,9 @@ class AddClientsToViewPageListenerTest extends \PHPUnit\Framework\TestCase
             ->willReturn(false);
         $this->encryptionKeysExistenceChecker->expects(self::never())
             ->method('isPublicKeyExist');
+        $this->clientManager->expects(self::once())
+            ->method('isViewGranted')
+            ->willReturn(true);
         $this->clientManager->expects(self::once())
             ->method('isCreationGranted')
             ->with($entityClass)

@@ -1,0 +1,107 @@
+{% extends 'OroUIBundle:actions:view.html.twig' %}
+{% import 'OroUIBundle::macros.html.twig' as UI %}
+
+{% oro_title_set({params : {"%application.name%": entity.name|default('N/A') }}) %}
+
+{% block navButtons %}
+    {% if is_granted('DELETE', entity) %}
+        {{ UI.deleteButton({
+            'dataUrl': path('oro_oauth2_server_client_delete', {'id': entity.id}),
+            'dataRedirect': path(entity.frontend ? 'oro_oauth2_storefront_index' : 'oro_oauth2_index'),
+            'aCss': 'no-hash remove-button',
+            'id': 'btn-remove-business_unit',
+            'dataId': entity.id,
+            'entity_label': 'oro.oauth2server.client.entity_label'|trans
+        }) }}
+    {% endif %}
+    {% if is_granted('EDIT', entity) %}
+        {{ UI.editButton({
+            'path' : path(
+                entity.frontend ? 'oro_oauth2_storefront_update' : 'oro_oauth2_update',
+                { id: entity.id }
+            ),
+            'entity_label': (entity.frontend
+                    ? 'oro.oauth2server.menu.frontend_oauth_application.label'
+                    : 'oro.oauth2server.menu.backoffice_oauth_application.label'
+                )|trans
+        }) }}
+    {% endif %}
+{% endblock navButtons %}
+
+{% block pageHeader %}
+    {% set breadcrumbs = {
+        'entity':      entity,
+        'indexPath':   path(entity.frontend ? 'oro_oauth2_storefront_index' : 'oro_oauth2_index'),
+        'indexLabel':  (entity.frontend
+                            ? 'oro.oauth2server.menu.frontend_oauth_application.label'
+                            : 'oro.oauth2server.menu.backoffice_oauth_application.label'
+                        )|trans,
+        'entityTitle': entity.name|default('N/A'),
+    } %}
+    {{ parent() }}
+{% endblock pageHeader %}
+
+{% block breadcrumbs %}
+    {{ parent() }}
+    <span class="page-title__status">
+        {% if entity.active %}
+            {{ UI.badge('oro.oauth2server.client.active.statuses.active'|trans, 'enabled') }}
+        {% else %}
+            {{ UI.badge('oro.oauth2server.client.active.statuses.inactive'|trans, 'disabled') }}
+        {% endif %}
+    </span>
+{% endblock breadcrumbs %}
+
+{% block stats %}
+{% endblock stats %}
+
+{% block content_data %}
+    {% if not encryptionKeysExist %}
+        <div class="alert alert-warning">{{ 'oro.oauth2server.no_encryption_keys'|trans }}</div>
+    {% endif %}
+    {% set grants %}
+        {%- for grant in entity.grants -%}
+            {%- if not loop.first %}, {% endif -%}
+            {{ ('oro.oauth2server.grant_types.' ~ grant)|trans }}
+        {%- endfor -%}
+    {% endset %}
+    {% set data %}
+        <div class="widget-content">
+            <div class="row-fluid form-horizontal">
+                <div class="responsive-block">
+                    {{ UI.renderProperty('oro.oauth2server.client.identifier.label'|trans, entity.identifier) }}
+                    {{ UI.renderProperty('oro.oauth2server.client.name.label'|trans, entity.name) }}
+                    {{ UI.renderProperty('oro.oauth2server.client.grants.label'|trans, grants) }}
+                    {% if user is not null %}
+                        {{ UI.renderHtmlProperty(
+                            (entity.frontend
+                                ? 'oro.customer.customeruser.entity_plural_label'
+                                : 'oro.user.entity_plural_label'
+                            )|trans,
+                            UI.entityViewLink(
+                                user,
+                                attribute(user, 'fullName'),
+                                entity.frontend ? 'oro_customer_customer_user_view' : 'oro_user_view',
+                                'VIEW'
+                            )
+                        ) }}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% endset %}
+
+    {% set dataBlocks = [
+        {
+            'title': 'General Information'|trans,
+            'class': 'active',
+            'subblocks': [
+                {'data' : [data]}
+            ]
+        }
+    ]%}
+
+    {% set id = 'oauthApplicationsView' %}
+    {% set data = { 'dataBlocks': dataBlocks } %}
+    {{ parent() }}
+{% endblock content_data %}

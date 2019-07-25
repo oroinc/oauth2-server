@@ -132,13 +132,38 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
         }
     }
 
+    public function testIsViewGrantedWithoutObject()
+    {
+        $isGranted = true;
+
+        $this->authorizationChecker->expects(self::once())
+            ->method('isGranted')
+            ->with('VIEW', 'entity:' . Client::class)
+            ->willReturn($isGranted);
+
+        self::assertSame($isGranted, $this->clientManager->isViewGranted());
+    }
+
+    public function testIsViewGranted()
+    {
+        $isGranted = true;
+        $client = $this->getClient();
+
+        $this->authorizationChecker->expects(self::once())
+            ->method('isGranted')
+            ->with('VIEW', self::identicalTo($client))
+            ->willReturn($isGranted);
+
+        self::assertSame($isGranted, $this->clientManager->isViewGranted($client));
+    }
+
     public function testIsCreationGranted()
     {
         $isGranted = true;
 
         $this->authorizationChecker->expects(self::once())
             ->method('isGranted')
-            ->with('CREATE', Client::class)
+            ->with('CREATE', 'entity:' . Client::class)
             ->willReturn($isGranted);
 
         self::assertSame($isGranted, $this->clientManager->isCreationGranted());

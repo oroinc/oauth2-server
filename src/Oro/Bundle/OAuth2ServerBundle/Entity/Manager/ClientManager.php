@@ -47,13 +47,25 @@ class ClientManager
     }
 
     /**
+     * Checks whether access to view of Client entity is granted.
+     *
+     * @param Client|null $entity
+     *
+     * @return bool
+     */
+    public function isViewGranted(Client $entity = null): bool
+    {
+        return $this->authorizationChecker->isGranted('VIEW', $entity ?: 'entity:' . Client::class);
+    }
+
+    /**
      * Checks whether access to creation of Client entity is granted.
      *
      * @return bool
      */
     public function isCreationGranted(): bool
     {
-        return $this->authorizationChecker->isGranted('CREATE', Client::class);
+        return $this->authorizationChecker->isGranted('CREATE', 'entity:' . Client::class);
     }
 
     /**

@@ -1,0 +1,33 @@
+{% extends 'OroUIBundle:actions:index.html.twig' %}
+{% import 'OroUIBundle::macros.html.twig' as UI %}
+{% import 'OroDataGridBundle::macros.html.twig' as dataGrid %}
+
+{% if isFrontend %}
+    {% set pageTitle = 'oro.oauth2server.menu.frontend_oauth_application.label'|trans %}
+{%  else %}
+    {% set pageTitle = 'oro.oauth2server.menu.backoffice_oauth_application.label'|trans %}
+{% endif %}
+
+{% block navButtons %}
+    {% if is_granted('oro_oauth2_create') %}
+    <div class="btn-group">
+        {{ UI.addButton({
+            'path': path(isFrontend ? 'oro_oauth2_storefront_create' : 'oro_oauth2_create'),
+            'entity_label': 'oro.oauth2server.client.entity_label'|trans
+        }) }}
+    </div>
+    {% endif %}
+{% endblock %}
+
+{% block content_datagrid %}
+    <div data-bound-component="orodatagrid/js/app/components/datagrid-component">
+        {% if not encryptionKeysExist %}
+            <div class="alert alert-warning">{{ 'oro.oauth2server.no_encryption_keys'|trans }}</div>
+        {% endif %}
+        {{ dataGrid.renderGrid(
+            isFrontend ? 'oauth-client-frontend-grid' : 'oauth-client-backend-grid',
+            { frontend: isFrontend, '_grid_view': {'_disabled': true} },
+            { cssClass: 'inner-grid' }
+        ) }}
+    </div>
+{% endblock %}

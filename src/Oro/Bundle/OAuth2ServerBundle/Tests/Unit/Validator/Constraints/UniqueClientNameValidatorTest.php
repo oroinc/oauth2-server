@@ -35,6 +35,7 @@ class UniqueClientNameValidatorTest extends ConstraintValidatorTestCase
     /**
      * @param Organization $organization
      * @param string       $name
+     * @param bool         $isFrontend
      * @param string|null  $ownerEntityClass
      * @param int|null     $ownerEntityId
      * @param int|null     $clientEntityId
@@ -45,6 +46,7 @@ class UniqueClientNameValidatorTest extends ConstraintValidatorTestCase
     private function expectGetValidationQueryBuilder(
         $organization,
         $name,
+        $isFrontend,
         $ownerEntityClass = null,
         $ownerEntityId = null,
         $clientEntityId = null
@@ -75,13 +77,26 @@ class UniqueClientNameValidatorTest extends ConstraintValidatorTestCase
             ->with('e.organization = :organization AND e.name = :name')
             ->willReturnSelf();
         if (!$ownerEntityClass && null === $clientEntityId) {
-            $qb->expects(self::exactly(2))
+            $qb->expects(self::exactly(3))
                 ->method('setParameter')
                 ->withConsecutive(
                     ['organization', $organization],
-                    ['name', $name]
+                    ['name', $name],
+                    ['frontend', $isFrontend]
                 )
                 ->willReturnOnConsecutiveCalls(
+                    self::returnSelf(),
+                    self::returnSelf(),
+                    self::returnSelf()
+                );
+            $qb->expects(self::exactly(2))
+                ->method('andWhere')
+                ->withConsecutive(
+                    ['e.ownerEntityClass is null AND e.ownerEntityId is null'],
+                    ['e.frontend = :frontend']
+                )
+                ->willReturnOnConsecutiveCalls(
+                    self::returnSelf(),
                     self::returnSelf(),
                     self::returnSelf()
                 );
@@ -156,6 +171,7 @@ class UniqueClientNameValidatorTest extends ConstraintValidatorTestCase
     /**
      * @param Organization $organization
      * @param string       $name
+     * @param bool         $isFrontend
      * @param array        $rows
      * @param string|null  $ownerEntityClass
      * @param int|null     $ownerEntityId
@@ -163,11 +179,18 @@ class UniqueClientNameValidatorTest extends ConstraintValidatorTestCase
     private function expectValidationQuery(
         $organization,
         $name,
+        $isFrontend,
         $rows,
         $ownerEntityClass = null,
         $ownerEntityId = null
     ) {
-        $qb = $this->expectGetValidationQueryBuilder($organization, $name, $ownerEntityClass, $ownerEntityId);
+        $qb = $this->expectGetValidationQueryBuilder(
+            $organization,
+            $name,
+            $isFrontend,
+            $ownerEntityClass,
+            $ownerEntityId
+        );
         $query = $this->createMock(AbstractQuery::class);
         $qb->expects(self::once())
             ->method('getQuery')
@@ -233,6 +256,7 @@ class UniqueClientNameValidatorTest extends ConstraintValidatorTestCase
         $this->expectValidationQuery(
             $client->getOrganization(),
             $client->getName(),
+            $client->isFrontend(),
             []
         );
 
@@ -251,6 +275,7 @@ class UniqueClientNameValidatorTest extends ConstraintValidatorTestCase
         $this->expectValidationQuery(
             $client->getOrganization(),
             $client->getName(),
+            $client->isFrontend(),
             [],
             $client->getOwnerEntityClass(),
             $client->getOwnerEntityId()
@@ -274,6 +299,7 @@ class UniqueClientNameValidatorTest extends ConstraintValidatorTestCase
         $qb = $this->expectGetValidationQueryBuilder(
             $client->getOrganization(),
             $client->getName(),
+            $client->isFrontend(),
             $client->getOwnerEntityClass(),
             $client->getOwnerEntityId(),
             $client->getId()
@@ -301,6 +327,31 @@ class UniqueClientNameValidatorTest extends ConstraintValidatorTestCase
         $this->expectValidationQuery(
             $client->getOrganization(),
             $client->getName(),
+            $client->isFrontend(),
+            [['id' => 1]],
+            $client->getOwnerEntityClass(),
+            $client->getOwnerEntityId()
+        );
+
+        $constraint = new UniqueClientName();
+        $this->validator->validate($client, $constraint);
+
+        $this->buildViolation($constraint->message)
+            ->setParameters(['{{ name }}' => $client->getName()])
+            ->atPath('property.path.name')
+            ->assertRaised();
+    }
+
+    public function testNameIsNotUniqueForClientWithoutOwner()
+    {
+        $client = new Client();
+        $client->setName('test');
+        $client->setOrganization($this->createMock(Organization::class));
+
+        $this->expectValidationQuery(
+            $client->getOrganization(),
+            $client->getName(),
+            $client->isFrontend(),
             [['id' => 1]],
             $client->getOwnerEntityClass(),
             $client->getOwnerEntityId()

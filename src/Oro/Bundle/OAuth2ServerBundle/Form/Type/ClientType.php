@@ -3,18 +3,16 @@
 namespace Oro\Bundle\OAuth2ServerBundle\Form\Type;
 
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
-use Oro\Bundle\OAuth2ServerBundle\Form\Transformer\GrantTypeTransformer;
 use Oro\Bundle\OAuth2ServerBundle\Provider\ClientOwnerOrganizationsProvider;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -44,6 +42,7 @@ class ClientType extends AbstractType
             ->addEventListener(FormEvents::POST_SET_DATA, function (FormEvent $event) {
                 $this->addOrganizationField($event);
                 $this->addIdentifierField($event);
+                $this->modifyGrantField($event);
             })
             ->add('name', TextType::class, [
                 'label'    => 'oro.oauth2server.client.name.label',
@@ -55,32 +54,12 @@ class ClientType extends AbstractType
                 'tooltip' => 'oro.oauth2server.client.active.description'
             ]);
 
-        $grantTypes = $options['grant_types'];
-        $defaultGrantType = null;
-        if (count($grantTypes) === 1) {
-            $defaultGrantType = reset($grantTypes);
-        }
-        if ($options['show_grants']) {
-            $multipleGrantTypes = $options['multiple_grants'];
-            $builder
-                ->add('grants', ChoiceType::class, [
-                    'label'      => 'oro.oauth2server.client.grants.label',
-                    'tooltip'    => 'oro.oauth2server.client.grants.description',
-                    'required'   => true,
-                    'expanded'   => true,
-                    'multiple'   => $multipleGrantTypes,
-                    'choices'    => $this->getGrantTypes($grantTypes),
-                    'empty_data' => $defaultGrantType
-                ]);
-            if (!$multipleGrantTypes) {
-                $builder->get('grants')->addModelTransformer(new GrantTypeTransformer());
-            }
-        } elseif ($defaultGrantType) {
-            $builder->add('grants', HiddenType::class, [
-                'data' => $defaultGrantType
-            ]);
-            $builder->get('grants')->addModelTransformer(new GrantTypeTransformer());
-        }
+        $this->addGrantField(
+            $builder,
+            $options['show_grants'],
+            $options['grant_types'],
+            $options['multiple_grants']
+        );
     }
 
     /**
@@ -155,17 +134,19 @@ class ClientType extends AbstractType
             return;
         }
 
-        $organizations = $this->organizationsProvider->getClientOwnerOrganizations(
-            $client->getOwnerEntityClass(),
-            $client->getOwnerEntityId()
-        );
-        if ($this->organizationsProvider->isOrganizationSelectorRequired($organizations)) {
-            $event->getForm()->add('organization', EntityType::class, [
-                'label'                => 'oro.organization.entity_label',
-                'class'                => Organization::class,
-                'choices'              => $this->organizationsProvider->sortOrganizations($organizations),
-                'translatable_options' => false
-            ]);
+        if ($client->getOwnerEntityId()) {
+            $organizations = $this->organizationsProvider->getClientOwnerOrganizations(
+                $client->getOwnerEntityClass(),
+                $client->getOwnerEntityId()
+            );
+            if ($this->organizationsProvider->isOrganizationSelectorRequired($organizations)) {
+                $event->getForm()->add('organization', EntityType::class, [
+                    'label'                => 'oro.organization.entity_label',
+                    'class'                => Organization::class,
+                    'choices'              => $this->organizationsProvider->sortOrganizations($organizations),
+                    'translatable_options' => false
+                ]);
+            }
         }
     }
 
@@ -188,5 +169,76 @@ class ClientType extends AbstractType
             'required' => false,
             'disabled' => true
         ]);
+    }
+
+    /**
+     * Replaces grants field to read-only field for an existing client edit form.
+     *
+     * @param FormEvent $event
+     */
+    private function modifyGrantField(FormEvent $event): void
+    {
+        /** @var Client $client */
+        $client = $event->getData();
+        if (null === $client->getId()) {
+            return;
+        }
+
+        $form = $event->getForm();
+
+        $formConfig = $event->getForm()->getConfig();
+        $showGrants = $formConfig->getOption('show_grants');
+        if (!$showGrants) {
+            return;
+        }
+
+        $form->remove('grants');
+        $this->addGrantField(
+            $form,
+            $showGrants,
+            $formConfig->getOption('grant_types'),
+            $formConfig->getOption('multiple_grants'),
+            true
+        );
+    }
+
+    /**
+     * Adds the grants field to form.
+     *
+     * @param FormInterface|FormBuilderInterface $form
+     * @param bool                               $showGrants
+     * @param array                              $grantTypes
+     * @param bool                               $multipleGrantTypes
+     * @param bool                               $disabled
+     */
+    private function addGrantField(
+        $form,
+        bool $showGrants,
+        array $grantTypes,
+        bool $multipleGrantTypes,
+        bool $disabled = false
+    ) {
+        $defaultGrantType = null;
+        if (count($grantTypes) === 1) {
+            $defaultGrantType = reset($grantTypes);
+        }
+        if ($showGrants) {
+            $form
+                ->add('grants', GrantsType::class, [
+                    'label'      => 'oro.oauth2server.client.grants.label',
+                    'tooltip'    => 'oro.oauth2server.client.grants.description',
+                    'required'   => true,
+                    'expanded'   => true,
+                    'multiple'   => $multipleGrantTypes,
+                    'choices'    => $this->getGrantTypes($grantTypes),
+                    'empty_data' => $defaultGrantType,
+                    'disabled'   => $disabled
+
+                ]);
+        } elseif ($defaultGrantType) {
+            $form->add('grants', HiddenGrantsType::class, [
+                'data' => $defaultGrantType
+            ]);
+        }
     }
 }

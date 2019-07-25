@@ -1,28 +1,76 @@
 {% extends 'OroUIBundle:actions:update.html.twig' %}
+{% import 'OroUIBundle::macros.html.twig' as UI %}
+
+{% oro_title_set({ params : {"%application.name%": form.vars.data.name} }) %}
+
+{% block navButtons %}
+    {{ UI.cancelButton(path(form.vars.data.frontend ? 'oro_oauth2_storefront_index' : 'oro_oauth2_index')) }}
+
+    {% set html = UI.saveAndCloseButton({
+        'route': form.vars.data.frontend ? 'oro_oauth2_storefront_view' : 'oro_oauth2_view',
+        'params': {'id': '$id'}
+    }) %}
+
+    {% set html = html ~ UI.saveAndStayButton({
+        'route': form.vars.data.frontend ? 'oro_oauth2_storefront_update' : 'oro_oauth2_update',
+        'params': {'id': '$id'}
+    }) %}
+    {{ UI.dropdownSaveButton({'html': html}) }}
+{% endblock navButtons %}
+
+{% block pageHeader %}
+    {% set title = 'oro.ui.update_entity'|trans({'%entityName%':
+        (form.vars.data.frontend
+            ? 'oro.oauth2server.client.entity_storefront_label'
+            : 'oro.oauth2server.client.entity_label'
+        )|trans
+    }) %}
+    {% include 'OroUIBundle::page_title_block.html.twig' with { title: title } %}
+{% endblock pageHeader %}
 
 {% block content_data %}
-    {% if not form.vars.valid and form.vars.errors|length %}
-        <div class="alert alert-error" role="alert">
-            <div class="message">
-                {{ form_errors(form) }}
+    {% set id = 'oauth-application' %}
+
+    {% set grantsRow %}
+        {% if 'hidden' in form.grants.vars.block_prefixes|keys %}
+            <div data-validation-ignore="true">
+                <div class="client-grants">
+                    {{ form_row(form.grants) }}
+                </div>
             </div>
-        </div>
-    {% endif %}
-    <fieldset class="form form-horizontal">
-        {{ form_row(form.identifier) }}
-        {{ form_row(form.name) }}
-        {{ form_row(form.active) }}
-        {% if form.grants is defined %}
-            {% if 'hidden' in form.grants.vars.block_prefixes|keys %}
-                <div data-validation-ignore="true">{{ form_row(form.grants) }}</div>
-            {% else %}
+        {% else %}
+            <div class="client-grants">
                 {{ form_row(form.grants) }}
-            {% endif %}
+            </div>
         {% endif %}
-        {{ form_rest(form) }}
-        <div class="widget-actions form-actions">
-            <button class="btn" type="reset">{{ 'Cancel'|trans }}</button>
-            <button class="btn btn-primary" type="submit">{{ 'Save'|trans }}</button>
-        </div>
-    </fieldset>
+    {% endset %}
+
+    {% set ownerField %}
+        {% if form.owner is defined %}
+            {{ form_row(form.owner) }}
+        {% endif %}
+    {% endset %}
+
+    {% set dataBlocks = [{
+        'title': 'General'|trans,
+        'subblocks': [
+            {
+                'title': '',
+                'data': [
+                    form.organization is defined ? form_row(form.organization) : '',
+                    form_row(form.identifier),
+                    form_row(form.name),
+                    form_row(form.active),
+                    grantsRow,
+                    ownerField
+                ]
+            }
+        ]
+    }] %}
+
+    {% set data = {
+        'formErrors': form_errors(form)? form_errors(form) : null,
+        'dataBlocks': dataBlocks,
+    } %}
+    {{ parent() }}
 {% endblock content_data %}

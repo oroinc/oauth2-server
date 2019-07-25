@@ -1,0 +1,100 @@
+{% extends 'OroUIBundle:actions:view.html.twig' %}
+{% import 'OroUIBundle::macros.html.twig' as UI %}
+
+{% oro_title_set({params : {"%application.name%": entity.name|default('N/A') }}) %}
+
+{% block navButtons %}
+    {% set entityLabel %}
+        {{ (entity.frontend
+        ? 'oro.oauth2server.menu.frontend_oauth_application.label'
+        : 'oro.oauth2server.menu.backoffice_oauth_application.label'
+        )|trans }}
+    {% endset %}
+
+    {% if is_granted('VIEW', entity) %}
+        {{ UI.button({
+            'path': path(
+                entity.frontend ? 'oro_oauth2_storefront_view' : 'oro_oauth2_view',
+                { id: entity.id }
+            ),
+            'title': entityLabel,
+            'label': 'oro.ui.view'|trans,
+            'iCss': 'fa-eye',
+            'aCss': 'edit-button main-group'
+        }) }}
+    {% endif %}
+
+    {% if is_granted('EDIT', entity) %}
+        {{ UI.editButton({
+            'path' : path(
+                entity.frontend ? 'oro_oauth2_storefront_update' : 'oro_oauth2_update',
+                { id: entity.id }
+            ),
+            'entity_label': entityLabel
+        }) }}
+    {% endif %}
+{% endblock navButtons %}
+
+{% block pageHeader %}
+    {% set breadcrumbs = {
+        'entity':      entity,
+        'indexPath':   path(entity.frontend ? 'oro_oauth2_storefront_index' : 'oro_oauth2_index'),
+        'indexLabel':  (entity.frontend
+        ? 'oro.oauth2server.menu.frontend_oauth_application.label'
+        : 'oro.oauth2server.menu.backoffice_oauth_application.label'
+        )|trans,
+        'entityTitle': entity.name|default('N/A'),
+    } %}
+    {{ parent() }}
+{% endblock pageHeader %}
+
+{% block stats %}
+{% endblock stats %}
+
+{% block content_data %}
+        <div class="widget-content">
+            <div class="row-fluid form-horizontal">
+                <div class="alert alert-info ">
+                    {{ 'oro.oauth2server.client.created_warning_message'|trans|raw }}
+                </div>
+            </div>
+            <div class="row-fluid form-horizontal">
+                <div class="responsive-block">
+                    <div>
+                        <strong>{{ 'oro.oauth2server.client.identifier.label'|trans }}:</strong>
+                        {% set client_id = 'client-id-'|uniqid %}
+                        <span class="text-nowrap" id="{{ client_id }}">{{ entity.identifier }}</span>
+                        {{- UI.clientLink({
+                            aCss: 'btn btn-icon',
+                            iCss: 'fa-copy',
+                            title: 'oro.ui.button.copy_to_clipboard.label'|trans,
+                            labelInIcon: false,
+                            pageComponent: {
+                                view: {
+                                    view: 'oroui/js/app/views/element-value-copy-to-clipboard-view',
+                                    elementSelector: '#' ~ client_id
+                                }
+                            }
+                        }) -}}
+                    </div>
+                    <div>
+                        <strong>{{ 'oro.oauth2server.client.secret.label'|trans }}:</strong>
+                        {% set client_secret_id = 'client-secret-'|uniqid %}
+                        <span class="text-nowrap" id="{{ client_secret_id }}">{{ entity.plainSecret }}</span>
+                        {{- UI.clientLink({
+                            aCss: 'btn btn-icon',
+                            iCss: 'fa-copy',
+                            title: 'oro.ui.button.copy_to_clipboard.label'|trans,
+                            labelInIcon: false,
+                            pageComponent: {
+                                view: {
+                                    view: 'oroui/js/app/views/element-value-copy-to-clipboard-view',
+                                    elementSelector: '#' ~ client_secret_id
+                                }
+                            }
+                        }) -}}
+                    </div>
+                </div>
+            </div>
+        </div>
+{% endblock content_data %}
