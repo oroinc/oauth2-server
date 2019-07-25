@@ -55,6 +55,10 @@ class AddClientsToViewPageListener
      */
     public function addOAuth2Clients(BeforeViewRenderEvent $event): void
     {
+        if (!$this->clientManager->isViewGranted()) {
+            return;
+        }
+
         $entity = $event->getEntity();
         $entityClass = $this->getEntityClassIfItCanOwnClient($entity);
         if (!$entityClass) {

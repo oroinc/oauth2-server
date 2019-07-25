@@ -5,3 +5,5 @@ oro:
                 unique.message: The application with the given name already exists.
             grants:
                 count.message: You must select a grant.
+            owner:
+                not_null.message: This value should not be blank.

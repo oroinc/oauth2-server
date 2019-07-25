@@ -53,7 +53,15 @@ class UniqueClientNameValidator extends ConstraintValidator
         $ownerEntityClass = $value->getOwnerEntityClass();
         $ownerEntityId = $value->getOwnerEntityId();
         $clientEntityId = $value->getId();
-        if ($this->isClientExist($organization, $name, $ownerEntityClass, $ownerEntityId, $clientEntityId)) {
+        $isFrontend = $value->isFrontend();
+        if ($this->isClientExist(
+            $organization,
+            $name,
+            $isFrontend,
+            $ownerEntityClass,
+            $ownerEntityId,
+            $clientEntityId
+        )) {
             $this->context->buildViolation($constraint->message, ['{{ name }}' => $name])
                 ->atPath('name')
                 ->addViolation();
@@ -63,6 +71,7 @@ class UniqueClientNameValidator extends ConstraintValidator
     /**
      * @param Organization $organization
      * @param string       $name
+     * @param bool         $isFrontend
      * @param string|null  $ownerEntityClass
      * @param int|null     $ownerEntityId
      * @param int|null     $id
@@ -72,6 +81,7 @@ class UniqueClientNameValidator extends ConstraintValidator
     private function isClientExist(
         Organization $organization,
         string $name,
+        bool $isFrontend,
         ?string $ownerEntityClass,
         ?int $ownerEntityId,
         ?int $id
@@ -88,6 +98,10 @@ class UniqueClientNameValidator extends ConstraintValidator
                 ->andWhere('e.ownerEntityClass = :ownerEntityClass AND e.ownerEntityId = :ownerEntityId')
                 ->setParameter('ownerEntityClass', $ownerEntityClass)
                 ->setParameter('ownerEntityId', $ownerEntityId);
+        } else {
+            $qb->andWhere('e.ownerEntityClass is null AND e.ownerEntityId is null')
+                ->andWhere('e.frontend = :frontend')
+                ->setParameter('frontend', $isFrontend);
         }
         if (null !== $id) {
             $qb->andWhere('e.id <> :id')->setParameter('id', $id);

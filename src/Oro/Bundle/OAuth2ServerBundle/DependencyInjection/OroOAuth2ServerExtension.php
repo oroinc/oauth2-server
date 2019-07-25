@@ -166,7 +166,8 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
                 'refresh_token',
                 $this->getRefreshTokenGrant(),
                 $accessTokenLifetime,
-                $refreshTokenLifetime
+                $refreshTokenLifetime,
+                false
             );
         }
 
@@ -201,6 +202,7 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
      * @param Definition       $grantType
      * @param string           $accessTokenLifetime
      * @param string|null      $refreshTokenLifetime
+     * @param bool             $addToVisibleList
      */
     private function enableGrantType(
         ContainerBuilder $container,
@@ -208,7 +210,8 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
         string $grantTypeName,
         Definition $grantType,
         string $accessTokenLifetime,
-        string $refreshTokenLifetime = null
+        string $refreshTokenLifetime = null,
+        $addToVisibleList = true
     ): void {
         if ($refreshTokenLifetime) {
             $grantType->addMethodCall('setRefreshTokenTTL', [
@@ -221,10 +224,12 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
             new Definition(\DateInterval::class, [$accessTokenLifetime])
         ]);
 
-        $container->setParameter(
-            self::SUPPORTED_GRANT_TYPES_PARAM,
-            array_merge($container->getParameter(self::SUPPORTED_GRANT_TYPES_PARAM), [$grantTypeName])
-        );
+        if ($addToVisibleList) {
+            $container->setParameter(
+                self::SUPPORTED_GRANT_TYPES_PARAM,
+                array_merge($container->getParameter(self::SUPPORTED_GRANT_TYPES_PARAM), [$grantTypeName])
+            );
+        }
     }
 
     /**

@@ -16,7 +16,7 @@
                 'widget': {
                     'type': 'dialog',
                     'multiple': false,
-                    'reload-grid-name': 'oauth-client-grid',
+                    'reload-grid-name': 'oauth-client-with-owner-grid',
                     'options': {
                         'alias': 'oauth-client-dialog',
                         'dialogOptions': {
@@ -32,7 +32,7 @@
     {% endif %}
 
     {{ dataGrid.renderGrid(
-        'oauth-client-grid',
+        'oauth-client-with-owner-grid',
         { ownerEntityClass: entityClass, ownerEntityId: entityId, '_grid_view': {'_disabled': true} },
         { cssClass: 'inner-grid' }
     ) }}

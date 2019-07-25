@@ -225,6 +225,7 @@ class ClientTypeTest extends TypeTestCase
     public function testSubmitForExistingClient()
     {
         $client = new Client();
+        $client->setGrants(['grant1']);
         $idProp = (new \ReflectionClass($client))->getProperty('id');
         $idProp->setAccessible(true);
         $idProp->setValue($client, 1);
@@ -250,7 +251,7 @@ class ClientTypeTest extends TypeTestCase
 
         self::assertEquals('test name', $client->getName());
         self::assertTrue($client->isActive());
-        self::assertEquals(['grant2'], $client->getGrants());
+        self::assertEquals(['grant1'], $client->getGrants());
     }
 
     /**

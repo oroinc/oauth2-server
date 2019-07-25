@@ -1,0 +1,28 @@
+acls:
+    oro_oauth2_view:
+        type: entity
+        permission: VIEW
+        class: OroOAuth2ServerBundle:Client
+        group_name: ""
+        bindings: ~
+
+    oro_oauth2_create:
+        type: entity
+        permission: CREATE
+        class: OroOAuth2ServerBundle:Client
+        group_name: ""
+        bindings: ~
+
+    oro_oauth2_edit:
+        type: entity
+        permission: EDIT
+        class: OroOAuth2ServerBundle:Client
+        group_name: ""
+        bindings: ~
+
+    oro_oauth2_delete:
+        type: entity
+        permission: DELETE
+        class: OroOAuth2ServerBundle:Client
+        group_name: ""
+        bindings: ~

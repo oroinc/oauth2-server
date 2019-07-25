@@ -1,0 +1,28 @@
+{% extends 'OroUIBundle:actions:update.html.twig' %}
+
+{% block content_data %}
+    {% if not form.vars.valid and form.vars.errors|length %}
+        <div class="alert alert-error" role="alert">
+            <div class="message">
+                {{ form_errors(form) }}
+            </div>
+        </div>
+    {% endif %}
+    <fieldset class="form form-horizontal">
+        {{ form_row(form.identifier) }}
+        {{ form_row(form.name) }}
+        {{ form_row(form.active) }}
+        {% if form.grants is defined %}
+            {% if 'hidden' in form.grants.vars.block_prefixes|keys %}
+                <div data-validation-ignore="true">{{ form_row(form.grants) }}</div>
+            {% else %}
+                {{ form_row(form.grants) }}
+            {% endif %}
+        {% endif %}
+        {{ form_rest(form) }}
+        <div class="widget-actions form-actions">
+            <button class="btn" type="reset">{{ 'Cancel'|trans }}</button>
+            <button class="btn btn-primary" type="submit">{{ 'Save'|trans }}</button>
+        </div>
+    </fieldset>
+{% endblock content_data %}

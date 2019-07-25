@@ -7,3 +7,4 @@ Oro\Bundle\OAuth2ServerBundle\Entity\Client:
             - setSecret: [test_secret, test_salt]
             - setOwnerEntity: ['Oro\\Bundle\\UserBundle\\Entity\\User', '<(@admin->getId())>']
         organization: '@organization'
+

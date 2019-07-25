@@ -2,6 +2,7 @@ oro:
     oauth2server:
         client:
             entity_label: OAuth Application
+            entity_storefront_label: Storefront OAuth Application
             entity_plural_label: OAuth Applications
             id:
                 label: ID
@@ -12,6 +13,9 @@ oro:
             active:
                 label: Active
                 description: Whether the application is active or not.
+                statuses:
+                    active: Active
+                    inactive: Inactive
             grants:
                 label: Grants
                 description: The grant types supported by the application. For details see <a href="https://oauth.net/2/grant-types/" target="_blank" class="no-hash">OAuth 2.0 Grant Types</a>.
@@ -50,6 +54,7 @@ oro:
                 create_title: Create OAuth Application
                 edit_title: Edit OAuth Application
             created_message: OAuth application has been created.
+            updated_message: OAuth application has been updated.
             created_warning_message: Please copy <strong>Client Secret</strong> and save it somewhere safe. For security reasons, we cannot show it to you again.
             datagrid:
                 entity_hint: Applications
@@ -62,3 +67,6 @@ oro:
             client_credentials: Client Credentials
             refresh_token: Refresh Token
         no_encryption_keys: OAuth authorization is not available as encryption keys configuration was not complete. Please contact your administrator.
+        menu:
+            backoffice_oauth_application.label: OAuth Applications
+            frontend_oauth_application.label: Storefront OAuth Applications

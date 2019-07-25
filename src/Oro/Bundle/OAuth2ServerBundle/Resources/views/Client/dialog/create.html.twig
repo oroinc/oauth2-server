@@ -1,0 +1,134 @@
+{% extends 'OroUIBundle:actions:update.html.twig' %}
+{% import 'OroUIBundle::macros.html.twig' as UI %}
+
+{% block content_data %}
+    <script type="text/javascript">
+        require(['jquery'], function($){
+            $(function() {
+                var clientGrantsChoice = '.client-grants input:radio';
+                var clientOwnerSelect = '#client-owner';
+
+                $(document).ready(function() {
+                    if ($(clientGrantsChoice).prop('checked') && $(clientGrantsChoice).val() === 'client_credentials') {
+                        $(clientOwnerSelect).removeClass('hide');
+                    } else {
+                        $(clientOwnerSelect).addClass('hide');
+                    }
+                });
+
+                $(document).on('change', clientGrantsChoice, function() {
+                    if ($(this).prop('checked') && $(this).val() === 'client_credentials') {
+                        $(clientOwnerSelect).removeClass('hide');
+                    } else {
+                        $(clientOwnerSelect).addClass('hide');
+                    }
+                });
+            });
+        });
+    </script>
+
+    {% if not form.vars.valid and form.vars.errors|length %}
+        <div class="alert alert-error" role="alert">
+            <div class="message">
+                {{ form_errors(form) }}
+            </div>
+        </div>
+    {% endif %}
+    <fieldset class="form form-horizontal">
+        {% if form.organization is defined %}
+            {{ form_row(form.organization) }}
+        {% endif %}
+        {{ form_row(form.name) }}
+        {{ form_row(form.active) }}
+        {% if form.grants is defined %}
+            {% if 'hidden' in form.grants.vars.block_prefixes|keys %}
+                <div data-validation-ignore="true">
+                    <div class="client-grants">
+                        {{ form_row(form.grants) }}
+                    </div>
+                </div>
+            {% else %}
+                <div class="client-grants">
+                    {{ form_row(form.grants) }}
+                </div>
+            {% endif %}
+        {% endif %}
+        {% if form.owner is defined %}
+            <div id="client-owner" class="hide">
+                {{ form_row(form.owner) }}
+            </div>
+        {% endif %}
+        {{ form_rest(form) }}
+        <div class="widget-actions form-actions">
+            <button class="btn" type="reset">{{ 'Cancel'|trans }}</button>
+            <button class="btn btn-primary" type="submit">{{ 'Save'|trans }}</button>
+        </div>
+    </fieldset>
+{% endblock content_data %}
+
+{% block widget_context %}
+    {% import 'OroUIBundle::macros.html.twig' as UI %}
+
+    <div class="widget-content">
+        <div class="row-fluid form-horizontal">
+            <div class="responsive-block">
+                {{ 'oro.oauth2server.client.created_message'|trans }}
+            </div>
+        </div>
+        <div class="row-fluid form-horizontal">
+            <div class="responsive-block alert-info">
+                {{ 'oro.oauth2server.client.created_warning_message'|trans|raw }}
+            </div>
+        </div>
+        <div class="row-fluid form-horizontal">
+            <div class="responsive-block">
+                <div>
+                    <strong>{{ 'oro.oauth2server.client.identifier.label'|trans }}:</strong>
+                    {% set client_id = 'client-id-'|uniqid %}
+                    <span class="text-nowrap" id="{{ client_id }}">{{ entity.identifier }}</span>
+                    {{- UI.clientLink({
+                        aCss: 'btn btn-icon',
+                        iCss: 'fa-copy',
+                        title: 'oro.ui.button.copy_to_clipboard.label'|trans,
+                        labelInIcon: false,
+                        pageComponent: {
+                            view: {
+                                view: 'oroui/js/app/views/element-value-copy-to-clipboard-view',
+                                elementSelector: '#' ~ client_id
+                            }
+                        }
+                    }) -}}
+                </div>
+                <div>
+                    <strong>{{ 'oro.oauth2server.client.secret.label'|trans }}:</strong>
+                    {% set client_secret_id = 'client-secret-'|uniqid %}
+                    <span class="text-nowrap" id="{{ client_secret_id }}">{{ entity.plainSecret }}</span>
+                    {{- UI.clientLink({
+                        aCss: 'btn btn-icon',
+                        iCss: 'fa-copy',
+                        title: 'oro.ui.button.copy_to_clipboard.label'|trans,
+                        labelInIcon: false,
+                        pageComponent: {
+                            view: {
+                                view: 'oroui/js/app/views/element-value-copy-to-clipboard-view',
+                                elementSelector: '#' ~ client_secret_id
+                            }
+                        }
+                    }) -}}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="widget-actions">
+        <button class="btn" type="reset">{{ 'Close'|trans }}</button>
+    </div>
+
+    <div {{ UI.renderPageComponentAttributes({
+        module: 'oroui/js/app/components/widget-form-component',
+        options: {
+            _wid: app.request.get('_wid'),
+            data: savedId|default(null),
+            preventRemove: true
+        }
+    }) }}></div>
+{% endblock widget_context %}

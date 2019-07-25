@@ -8,16 +8,10 @@ datagrids:
                     - client.id
                     - client.name
                     - client.identifier
+                    - client.grants
                     - client.active
                 from:
                     - { table: Oro\Bundle\OAuth2ServerBundle\Entity\Client, alias: client }
-                where:
-                    and:
-                        - client.ownerEntityClass = :ownerEntityClass
-                        - client.ownerEntityId = :ownerEntityId
-            bind_parameters:
-                - ownerEntityClass
-                - ownerEntityId
         columns:
             name:
                 label: oro.oauth2server.client.name.label
@@ -42,10 +36,6 @@ datagrids:
                     data_name: client.active
         properties:
             id: ~
-            update_link:
-                type: url
-                route: oro_oauth2_server_client_update
-                params: [ id ]
             activate_link:
                 type: url
                 route: oro_oauth2_server_client_activate
@@ -59,23 +49,12 @@ datagrids:
                 route: oro_oauth2_server_client_delete
                 params: [ id ]
         actions:
-            update:
-                type: dialog
-                label: oro.grid.action.update
-                icon: edit
-                link: update_link
-                widgetOptions:
-                    reload-grid-name: oauth-client-grid
-                    options:
-                        dialogOptions:
-                            title: "@translator->trans(oro.oauth2server.client.dialog.edit_title)"
-                            modal: true
-                            width: 500
             activate:
                 type: ajax
                 label: oro.oauth2server.client.action.activate
                 icon: check
                 link: activate_link
+                acl_resource: oro_oauth2_edit
                 defaultMessages:
                     success: oro.oauth2server.client.activate_success
             deactivate:
@@ -84,6 +63,7 @@ datagrids:
                 icon: close
                 link: deactivate_link
                 confirmation: true
+                acl_resource: oro_oauth2_edit
                 defaultMessages:
                     confirm_title: oro.oauth2server.client.deactivate_confirm_title
                     confirm_content: oro.oauth2server.client.deactivate_confirm_message
@@ -93,6 +73,7 @@ datagrids:
                 label: oro.grid.action.delete
                 link: delete_link
                 icon: trash
+                acl_resource: oro_oauth2_delete
                 defaultMessages:
                     confirm_content: oro.oauth2server.client.delete_confirm_message
                     success: oro.oauth2server.client.delete_success
@@ -100,3 +81,91 @@ datagrids:
         options:
             entity_pagination: false
             entityHint: oro.oauth2server.client.datagrid.entity_hint
+
+    oauth-client-backend-grid:
+        extends: oauth-client-grid
+        source:
+            query:
+                select:
+                    - client.ownerEntityId
+                    - client.ownerEntityClass
+                    - client.frontend
+                where:
+                    and:
+                        - client.frontend = :frontend
+            bind_parameters:
+                - frontend
+        columns:
+            grants:
+                label: oro.oauth2server.client.grants.label
+                inline_editing:
+                    enable: false
+                type: twig
+                frontend_type: html
+                template: OroOAuth2ServerBundle:Client/Datagrid:grants.html.twig
+        properties:
+            view_link:
+                type:   url
+                route:  oro_oauth2_view
+                params: [ id ]
+            update_link:
+                type: url
+                route: oro_oauth2_update
+                params: [ id ]
+        actions:
+            view:
+                type:         navigate
+                label:        oro.grid.action.view
+                link:         view_link
+                icon:         eye
+                rowAction:    true
+            update:
+                type: navigate
+                label: oro.grid.action.update
+                icon: edit
+                link: update_link
+                acl_resource: oro_oauth2_edit
+
+    oauth-client-frontend-grid:
+        extends: oauth-client-backend-grid
+        properties:
+            view_link:
+                type:   url
+                route:  oro_oauth2_storefront_view
+                params: [ id ]
+            update_link:
+                type: url
+                route: oro_oauth2_storefront_update
+                params: [ id ]
+
+    oauth-client-with-owner-grid:
+        extends: oauth-client-grid
+        source:
+            query:
+                where:
+                    and:
+                        - client.ownerEntityId = :ownerEntityId
+                        - client.ownerEntityClass = :ownerEntityClass
+            bind_parameters:
+                - ownerEntityId
+                - ownerEntityClass
+        properties:
+            id: ~
+            update_link:
+                type: url
+                route: oro_oauth2_server_client_update
+                params: [ id ]
+        actions:
+            update:
+                type: dialog
+                label: oro.grid.action.update
+                icon: edit
+                link: update_link
+                acl_resource: oro_oauth2_edit
+                widgetOptions:
+                    reload-grid-name: oauth-client-with-owner-grid
+                    options:
+                        dialogOptions:
+                            title: "@translator->trans(oro.oauth2server.client.dialog.edit_title)"
+                            modal: true
+                            width: 500
