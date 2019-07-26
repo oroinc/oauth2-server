@@ -177,6 +177,7 @@ services:
 
     oro_oauth2_server.league.authorization_server:
         class: League\OAuth2\Server\AuthorizationServer
+        public: true
         arguments:
             - '@oro_oauth2_server.league.repository.client_repository'
             - '@oro_oauth2_server.league.repository.access_token_repository'
