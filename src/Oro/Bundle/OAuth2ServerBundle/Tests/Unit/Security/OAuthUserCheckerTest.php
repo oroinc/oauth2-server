@@ -21,6 +21,7 @@ class OAuthUserCheckerTest extends \PHPUnit\Framework\TestCase
         $translator = $this->createMock(TranslatorInterface::class);
         $translator->expects($this->any())
             ->method('trans')
+            ->with(self::anything(), self::anything(), 'security')
             ->willReturnCallback(
                 function ($string) {
                     return '__' . $string . '_translated_';
