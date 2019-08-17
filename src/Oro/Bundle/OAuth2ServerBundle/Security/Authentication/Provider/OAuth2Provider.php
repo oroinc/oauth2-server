@@ -88,7 +88,7 @@ class OAuth2Provider implements AuthenticationProviderInterface
         $user = $this->getUser($client, $request);
         $this->userChecker->checkPreAuth($user);
         $this->userChecker->checkPostAuth($user);
-        if (!$user->getOrganizations()->contains($organization)) {
+        if (!$user->isBelongToOrganization($organization)) {
             throw new AuthenticationException('The user is not set to given OAuth client organization.');
         }
 

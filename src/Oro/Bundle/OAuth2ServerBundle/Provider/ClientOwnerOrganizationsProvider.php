@@ -5,7 +5,7 @@ namespace Oro\Bundle\OAuth2ServerBundle\Provider;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Oro\Bundle\SecurityBundle\Authentication\TokenAccessorInterface;
-use Oro\Bundle\UserBundle\Entity\OrganizationAwareUserInterface;
+use Oro\Bundle\UserBundle\Entity\AbstractUser;
 
 /**
  * A helper class that can be used to get organizations to which OAuth 2.0 client owner belongs to.
@@ -60,7 +60,7 @@ class ClientOwnerOrganizationsProvider
         }
 
         $owner = $this->doctrine->getManagerForClass($ownerEntityClass)->find($ownerEntityClass, $ownerEntityId);
-        if ($owner instanceof OrganizationAwareUserInterface) {
+        if ($owner instanceof AbstractUser) {
             return $owner->getOrganizations(true)->toArray();
         }
 

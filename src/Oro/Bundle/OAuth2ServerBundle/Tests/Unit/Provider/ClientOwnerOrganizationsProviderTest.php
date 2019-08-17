@@ -9,7 +9,7 @@ use Oro\Bundle\OAuth2ServerBundle\Provider\ClientOwnerOrganizationsProvider;
 use Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Fixtures\Entity\ExtendedOrganization;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Oro\Bundle\SecurityBundle\Authentication\TokenAccessorInterface;
-use Oro\Bundle\UserBundle\Entity\OrganizationAwareUserInterface;
+use Oro\Bundle\UserBundle\Entity\AbstractUser;
 
 class ClientOwnerOrganizationsProviderTest extends \PHPUnit\Framework\TestCase
 {
@@ -120,7 +120,7 @@ class ClientOwnerOrganizationsProviderTest extends \PHPUnit\Framework\TestCase
     {
         $ownerEntityClass = 'Test\OwnerEntity';
         $ownerEntityId = 123;
-        $owner = $this->createMock(OrganizationAwareUserInterface::class);
+        $owner = $this->createMock(AbstractUser::class);
         $organization1 = new ExtendedOrganization();
         $organization2 = new ExtendedOrganization();
 
