@@ -46,7 +46,7 @@ class OAuth2TokenTest extends \PHPUnit\Framework\TestCase
 
         self::assertTrue($token->isAuthenticated());
         self::assertSame($user, $token->getUser());
-        self::assertSame($organization, $token->getOrganizationContext());
+        self::assertSame($organization, $token->getOrganization());
         self::assertSame([$role], $token->getRoles());
     }
 

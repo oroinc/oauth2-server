@@ -3,8 +3,8 @@
 namespace Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token;
 
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
-use Oro\Bundle\SecurityBundle\Authentication\Token\OrganizationContextTokenInterface;
-use Oro\Bundle\SecurityBundle\Authentication\Token\OrganizationContextTokenSerializerTrait;
+use Oro\Bundle\SecurityBundle\Authentication\Token\OrganizationAwareTokenInterface;
+use Oro\Bundle\SecurityBundle\Authentication\Token\OrganizationAwareTokenTrait;
 use Symfony\Component\Security\Core\Authentication\Token\AbstractToken;
 use Symfony\Component\Security\Core\Role\Role;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -12,12 +12,12 @@ use Symfony\Component\Security\Core\User\UserInterface;
 /**
  * The token that represents OAuth 2.0 authentication data.
  */
-class OAuth2Token extends AbstractToken implements OrganizationContextTokenInterface
+class OAuth2Token extends AbstractToken implements OrganizationAwareTokenInterface
 {
+    use OrganizationAwareTokenTrait;
+
     public const REQUEST_ATTRIBUTE      = 'request';
     public const PROVIDER_KEY_ATTRIBUTE = 'provider_key';
-
-    use OrganizationContextTokenSerializerTrait;
 
     /**
      * @param UserInterface $user
@@ -27,13 +27,13 @@ class OAuth2Token extends AbstractToken implements OrganizationContextTokenInter
     {
         $this->setAuthenticated(false);
 
-        if ($user && $organization) {
+        if (null !== $user && null !== $organization) {
             $roles = $user->getRoles();
 
             parent::__construct($roles);
 
             $this->setUser($user);
-            $this->setOrganizationContext($organization);
+            $this->setOrganization($organization);
 
             $this->setAuthenticated(\count($roles) > 0);
         }
@@ -44,11 +44,11 @@ class OAuth2Token extends AbstractToken implements OrganizationContextTokenInter
      */
     public function getRoles()
     {
-        if (!$this->hasIsGlobalMethod($this->organizationContext)) {
+        if (!$this->hasIsGlobalMethod($this->organization)) {
             return parent::getRoles();
         }
 
-        return $this->filterRolesInOrganizationContext();
+        return $this->filterRolesByOrganization($this->organization, parent::getRoles());
     }
 
     /**
@@ -70,13 +70,16 @@ class OAuth2Token extends AbstractToken implements OrganizationContextTokenInter
     }
 
     /**
+     * @param Organization $organization
+     * @param Role[]       $roles
+     *
      * @return Role[]
      */
-    private function filterRolesInOrganizationContext(): array
+    private function filterRolesByOrganization(Organization $organization, array $roles): array
     {
-        $organizationId = $this->organizationContext->getId();
-        $roles = parent::getRoles();
+        $organizationId = $organization->getId();
         foreach ($roles as $key => $role) {
+            /** @var Organization $roleOrganization */
             $roleOrganization = $role->getOrganization();
             if ($roleOrganization && $roleOrganization->getId() !== $organizationId) {
                 unset($roles[$key]);
