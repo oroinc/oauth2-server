@@ -4,3 +4,6 @@ trusted_data:
         Oro\Bundle\OAuth2ServerBundle\Entity\Cleaner\ClientCleaner:
             cleanUp:
                 ownerEntityClass: true
+        Oro\Bundle\OAuth2ServerBundle\Datagrid\EventListener\OwnerClientDatagridListener:
+            getOwners:
+                ownerClass: true
