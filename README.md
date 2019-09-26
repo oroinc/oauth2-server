@@ -207,6 +207,7 @@ Request Body
 {
     "grant_type": "refresh_token",
     "client_id": "your client identifier",
+    "client_secret": "your client secret",
     "refresh_token": "your refresh token was returned with an access token"
 }
 ```
