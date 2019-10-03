@@ -1,6 +1,7 @@
 @regression
 @ticket-BAP-16477
 @ticket-BAP-18430
+@ticket-BAP-19159
 Feature: Manage OAuth Applications
   In order to use OAuth authorization
   As an Administrator
@@ -94,3 +95,14 @@ Feature: Manage OAuth Applications
     And I should see following "OAuth Applications Grid" grid:
       | Application Name | Active |
       | Second App       | Yes    |
+
+  Scenario: User should be able to add new application after validation message
+    When I click "Add OAuth Application"
+    And I type "Second App" in "Application Name"
+    And click "Save"
+    Then I should see validation errors:
+      | Application Name | The application with the given name already exists. |
+    When I type "Another One App" in "Application Name"
+    And click "Save"
+    Then I should see "Saved successfully" flash message
+    And should see "OAuth application has been created."

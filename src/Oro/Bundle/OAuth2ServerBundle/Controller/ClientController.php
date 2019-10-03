@@ -84,7 +84,7 @@ class ClientController extends AbstractController
         }
 
         return [
-            'isFrontend' => $this->supportedClientTypes[$type]['isFrontend'],
+            'isFrontend'          => $this->supportedClientTypes[$type]['isFrontend'],
             'encryptionKeysExist' => $this->isEncryptionKeysExist()
         ];
     }
@@ -242,12 +242,12 @@ class ClientController extends AbstractController
         $entity = new Client();
         $entityRoutingHelper = $this->get(EntityRoutingHelper::class);
         $ownerEntityClass = $entityRoutingHelper->getEntityClassName($request);
-        if ($ownerEntityClass) {
-            $ownerEntityId = (int)$entityRoutingHelper->getEntityId($request);
+        $ownerEntityId = (int)$entityRoutingHelper->getEntityId($request);
+        if ($ownerEntityClass && $ownerEntityId) {
             $entity->setOwnerEntity($ownerEntityClass, $ownerEntityId);
         }
 
-        return $this->update($request, $entity);
+        return $this->update($request, $entity, false, ['client_credentials'], null, $ownerEntityClass, $ownerEntityId);
     }
 
     /**
@@ -345,6 +345,8 @@ class ClientController extends AbstractController
      * @param bool    $isSystemOAuthApplication
      * @param array   $grantTypes
      * @param string  $message
+     * @param string  $ownerEntityClass
+     * @param int     $ownerEntityId
      *
      * @return array
      */
@@ -353,7 +355,9 @@ class ClientController extends AbstractController
         Client $entity,
         $isSystemOAuthApplication = false,
         $grantTypes = ['client_credentials'],
-        $message = null
+        $message = null,
+        $ownerEntityClass = null,
+        $ownerEntityId = null
     ) {
         return $this->get(UpdateHandlerFacade::class)->update(
             $entity,
@@ -361,7 +365,7 @@ class ClientController extends AbstractController
             $message,
             $request,
             null,
-            $this->getFormTemplateDataProvider($isSystemOAuthApplication)
+            $this->getFormTemplateDataProvider($isSystemOAuthApplication, $ownerEntityClass, $ownerEntityId)
         );
     }
 
@@ -408,22 +412,41 @@ class ClientController extends AbstractController
     }
 
     /**
+     * @param bool   $isSystemApp
+     * @param string $ownerClass
+     * @param int    $ownerId
+     *
      * @return callable
      */
-    private function getFormTemplateDataProvider($isSystemOAuthApplication = false): callable
-    {
-        return function (Client $entity, FormInterface $form) use ($isSystemOAuthApplication) {
-            if ($isSystemOAuthApplication) {
-                $formAction = null === $entity->getId()
-                    ? $this->generateUrl($entity->isFrontend() ? 'oro_oauth2_storefront_create' : 'oro_oauth2_create')
-                    : $this->generateUrl(
+    private function getFormTemplateDataProvider(
+        bool $isSystemApp = false,
+        string $ownerClass = null,
+        int $ownerId = null
+    ): callable {
+        return function (Client $entity, FormInterface $form) use ($isSystemApp, $ownerClass, $ownerId) {
+            if ($isSystemApp) {
+                if (null === $entity->getId()) {
+                    $formAction = $this->generateUrl(
+                        $entity->isFrontend() ? 'oro_oauth2_storefront_create' : 'oro_oauth2_create'
+                    );
+                } else {
+                    $formAction = $this->generateUrl(
                         $entity->isFrontend() ? 'oro_oauth2_storefront_update' : 'oro_oauth2_update',
                         ['id' => $entity->getId()]
                     );
+                }
             } else {
+                $parameters = [];
+                if (null !== $ownerClass && null !== $ownerId) {
+                    $parameters['entityClass'] = $ownerClass;
+                    $parameters['entityId'] = $ownerId;
+                }
                 $formAction = null === $entity->getId()
-                    ? $this->generateUrl('oro_oauth2_server_client_create')
-                    : $this->generateUrl('oro_oauth2_server_client_update', ['id' => $entity->getId()]);
+                    ? $this->generateUrl('oro_oauth2_server_client_create', $parameters)
+                    : $this->generateUrl(
+                        'oro_oauth2_server_client_update',
+                        array_merge($parameters, ['id' => $entity->getId()])
+                    );
             }
 
             return [
