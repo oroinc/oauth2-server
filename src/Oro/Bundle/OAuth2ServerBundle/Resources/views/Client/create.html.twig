@@ -76,9 +76,8 @@
         'dataBlocks': dataBlocks,
     } %}
     {{ parent() }}
-
     <script type="text/javascript">
-        require(['jquery'], function($){
+        loadModules(['jquery'], function($){
             $(function() {
                 var clientGrantsChoice = '.client-grants input:radio';
                 var clientOwnerSelect = '#client-owner';
