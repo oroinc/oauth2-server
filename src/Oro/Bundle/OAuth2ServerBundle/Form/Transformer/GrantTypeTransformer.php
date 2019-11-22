@@ -25,7 +25,7 @@ class GrantTypeTransformer implements DataTransformerInterface
 
         if (!is_array($value)) {
             throw new TransformationFailedException(sprintf(
-                'Expected argument of type "array" or "string", "%s" given',
+                'Expected argument of type "array" or "string", "%s" given.',
                 is_object($value) ? get_class($value) : gettype($value)
             ));
         }
@@ -52,7 +52,7 @@ class GrantTypeTransformer implements DataTransformerInterface
 
         if (!is_string($value)) {
             throw new TransformationFailedException(sprintf(
-                'Expected argument of type "string" or "array", "%s" given',
+                'Expected argument of type "string" or "array", "%s" given.',
                 is_object($value) ? get_class($value) : gettype($value)
             ));
         }

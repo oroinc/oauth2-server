@@ -108,30 +108,6 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
             ->willReturn($encodedSecret);
     }
 
-    /**
-     * @param array  $grants
-     * @param object $subject
-     */
-    private function expectIsGranted(array $grants, $subject)
-    {
-        if (!$grants['MANAGE_API_KEY']) {
-            $this->authorizationChecker->expects(self::once())
-                ->method('isGranted')
-                ->with('MANAGE_API_KEY', $subject)
-                ->willReturn(false);
-        } elseif (!$grants['EDIT']) {
-            $this->authorizationChecker->expects(self::exactly(2))
-                ->method('isGranted')
-                ->withConsecutive(['MANAGE_API_KEY', $subject], ['EDIT', $subject])
-                ->willReturnOnConsecutiveCalls(true, false);
-        } else {
-            $this->authorizationChecker->expects(self::exactly(2))
-                ->method('isGranted')
-                ->withConsecutive(['MANAGE_API_KEY', $subject], ['EDIT', $subject])
-                ->willReturnOnConsecutiveCalls(true, true);
-        }
-    }
-
     public function testIsViewGrantedWithoutObject()
     {
         $isGranted = true;

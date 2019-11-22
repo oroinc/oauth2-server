@@ -49,10 +49,9 @@ class OAuth2ListenerTest extends \PHPUnit\Framework\TestCase
             HttpKernelInterface::MASTER_REQUEST
         );
 
-        $this->httpMessageFactory->expects($this->once())
+        $this->httpMessageFactory->expects($this->never())
             ->method('createRequest')
-            ->with($request)
-            ->willReturn(new ServerRequest());
+            ->with($request);
         $this->authenticationManager->expects($this->never())
             ->method('authenticate');
         $this->tokenStorage->expects($this->never())
@@ -64,19 +63,18 @@ class OAuth2ListenerTest extends \PHPUnit\Framework\TestCase
     public function testHandleWithRequestWithNotSupportedAuthorizationHeader()
     {
         $headers = ['Authorization' => 'Basic YWxhZGRpbjpvcGVuc2VzYW1l'];
-        $serverRequest = new ServerRequest([], [], 'http://test.com/test_api', 'POST', 'php://input', $headers);
 
-        $request = new Request();
+        $request = Request::create('http://test.com/test_api', 'POST');
+        $request->headers->add($headers);
         $event = new GetResponseEvent(
             $this->createMock(HttpKernelInterface::class),
             $request,
             HttpKernelInterface::MASTER_REQUEST
         );
 
-        $this->httpMessageFactory->expects($this->once())
+        $this->httpMessageFactory->expects($this->never())
             ->method('createRequest')
-            ->with($request)
-            ->willReturn($serverRequest);
+            ->with($request);
         $this->authenticationManager->expects($this->never())
             ->method('authenticate');
         $this->tokenStorage->expects($this->never())
@@ -85,12 +83,16 @@ class OAuth2ListenerTest extends \PHPUnit\Framework\TestCase
         $this->listener->handle($event);
     }
 
-    public function testHandleWithCorrectAuthorizationHeader()
+    /**
+     * @dataProvider bearerAuthorizationHeaderDataProvider
+     */
+    public function testHandleWithCorrectAuthorizationHeader(string $bearerAuthorizationHeader)
     {
-        $headers = ['Authorization' => 'Bearer YWxhZGRpbjpvcGVuc2VzYW1l'];
+        $headers = ['Authorization' => $bearerAuthorizationHeader];
         $serverRequest = new ServerRequest([], [], 'http://test.com/test_api', 'POST', 'php://input', $headers);
 
-        $request = new Request();
+        $request = Request::create($serverRequest->getUri(), $serverRequest->getMethod());
+        $request->headers->add($headers);
         $event = new GetResponseEvent(
             $this->createMock(HttpKernelInterface::class),
             $request,
@@ -114,5 +116,16 @@ class OAuth2ListenerTest extends \PHPUnit\Framework\TestCase
             ->with($expectedToken);
 
         $this->listener->handle($event);
+    }
+
+    /**
+     * @return array
+     */
+    public function bearerAuthorizationHeaderDataProvider()
+    {
+        return [
+            ['Bearer YWxhZGRpbjpvcGVuc2VzYW1l'],
+            [' Bearer YWxhZGRpbjpvcGVuc2VzYW1l']
+        ];
     }
 }

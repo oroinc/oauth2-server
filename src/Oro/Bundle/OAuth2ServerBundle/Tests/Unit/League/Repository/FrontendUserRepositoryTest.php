@@ -8,11 +8,14 @@ use Oro\Bundle\OAuth2ServerBundle\League\Repository\FrontendUserRepository;
 use Oro\Bundle\OAuth2ServerBundle\Security\OAuthUserChecker;
 use Oro\Bundle\UserBundle\Entity\UserInterface;
 use Oro\Bundle\UserBundle\Security\UserLoaderInterface;
+use Oro\Component\Testing\Unit\EntityTrait;
 use Symfony\Component\Security\Core\Encoder\EncoderFactoryInterface;
 use Symfony\Component\Security\Core\Encoder\PasswordEncoderInterface;
 
 class FrontendUserRepositoryTest extends \PHPUnit\Framework\TestCase
 {
+    use EntityTrait;
+
     /** @var UserLoaderInterface|\PHPUnit\Framework\MockObject\MockObject */
     private $userLoader;
 
@@ -25,21 +28,30 @@ class FrontendUserRepositoryTest extends \PHPUnit\Framework\TestCase
     /** @var OAuthUserChecker|\PHPUnit\Framework\MockObject\MockObject */
     private $userChecker;
 
+    /** @var PHPUnit\Framework\MockObject\MockObject */
+    private $customerVisitorManager;
+
     /** @var FrontendUserRepository */
     private $repository;
 
     protected function setUp()
     {
+        if (!class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {
+            self::markTestSkipped('Could be tested only with Customer bundle');
+        }
+
         $this->userLoader = $this->createMock(UserLoaderInterface::class);
         $this->frontendUserLoader = $this->createMock(UserLoaderInterface::class);
         $this->encoderFactory = $this->createMock(EncoderFactoryInterface::class);
         $this->userChecker = $this->createMock(OAuthUserChecker::class);
+        $this->customerVisitorManager = $this->createMock('Oro\Bundle\CustomerBundle\Entity\CustomerVisitorManager');
 
         $this->repository = new FrontendUserRepository(
             $this->userLoader,
             $this->encoderFactory,
             $this->userChecker,
-            $this->frontendUserLoader
+            $this->frontendUserLoader,
+            $this->customerVisitorManager
         );
     }
 
@@ -187,5 +199,43 @@ class FrontendUserRepositoryTest extends \PHPUnit\Framework\TestCase
 
         self::assertInstanceOf(UserEntity::class, $userEntity);
         self::assertEquals($userUsername, $userEntity->getIdentifier());
+    }
+
+    public function testCustomerVisitor()
+    {
+        $client = new ClientEntity();
+        $client->setFrontend(true);
+
+        $visitor = $this->getEntity(
+            'Oro\Bundle\CustomerBundle\Entity\CustomerVisitor',
+            ['id' => 234, 'sessionId' => 'testSession']
+        );
+
+        $this->customerVisitorManager->expects(self::once())
+            ->method('findOrCreate')
+            ->willReturn($visitor);
+        $this->frontendUserLoader->expects(self::never())
+            ->method('loadUser');
+        $this->userLoader->expects(self::never())
+            ->method('loadUser');
+
+        $expectedEntity = new UserEntity();
+        $expectedEntity->setIdentifier('visitor:234:testSession');
+
+        $this->assertEquals(
+            $expectedEntity,
+            $this->repository->getUserEntityByUserCredentials('guest', 'guest', 'password', $client)
+        );
+    }
+
+    /**
+     * @expectedException \League\OAuth2\Server\Exception\OAuthServerException
+     */
+    public function testCustomerVisitorOnNotPasswordGrantType()
+    {
+        $client = new ClientEntity();
+        $client->setFrontend(true);
+
+        $this->repository->getUserEntityByUserCredentials('guest', 'guest', 'test', $client);
     }
 }

@@ -313,7 +313,7 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
         );
     }
 
-    public function testGetBackenddRefreshedTokenByFronendRefreshTokenShouldReturnUnauthorizedStatusCode()
+    public function testGetBackendRefreshedTokenByFronendRefreshTokenShouldReturnUnauthorizedStatusCode()
     {
         $accessToken = $this->sendFrontendPasswordAccessTokenRequest(
             'grzegorz.brzeczyszczykiewicz@example.com',

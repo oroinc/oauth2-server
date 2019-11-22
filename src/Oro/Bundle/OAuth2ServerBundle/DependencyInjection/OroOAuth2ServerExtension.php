@@ -35,6 +35,7 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
     private const USER_REPOSITORY_SERVICE          = 'oro_oauth2_server.league.repository.user_repository';
     private const REFRESH_TOKEN_REPOSITORY_SERVICE = 'oro_oauth2_server.league.repository.refresh_token_repository';
     private const FRONTEND_USER_LOADER_SERVICE     = 'oro_customer.security.user_loader';
+    private const CUSTOMER_VISITOR_MANAGER_SERVICE = 'oro_customer.customer_visitor_manager';
 
     /**
      * {@inheritdoc}
@@ -112,10 +113,12 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
         if (class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {
             $container->getDefinition(self::USER_REPOSITORY_SERVICE)
                 ->setClass(FrontendUserRepository::class)
-                ->addArgument(new Reference(self::FRONTEND_USER_LOADER_SERVICE));
+                ->addArgument(new Reference(self::FRONTEND_USER_LOADER_SERVICE))
+                ->addArgument(new Reference(self::CUSTOMER_VISITOR_MANAGER_SERVICE));
             $container->getDefinition(self::REFRESH_TOKEN_REPOSITORY_SERVICE)
                 ->setClass(FrontendRefreshTokenRepository::class)
-                ->addArgument(new Reference(self::FRONTEND_USER_LOADER_SERVICE));
+                ->addArgument(new Reference(self::FRONTEND_USER_LOADER_SERVICE))
+                ->addArgument(new Reference(self::CUSTOMER_VISITOR_MANAGER_SERVICE));
         }
     }
 
@@ -280,7 +283,12 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
         $securityConfigs = $container->getExtensionConfig('security');
         foreach ($oauthFirewalls as $firewallName) {
             if (!empty($securityConfigs[0]['firewalls'][$firewallName])) {
-                $securityConfigs[0]['firewalls'][$firewallName]['oauth2'] = true;
+                $config = [];
+                if (!empty($securityConfigs[0]['firewalls'][$firewallName]['anonymous_customer_user'])) {
+                    $config ['anonymous_customer_user'] = true;
+                }
+
+                $securityConfigs[0]['firewalls'][$firewallName]['oauth2'] = $config;
             }
         }
         $container->setExtensionConfig('security', $securityConfigs);

@@ -225,3 +225,53 @@ Response Body
 
 If refresh token was expired, the request to the access token with Password grant type should be requested to get new 
 access and refresh tokens.
+
+## OAuth authorization in storefront API
+
+If the system has the customer portal package installed, OAuth authorization for customer users to the storefront
+API resources is enabled automatically.
+
+Storefront applications can be managed from the application back-office under System > Storefront OAuth Applications.
+
+Customer user email address should be used as a username to get access token for `password` grant applications. 
+
+## Customer visitor authorization for storefront API
+
+To be able to get the storefront API data without the customer user, you can authorize as a customer visitor
+if the security firewall for storefront API resources is configured with `anonymous_customer_user`.
+
+To get the access token for customer visitor, send `guest` as login and password:
+
+Request
+
+```
+POST /oauth2-token HTTP/1.1
+Content-Type: application/json
+```
+
+Request Body
+
+``` json
+{
+    "grant_type": "password",
+    "client_id": "your storefront client identifier",
+    "client_secret": "your storefront client secret",
+    "username": "guest",
+    "password": "guest"
+}
+```
+
+Response Body
+
+``` json
+{
+    "token_type": "Bearer",
+    "expires_in": 3600,
+    "access_token": "your access token",
+    "refresh_token" "your refresh token"
+}
+```
+
+A new customer visitor is created after each such request.
+
+To be able to work with the same customer visitor when the access token expires, use the refresh access token request.

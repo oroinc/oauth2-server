@@ -8,7 +8,7 @@ use League\OAuth2\Server\Exception\OAuthServerException;
 use Oro\Bundle\CustomerBundle\Entity\CustomerUser;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\OAuth2Token;
-use Oro\Bundle\UserBundle\Entity\AbstractUser;
+use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Oro\Bundle\UserBundle\Entity\User;
 use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\Security\Core\Authentication\Provider\AuthenticationProviderInterface;
@@ -18,7 +18,7 @@ use Symfony\Component\Security\Core\User\UserCheckerInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 
 /**
- * The authentication provider that does the verification of OAuth 2.0 token.
+ * The authentication provider for requests with OAuth2 authentication headers.
  */
 class OAuth2Provider implements AuthenticationProviderInterface
 {
@@ -85,14 +85,7 @@ class OAuth2Provider implements AuthenticationProviderInterface
             throw new AuthenticationException('The OAuth client organization is not enabled.');
         }
 
-        $user = $this->getUser($client, $request);
-        $this->userChecker->checkPreAuth($user);
-        $this->userChecker->checkPostAuth($user);
-        if (!$user->isBelongToOrganization($organization)) {
-            throw new AuthenticationException('The user is not set to given OAuth client organization.');
-        }
-
-        return new OAuth2Token($user, $organization);
+        return $this->validateUserAndGetToken($this->getUser($client, $request), $organization);
     }
 
     /**
@@ -123,9 +116,9 @@ class OAuth2Provider implements AuthenticationProviderInterface
      * @param Client                 $client
      * @param ServerRequestInterface $request
      *
-     * @return AbstractUser
+     * @return object
      */
-    private function getUser(Client $client, ServerRequestInterface $request): AbstractUser
+    private function getUser(Client $client, ServerRequestInterface $request)
     {
         $ownerClass = $client->getOwnerEntityClass();
         $ownerId = $client->getOwnerEntityId();
@@ -163,5 +156,22 @@ class OAuth2Provider implements AuthenticationProviderInterface
         return
             $token instanceof OAuth2Token
             && $this->providerKey === $token->getAttribute(OAuth2Token::PROVIDER_KEY_ATTRIBUTE);
+    }
+
+    /**
+     * @param object       $user
+     * @param Organization $organization
+     *
+     * @return TokenInterface
+     */
+    protected function validateUserAndGetToken($user, Organization $organization): TokenInterface
+    {
+        $this->userChecker->checkPreAuth($user);
+        $this->userChecker->checkPostAuth($user);
+        if (!$user->isBelongToOrganization($organization)) {
+            throw new AuthenticationException('The user is not set to given OAuth client organization.');
+        }
+
+        return new OAuth2Token($user, $organization);
     }
 }

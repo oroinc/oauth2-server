@@ -1,0 +1,4 @@
+data:
+    type: shoppinglists
+    attributes:
+        name: 'New Shopping List'

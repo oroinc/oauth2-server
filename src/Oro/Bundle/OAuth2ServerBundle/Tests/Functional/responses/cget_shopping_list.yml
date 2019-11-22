@@ -1,0 +1,17 @@
+data:
+    -
+        type: shoppinglists
+        id: new
+        attributes:
+            name: 'New Shopping List'
+            notes: null
+            default: true
+            total: '0'
+            subTotal: '0'
+        relationships:
+            items:
+                data: []
+            customerUser:
+                data: null
+            customer:
+                data: null

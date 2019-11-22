@@ -9,7 +9,7 @@ class OAuthServerTestCase extends RestJsonApiTestCase
 {
     /**
      * {@inheritdoc}
-     * Rewrite method to not add HTTP_X-WSSE header to request.
+     * The method is overridden to not add HTTP_X-WSSE header to the request.
      */
     protected function checkWsseAuthHeader(array &$server)
     {
@@ -50,7 +50,7 @@ class OAuthServerTestCase extends RestJsonApiTestCase
     protected function sendRequest(string $method, string $uri, array $parameters = [], array $server = []): Response
     {
         $this->client->request($method, $uri, $parameters, [], $server);
-        self::assertSessionNotStarted($method, $uri);
+        self::assertSessionNotStarted($method, $uri, $server);
 
         return $this->client->getResponse();
     }

@@ -5,6 +5,7 @@ namespace Oro\Bundle\OAuth2ServerBundle\League\Repository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\EntityManagerInterface;
 use League\OAuth2\Server\Entities\RefreshTokenEntityInterface;
+use League\OAuth2\Server\Exception\OAuthServerException;
 use League\OAuth2\Server\Exception\UniqueTokenIdentifierConstraintViolationException;
 use League\OAuth2\Server\Repositories\RefreshTokenRepositoryInterface;
 use Oro\Bundle\OAuth2ServerBundle\Entity\AccessToken;
@@ -121,17 +122,26 @@ class RefreshTokenRepository implements RefreshTokenRepositoryInterface
      */
     private function findRefreshTokenEntity(EntityManagerInterface $em, string $tokenId): ?RefreshToken
     {
-        $token = $em->getRepository(RefreshToken::class)
-            ->findOneBy(['identifier' => $tokenId]);
+        $token = $em->getRepository(RefreshToken::class)->findOneBy(['identifier' => $tokenId]);
 
         if (null !== $token) {
             $userIdentifier = $token->getAccessToken()->getUserIdentifier();
-            if ($userIdentifier) {
-                $this->userChecker->checkUser($this->getUserLoader($token)->loadUser($userIdentifier));
+            if (null === $userIdentifier) {
+                throw OAuthServerException::invalidCredentials();
             }
+            $this->checkUser($this->getUserLoader($token), $userIdentifier);
         }
 
         return $token;
+    }
+
+    /**
+     * @param UserLoaderInterface $userLoader
+     * @param string              $userIdentifier
+     */
+    protected function checkUser(UserLoaderInterface $userLoader, string $userIdentifier): void
+    {
+        $this->userChecker->checkUser($userLoader->loadUser($userIdentifier));
     }
 
     /**

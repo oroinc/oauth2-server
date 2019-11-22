@@ -49,20 +49,22 @@ class OAuth2Listener implements ListenerInterface
      */
     public function handle(GetResponseEvent $event): void
     {
-        $request = $this->httpMessageFactory->createRequest($event->getRequest());
-
-        if (!$request->hasHeader('Authorization')
-            || strpos($request->getHeader('Authorization')[0], 'Bearer') === false
+        $request = $event->getRequest();
+        if (!$request->headers->has('Authorization')
+            || !preg_match('/^(?:\s+)?Bearer\s/', $request->headers->get('Authorization'))
         ) {
             return;
         }
 
         $token = new OAuth2Token();
-        $token->setAttribute(OAuth2Token::REQUEST_ATTRIBUTE, $request);
+        $token->setAttribute(
+            OAuth2Token::REQUEST_ATTRIBUTE,
+            $this->httpMessageFactory->createRequest($request)
+        );
         $token->setAttribute(OAuth2Token::PROVIDER_KEY_ATTRIBUTE, $this->providerKey);
 
-        $authenticatedToken = $this->authenticationManager->authenticate($token);
-
-        $this->tokenStorage->setToken($authenticatedToken);
+        $this->tokenStorage->setToken(
+            $this->authenticationManager->authenticate($token)
+        );
     }
 }
