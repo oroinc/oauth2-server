@@ -3,6 +3,7 @@
 namespace Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token;
 
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
+use Oro\Bundle\SecurityBundle\Authentication\Token\AuthenticatedTokenTrait;
 use Oro\Bundle\SecurityBundle\Authentication\Token\OrganizationAwareTokenInterface;
 use Oro\Bundle\SecurityBundle\Authentication\Token\OrganizationAwareTokenTrait;
 use Symfony\Component\Security\Core\Authentication\Token\AbstractToken;
@@ -14,6 +15,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
  */
 class OAuth2Token extends AbstractToken implements OrganizationAwareTokenInterface
 {
+    use AuthenticatedTokenTrait;
     use OrganizationAwareTokenTrait;
 
     public const REQUEST_ATTRIBUTE      = 'request';
