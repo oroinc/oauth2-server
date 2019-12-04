@@ -13,8 +13,8 @@ class Configuration implements ConfigurationInterface
      */
     public function getConfigTreeBuilder()
     {
-        $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root(OroOAuth2ServerExtension::ALIAS);
+        $treeBuilder = new TreeBuilder(OroOAuth2ServerExtension::ALIAS);
+        $rootNode = $treeBuilder->getRootNode();
 
         $node = $rootNode->children();
         $this->appendAuthorizationServer($node);
