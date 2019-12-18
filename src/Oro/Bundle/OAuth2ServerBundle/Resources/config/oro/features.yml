@@ -1,0 +1,7 @@
+features:
+    web_api:
+        routes:
+            - oro_oauth2_index
+            - oro_oauth2_view
+            - oro_oauth2_create
+            - oro_oauth2_update

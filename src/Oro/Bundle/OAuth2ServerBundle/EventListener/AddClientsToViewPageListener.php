@@ -4,6 +4,7 @@ namespace Oro\Bundle\OAuth2ServerBundle\EventListener;
 
 use Oro\Bundle\EntityBundle\ORM\EntityIdAccessor;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
+use Oro\Bundle\OAuth2ServerBundle\Security\ApiFeatureChecker;
 use Oro\Bundle\OAuth2ServerBundle\Security\EncryptionKeysExistenceChecker;
 use Oro\Bundle\UIBundle\Event\BeforeViewRenderEvent;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -29,25 +30,31 @@ class AddClientsToViewPageListener
     /** @var EncryptionKeysExistenceChecker */
     private $encryptionKeysExistenceChecker;
 
+    /** @var ApiFeatureChecker */
+    private $featureChecker;
+
     /**
      * @param string[]                       $ownerEntityClasses
      * @param TranslatorInterface            $translator
      * @param EntityIdAccessor               $entityIdAccessor
      * @param ClientManager                  $clientManager
      * @param EncryptionKeysExistenceChecker $encryptionKeysExistenceChecker
+     * @param ApiFeatureChecker              $featureChecker
      */
     public function __construct(
         array $ownerEntityClasses,
         TranslatorInterface $translator,
         EntityIdAccessor $entityIdAccessor,
         ClientManager $clientManager,
-        EncryptionKeysExistenceChecker $encryptionKeysExistenceChecker
+        EncryptionKeysExistenceChecker $encryptionKeysExistenceChecker,
+        ApiFeatureChecker $featureChecker
     ) {
         $this->ownerEntityClasses = $ownerEntityClasses;
         $this->translator = $translator;
         $this->entityIdAccessor = $entityIdAccessor;
         $this->clientManager = $clientManager;
         $this->encryptionKeysExistenceChecker = $encryptionKeysExistenceChecker;
+        $this->featureChecker = $featureChecker;
     }
 
     /**
@@ -61,7 +68,7 @@ class AddClientsToViewPageListener
 
         $entity = $event->getEntity();
         $entityClass = $this->getEntityClassIfItCanOwnClient($entity);
-        if (!$entityClass) {
+        if (!$entityClass || !$this->featureChecker->isEnabledByClientOwnerClass($entityClass)) {
             return;
         }
 
@@ -72,7 +79,7 @@ class AddClientsToViewPageListener
                 'encryptionKeysExist' =>
                     $this->encryptionKeysExistenceChecker->isPrivateKeyExist()
                     && $this->encryptionKeysExistenceChecker->isPublicKeyExist(),
-                'creationGranted'     => $this->clientManager->isCreationGranted($entityClass, $entityId),
+                'creationGranted'     => $this->clientManager->isCreationGranted(),
                 'entityClass'         => $entityClass,
                 'entityId'            => $entityId
             ]

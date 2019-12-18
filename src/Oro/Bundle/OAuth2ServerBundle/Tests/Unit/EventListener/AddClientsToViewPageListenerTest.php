@@ -5,6 +5,7 @@ namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\EventListener;
 use Oro\Bundle\EntityBundle\ORM\EntityIdAccessor;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
 use Oro\Bundle\OAuth2ServerBundle\EventListener\AddClientsToViewPageListener;
+use Oro\Bundle\OAuth2ServerBundle\Security\ApiFeatureChecker;
 use Oro\Bundle\OAuth2ServerBundle\Security\EncryptionKeysExistenceChecker;
 use Oro\Bundle\UIBundle\Event\BeforeViewRenderEvent;
 use Oro\Bundle\UserBundle\Entity\User;
@@ -25,6 +26,9 @@ class AddClientsToViewPageListenerTest extends \PHPUnit\Framework\TestCase
     /** @var EncryptionKeysExistenceChecker|\PHPUnit\Framework\MockObject\MockObject */
     private $encryptionKeysExistenceChecker;
 
+    /** @var ApiFeatureChecker|\PHPUnit\Framework\MockObject\MockObject */
+    private $featureChecker;
+
     /** @var AddClientsToViewPageListener */
     private $listener;
 
@@ -34,13 +38,15 @@ class AddClientsToViewPageListenerTest extends \PHPUnit\Framework\TestCase
         $this->entityIdAccessor = $this->createMock(EntityIdAccessor::class);
         $this->clientManager = $this->createMock(ClientManager::class);
         $this->encryptionKeysExistenceChecker = $this->createMock(EncryptionKeysExistenceChecker::class);
+        $this->featureChecker = $this->createMock(ApiFeatureChecker::class);
 
         $this->listener = new AddClientsToViewPageListener(
             [User::class],
             $this->translator,
             $this->entityIdAccessor,
             $this->clientManager,
-            $this->encryptionKeysExistenceChecker
+            $this->encryptionKeysExistenceChecker,
+            $this->featureChecker
         );
     }
 
@@ -101,9 +107,12 @@ class AddClientsToViewPageListenerTest extends \PHPUnit\Framework\TestCase
         $this->encryptionKeysExistenceChecker->expects(self::once())
             ->method('isPublicKeyExist')
             ->willReturn(true);
+        $this->featureChecker->expects(self::once())
+            ->method('isEnabledByClientOwnerClass')
+            ->with($entityClass)
+            ->willReturn(true);
         $this->clientManager->expects(self::once())
             ->method('isCreationGranted')
-            ->with($entityClass)
             ->willReturn($creationGranted);
         $this->clientManager->expects(self::once())
             ->method('isViewGranted')
@@ -161,9 +170,12 @@ class AddClientsToViewPageListenerTest extends \PHPUnit\Framework\TestCase
         $this->clientManager->expects(self::once())
             ->method('isViewGranted')
             ->willReturn(true);
+        $this->featureChecker->expects(self::once())
+            ->method('isEnabledByClientOwnerClass')
+            ->with($entityClass)
+            ->willReturn(true);
         $this->clientManager->expects(self::once())
             ->method('isCreationGranted')
-            ->with($entityClass)
             ->willReturn($creationGranted);
         $this->entityIdAccessor->expects(self::once())
             ->method('getIdentifier')
@@ -217,9 +229,12 @@ class AddClientsToViewPageListenerTest extends \PHPUnit\Framework\TestCase
         $this->clientManager->expects(self::once())
             ->method('isViewGranted')
             ->willReturn(true);
+        $this->featureChecker->expects(self::once())
+            ->method('isEnabledByClientOwnerClass')
+            ->with($entityClass)
+            ->willReturn(true);
         $this->clientManager->expects(self::once())
             ->method('isCreationGranted')
-            ->with($entityClass)
             ->willReturn($creationGranted);
         $this->entityIdAccessor->expects(self::once())
             ->method('getIdentifier')

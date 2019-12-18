@@ -5,9 +5,11 @@ namespace Oro\Bundle\OAuth2ServerBundle\League\Repository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\Common\Persistence\ObjectRepository;
 use League\OAuth2\Server\Entities\ClientEntityInterface;
+use League\OAuth2\Server\Exception\OAuthServerException;
 use League\OAuth2\Server\Repositories\ClientRepositoryInterface;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\League\Entity\ClientEntity;
+use Oro\Bundle\OAuth2ServerBundle\Security\ApiFeatureChecker;
 use Symfony\Component\Security\Core\Encoder\EncoderFactoryInterface;
 
 /**
@@ -21,14 +23,22 @@ class ClientRepository implements ClientRepositoryInterface
     /** @var EncoderFactoryInterface */
     private $encoderFactory;
 
+    /** @var ApiFeatureChecker */
+    private $featureChecker;
+
     /**
      * @param ManagerRegistry         $doctrine
      * @param EncoderFactoryInterface $encoderFactory
+     * @param ApiFeatureChecker       $featureChecker
      */
-    public function __construct(ManagerRegistry $doctrine, EncoderFactoryInterface $encoderFactory)
-    {
+    public function __construct(
+        ManagerRegistry $doctrine,
+        EncoderFactoryInterface $encoderFactory,
+        ApiFeatureChecker $featureChecker
+    ) {
         $this->doctrine = $doctrine;
         $this->encoderFactory = $encoderFactory;
+        $this->featureChecker = $featureChecker;
     }
 
     /**
@@ -60,6 +70,10 @@ class ClientRepository implements ClientRepositoryInterface
 
         if (!$client->getOrganization()->isEnabled()) {
             return null;
+        }
+
+        if (!$this->featureChecker->isEnabledByClient($client)) {
+            throw new OAuthServerException('Not found', 404, 'not_available', 404);
         }
 
         $clientEntity = new ClientEntity();

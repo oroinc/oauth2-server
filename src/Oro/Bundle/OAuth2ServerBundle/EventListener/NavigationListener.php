@@ -4,11 +4,12 @@ namespace Oro\Bundle\OAuth2ServerBundle\EventListener;
 
 use Knp\Menu\ItemInterface;
 use Oro\Bundle\NavigationBundle\Event\ConfigureMenuEvent;
+use Oro\Bundle\OAuth2ServerBundle\Security\ApiFeatureChecker;
 use Oro\Bundle\SecurityBundle\Authentication\TokenAccessorInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
 /**
- * Adds storefront OAuth applications menu item if customer portal is installed.
+ * Adds storefront OAuth applications menu item if customer portal is installed and storefront api is enabled.
  */
 class NavigationListener
 {
@@ -18,16 +19,22 @@ class NavigationListener
     /** @var TokenAccessorInterface */
     private $tokenAccessor;
 
+    /** @var ApiFeatureChecker */
+    private $featureChecker;
+
     /**
      * @param AuthorizationCheckerInterface $authorizationChecker
      * @param TokenAccessorInterface        $tokenAccessor
+     * @param ApiFeatureChecker             $featureChecker
      */
     public function __construct(
         AuthorizationCheckerInterface $authorizationChecker,
-        TokenAccessorInterface $tokenAccessor
+        TokenAccessorInterface $tokenAccessor,
+        ApiFeatureChecker $featureChecker
     ) {
         $this->authorizationChecker = $authorizationChecker;
         $this->tokenAccessor = $tokenAccessor;
+        $this->featureChecker = $featureChecker;
     }
 
     /**
@@ -35,7 +42,9 @@ class NavigationListener
      */
     public function onNavigationConfigure(ConfigureMenuEvent $event)
     {
-        if (!class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {
+        if (!class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')
+            || !$this->featureChecker->isFrontendApiEnabled()
+        ) {
             return;
         }
 

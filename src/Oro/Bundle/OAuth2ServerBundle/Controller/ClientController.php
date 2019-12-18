@@ -8,6 +8,7 @@ use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
 use Oro\Bundle\OAuth2ServerBundle\Form\Type\ClientType;
 use Oro\Bundle\OAuth2ServerBundle\Form\Type\SystemClientType;
+use Oro\Bundle\OAuth2ServerBundle\Security\ApiFeatureChecker;
 use Oro\Bundle\OAuth2ServerBundle\Security\EncryptionKeysExistenceChecker;
 use Oro\Bundle\SecurityBundle\Annotation\CsrfProtection;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
@@ -26,21 +27,27 @@ use Symfony\Component\Translation\TranslatorInterface;
  */
 class ClientController extends AbstractController
 {
-    /** @var array */
-    private $supportedGrantTypes;
-
-    /** @var array */
-    private $supportedClientTypes = [
+    private const SUPPORTED_CLIENT_TYPES = [
         'storefront' => ['isFrontend' => true],
         'backoffice' => ['isFrontend' => false]
     ];
 
+    private const CLIENT_CREDENTIALS_GRANT_TYPES = ['client_credentials'];
+
+    /** @var array */
+    private $supportedGrantTypes;
+
+    /** @var ApiFeatureChecker */
+    private $featureChecker;
+
     /**
-     * @param array $supportedGrantTypes
+     * @param string[]          $supportedGrantTypes
+     * @param ApiFeatureChecker $featureChecker
      */
-    public function __construct(array $supportedGrantTypes)
+    public function __construct(array $supportedGrantTypes, ApiFeatureChecker $featureChecker)
     {
         $this->supportedGrantTypes = $supportedGrantTypes;
+        $this->featureChecker = $featureChecker;
     }
 
     /**
@@ -84,7 +91,7 @@ class ClientController extends AbstractController
         }
 
         return [
-            'isFrontend'          => $this->supportedClientTypes[$type]['isFrontend'],
+            'isFrontend'          => self::SUPPORTED_CLIENT_TYPES[$type]['isFrontend'],
             'encryptionKeysExist' => $this->isEncryptionKeysExist()
         ];
     }
@@ -158,7 +165,7 @@ class ClientController extends AbstractController
         }
 
         $entity = new Client();
-        $entity->setFrontend($this->supportedClientTypes[$type]['isFrontend']);
+        $entity->setFrontend(self::SUPPORTED_CLIENT_TYPES[$type]['isFrontend']);
 
         $response = $this->update(
             $request,
@@ -244,10 +251,21 @@ class ClientController extends AbstractController
         $ownerEntityClass = $entityRoutingHelper->getEntityClassName($request);
         $ownerEntityId = (int)$entityRoutingHelper->getEntityId($request);
         if ($ownerEntityClass && $ownerEntityId) {
+            if (!$this->featureChecker->isEnabledByClientOwnerClass($ownerEntityClass)) {
+                throw $this->createNotFoundException();
+            }
             $entity->setOwnerEntity($ownerEntityClass, $ownerEntityId);
         }
 
-        return $this->update($request, $entity, false, ['client_credentials'], null, $ownerEntityClass, $ownerEntityId);
+        return $this->update(
+            $request,
+            $entity,
+            false,
+            self::CLIENT_CREDENTIALS_GRANT_TYPES,
+            null,
+            $ownerEntityClass,
+            $ownerEntityId
+        );
     }
 
     /**
@@ -266,9 +284,15 @@ class ClientController extends AbstractController
      */
     public function updateClientAction(Request $request, Client $entity)
     {
+        $this->checkClientEnabled($entity);
         $this->checkModificationAccess($entity);
 
-        return $this->update($request, $entity);
+        return $this->update(
+            $request,
+            $entity,
+            false,
+            self::CLIENT_CREDENTIALS_GRANT_TYPES
+        );
     }
 
     /**
@@ -286,6 +310,7 @@ class ClientController extends AbstractController
      */
     public function deleteAction(Client $entity): Response
     {
+        $this->checkClientEnabled($entity);
         if (!$this->getClientManager()->isDeletionGranted($entity)) {
             throw $this->createAccessDeniedException();
         }
@@ -310,6 +335,7 @@ class ClientController extends AbstractController
      */
     public function activateAction(Client $entity): Response
     {
+        $this->checkClientEnabled($entity);
         $this->checkModificationAccess($entity);
 
         $this->getClientManager()->activateClient($entity);
@@ -332,6 +358,7 @@ class ClientController extends AbstractController
      */
     public function deactivateAction(Client $entity): Response
     {
+        $this->checkClientEnabled($entity);
         $this->checkModificationAccess($entity);
 
         $this->getClientManager()->deactivateClient($entity);
@@ -340,21 +367,21 @@ class ClientController extends AbstractController
     }
 
     /**
-     * @param Request $request
-     * @param Client  $entity
-     * @param bool    $isSystemOAuthApplication
-     * @param array   $grantTypes
-     * @param string  $message
-     * @param string  $ownerEntityClass
-     * @param int     $ownerEntityId
+     * @param Request  $request
+     * @param Client   $entity
+     * @param bool     $isSystemOAuthApplication
+     * @param string[] $grantTypes
+     * @param string   $message
+     * @param string   $ownerEntityClass
+     * @param int      $ownerEntityId
      *
      * @return array
      */
     private function update(
         Request $request,
         Client $entity,
-        $isSystemOAuthApplication = false,
-        $grantTypes = ['client_credentials'],
+        $isSystemOAuthApplication,
+        $grantTypes,
         $message = null,
         $ownerEntityClass = null,
         $ownerEntityId = null
@@ -370,35 +397,14 @@ class ClientController extends AbstractController
     }
 
     /**
-     * @param Client $entity
-     */
-    private function checkModificationAccess(Client $entity): void
-    {
-        if (!$this->getClientManager()->isModificationGranted($entity)) {
-            throw $this->createAccessDeniedException();
-        }
-    }
-
-    /**
-     * @return ClientManager
-     */
-    private function getClientManager(): ClientManager
-    {
-        return $this->get(ClientManager::class);
-    }
-
-    /**
-     * @param Client $entity
-     * @param bool   $isSystemOAuthApplication
-     * @param array  $grantTypes
+     * @param Client   $entity
+     * @param bool     $isSystemOAuthApplication
+     * @param string[] $grantTypes
      *
      * @return FormInterface
      */
-    private function getForm(
-        Client $entity,
-        $isSystemOAuthApplication = false,
-        $grantTypes = ['client_credentials']
-    ): FormInterface {
+    private function getForm(Client $entity, $isSystemOAuthApplication, $grantTypes): FormInterface
+    {
         return $this->get(FormFactoryInterface::class)
             ->createNamed(
                 'oro_oauth2_client',
@@ -458,11 +464,39 @@ class ClientController extends AbstractController
     }
 
     /**
+     * @return ClientManager
+     */
+    private function getClientManager(): ClientManager
+    {
+        return $this->get(ClientManager::class);
+    }
+
+    /**
      * @return TranslatorInterface
      */
-    private function getTranslator()
+    private function getTranslator(): TranslatorInterface
     {
         return $this->container->get(TranslatorInterface::class);
+    }
+
+    /**
+     * @param Client $entity
+     */
+    private function checkClientEnabled(Client $entity): void
+    {
+        if (!$this->featureChecker->isEnabledByClient($entity)) {
+            throw $this->createNotFoundException();
+        }
+    }
+
+    /**
+     * @param Client $entity
+     */
+    private function checkModificationAccess(Client $entity): void
+    {
+        if (!$this->getClientManager()->isModificationGranted($entity)) {
+            throw $this->createAccessDeniedException();
+        }
     }
 
     /**
@@ -470,7 +504,13 @@ class ClientController extends AbstractController
      */
     private function checkTypeEnabled(string $type): void
     {
-        if ($type === 'storefront' && !class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {
+        if ($type === 'storefront') {
+            if (!class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')
+                || !$this->featureChecker->isFrontendApiEnabled()
+            ) {
+                throw $this->createNotFoundException();
+            }
+        } elseif (!$this->featureChecker->isBackendApiEnabled()) {
             throw $this->createNotFoundException();
         }
     }
@@ -490,11 +530,12 @@ class ClientController extends AbstractController
     /**
      * @return bool
      */
-    private function isEncryptionKeysExist()
+    private function isEncryptionKeysExist(): bool
     {
         $encryptionKeysExistenceChecker = $this->get(EncryptionKeysExistenceChecker::class);
 
-        return $encryptionKeysExistenceChecker->isPrivateKeyExist()
-                && $encryptionKeysExistenceChecker->isPublicKeyExist();
+        return
+            $encryptionKeysExistenceChecker->isPrivateKeyExist()
+            && $encryptionKeysExistenceChecker->isPublicKeyExist();
     }
 }

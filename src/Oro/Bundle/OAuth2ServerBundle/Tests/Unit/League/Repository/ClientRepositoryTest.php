@@ -7,6 +7,7 @@ use Doctrine\Common\Persistence\ObjectRepository;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\League\Entity\ClientEntity;
 use Oro\Bundle\OAuth2ServerBundle\League\Repository\ClientRepository;
+use Oro\Bundle\OAuth2ServerBundle\Security\ApiFeatureChecker;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Symfony\Component\Security\Core\Encoder\EncoderFactoryInterface;
 use Symfony\Component\Security\Core\Encoder\PasswordEncoderInterface;
@@ -19,6 +20,9 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
     /** @var EncoderFactoryInterface|\PHPUnit\Framework\MockObject\MockObject */
     private $encoderFactory;
 
+    /** @var ApiFeatureChecker|\PHPUnit\Framework\MockObject\MockObject */
+    private $featureChecker;
+
     /** @var ClientRepository */
     private $clientRepository;
 
@@ -26,10 +30,12 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
     {
         $this->doctrine = $this->createMock(ManagerRegistry::class);
         $this->encoderFactory = $this->createMock(EncoderFactoryInterface::class);
+        $this->featureChecker = $this->createMock(ApiFeatureChecker::class);
 
         $this->clientRepository = new ClientRepository(
             $this->doctrine,
-            $this->encoderFactory
+            $this->encoderFactory,
+            $this->featureChecker
         );
     }
 
@@ -175,6 +181,10 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
             ->method('isPasswordValid')
             ->with($clientEncodedSecret, $clientSecret, $clientSecretSalt)
             ->willReturn(true);
+        $this->featureChecker->expects(self::once())
+            ->method('isEnabledByClient')
+            ->with($client)
+            ->willReturn(true);
 
         /** @var ClientEntity $clientEntity */
         $clientEntity = $this->clientRepository->getClientEntity(
@@ -223,6 +233,10 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
             ->method('isPasswordValid')
             ->with($clientEncodedSecret, $clientSecret, $clientSecretSalt)
             ->willReturn(true);
+        $this->featureChecker->expects(self::once())
+            ->method('isEnabledByClient')
+            ->with($client)
+            ->willReturn(true);
 
         /** @var ClientEntity $clientEntity */
         $clientEntity = $this->clientRepository->getClientEntity(
@@ -261,6 +275,10 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
             ->willReturn($client);
         $this->encoderFactory->expects(self::never())
             ->method('getEncoder');
+        $this->featureChecker->expects(self::once())
+            ->method('isEnabledByClient')
+            ->with($client)
+            ->willReturn(true);
 
         /** @var ClientEntity $clientEntity */
         $clientEntity = $this->clientRepository->getClientEntity(
@@ -300,6 +318,10 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
             ->willReturn($client);
         $this->encoderFactory->expects(self::never())
             ->method('getEncoder');
+        $this->featureChecker->expects(self::once())
+            ->method('isEnabledByClient')
+            ->with($client)
+            ->willReturn(true);
 
         /** @var ClientEntity $clientEntity */
         $clientEntity = $this->clientRepository->getClientEntity(
@@ -373,6 +395,10 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
             ->willReturn($client);
         $this->encoderFactory->expects(self::never())
             ->method('getEncoder');
+        $this->featureChecker->expects(self::once())
+            ->method('isEnabledByClient')
+            ->with($client)
+            ->willReturn(true);
 
         /** @var ClientEntity $clientEntity */
         $clientEntity = $this->clientRepository->getClientEntity(
@@ -412,6 +438,10 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
             ->willReturn($client);
         $this->encoderFactory->expects(self::never())
             ->method('getEncoder');
+        $this->featureChecker->expects(self::once())
+            ->method('isEnabledByClient')
+            ->with($client)
+            ->willReturn(true);
 
         /** @var ClientEntity $clientEntity */
         $clientEntity = $this->clientRepository->getClientEntity(

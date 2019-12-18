@@ -7,7 +7,8 @@ Feature: Manage Storefront OAuth Applications
   I need to be able to manage storefront OAuth applications with different grant types
 
   Scenario: Feature Background
-    Given I login as administrator
+    Given I enable storefront API
+    And I login as administrator
 
   Scenario: Create Client Credentials grant OAuth application
     When I go to System/Storefront OAuth Applications

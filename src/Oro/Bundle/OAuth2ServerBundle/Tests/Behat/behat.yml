@@ -6,6 +6,8 @@ oro_behat_extension:
                 - OroFormBundle::FormContext
                 - OroDataGridBundle::GridContext
                 - OroEmailBundle::EmailContext
+                - OroApiBundle::ApiContext
+                - OroFrontendBundle::ApiContext
             paths:
                 - '@OroOAuth2ServerBundle/Tests/Behat/Features'
 

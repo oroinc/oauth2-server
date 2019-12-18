@@ -8,7 +8,8 @@ Feature: Manage Backoffice OAuth Applications
   I need to be able to manage backoffice OAuth applications with different grant types
 
   Scenario: Feature Background
-    Given I login as administrator
+    Given I enable API
+    And I login as administrator
 
   Scenario: Applications grid
     When I go to System/User Management/OAuth Applications

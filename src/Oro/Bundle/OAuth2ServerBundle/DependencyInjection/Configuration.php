@@ -52,7 +52,7 @@ class Configuration implements ConfigurationInterface
                 ->info(
                     'The full path to the private key file that is used to sign JWT tokens.'
                     . ' How to generate a private key:'
-                    . ' https://oauth2.thephpleague.com/installation/#generating-public-and-private-keys'
+                    . ' https://oauth2.thephpleague.com/installation/#generating-public-and-private-keys.'
                 )
                 ->example('/var/oauth/private.key')
                 ->defaultValue('%kernel.project_dir%/var/oauth_private.key')
@@ -62,22 +62,22 @@ class Configuration implements ConfigurationInterface
                 ->info(
                     'The string that is used to encrypt refresh token and authorization token payload.'
                     . ' How to generate an encryption key:'
-                    . ' https://oauth2.thephpleague.com/installation/#string-password'
+                    . ' https://oauth2.thephpleague.com/installation/#string-password.'
                 )
                 ->defaultValue('%secret%')
                 ->cannotBeEmpty()
             ->end()
             ->arrayNode('cors')
-                ->info('The configuration of CORS requests')
+                ->info('The configuration of CORS requests.')
                 ->addDefaultsIfNotSet()
                 ->children()
                     ->integerNode('preflight_max_age')
-                        ->info('The amount of seconds the user agent is allowed to cache CORS preflight requests')
+                        ->info('The amount of seconds the user agent is allowed to cache CORS preflight requests.')
                         ->defaultValue(600)
                         ->min(0)
                     ->end()
                     ->arrayNode('allow_origins')
-                        ->info('The list of origins that are allowed to send CORS requests')
+                        ->info('The list of origins that are allowed to send CORS requests.')
                         ->example(['https://foo.com', 'https://bar.com'])
                         ->prototype('scalar')->cannotBeEmpty()->end()
                     ->end()
@@ -100,7 +100,7 @@ class Configuration implements ConfigurationInterface
                 ->info(
                     'The full path to the public key file that is used to verify JWT tokens.'
                     . ' How to generate a public key:'
-                    . ' https://oauth2.thephpleague.com/installation/#generating-public-and-private-keys'
+                    . ' https://oauth2.thephpleague.com/installation/#generating-public-and-private-keys.'
                 )
                 ->example('/var/oauth/public.key')
                 ->defaultValue('%kernel.project_dir%/var/oauth_public.key')

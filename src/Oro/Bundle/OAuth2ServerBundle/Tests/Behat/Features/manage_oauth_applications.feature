@@ -8,7 +8,8 @@ Feature: Manage OAuth Applications
   I need to be able to manage OAuth applications for a user
 
   Scenario: Feature Background
-    Given I login as administrator
+    Given I enable API
+    And I login as administrator
     And go to System/User Management/Users
     And click view John in grid
 

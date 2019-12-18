@@ -7,6 +7,7 @@ use Knp\Menu\MenuFactory;
 use Knp\Menu\MenuItem;
 use Oro\Bundle\NavigationBundle\Event\ConfigureMenuEvent;
 use Oro\Bundle\OAuth2ServerBundle\EventListener\NavigationListener;
+use Oro\Bundle\OAuth2ServerBundle\Security\ApiFeatureChecker;
 use Oro\Bundle\SecurityBundle\Authentication\TokenAccessorInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
@@ -18,6 +19,9 @@ class NavigationListenerTest extends \PHPUnit\Framework\TestCase
     /** @var TokenAccessorInterface|\PHPUnit\Framework\MockObject\MockObject */
     private $tokenAccessor;
 
+    /** @var ApiFeatureChecker|\PHPUnit\Framework\MockObject\MockObject */
+    private $featureChecker;
+
     /** @var NavigationListener */
     private $listener;
 
@@ -25,7 +29,13 @@ class NavigationListenerTest extends \PHPUnit\Framework\TestCase
     {
         $this->authorizationChecker = $this->createMock(AuthorizationCheckerInterface::class);
         $this->tokenAccessor = $this->createMock(TokenAccessorInterface::class);
-        $this->listener = new NavigationListener($this->authorizationChecker, $this->tokenAccessor);
+        $this->featureChecker = $this->createMock(ApiFeatureChecker::class);
+
+        $this->listener = new NavigationListener(
+            $this->authorizationChecker,
+            $this->tokenAccessor,
+            $this->featureChecker
+        );
     }
 
     public function testOnNavigationConfigureWithoutSystemTab()
@@ -46,6 +56,10 @@ class NavigationListenerTest extends \PHPUnit\Framework\TestCase
 
         $this->tokenAccessor->expects($this->once())
             ->method('hasUser')
+            ->willReturn(true);
+
+        $this->featureChecker->expects($this->once())
+            ->method('isFrontendApiEnabled')
             ->willReturn(true);
 
         $this->authorizationChecker->expects($this->once())
@@ -74,6 +88,10 @@ class NavigationListenerTest extends \PHPUnit\Framework\TestCase
             ->method('hasUser')
             ->willReturn(true);
 
+        $this->featureChecker->expects($this->once())
+            ->method('isFrontendApiEnabled')
+            ->willReturn(true);
+
         $this->authorizationChecker->expects($this->once())
             ->method('isGranted')
             ->with('oro_oauth2_view')
@@ -97,6 +115,9 @@ class NavigationListenerTest extends \PHPUnit\Framework\TestCase
         $this->tokenAccessor->expects($this->once())
             ->method('hasUser')
             ->willReturn(false);
+        $this->featureChecker->expects($this->once())
+            ->method('isFrontendApiEnabled')
+            ->willReturn(true);
 
         $menu = new MenuItem('test', new MenuFactory());
         $menu->addChild('system_tab', []);
@@ -116,6 +137,9 @@ class NavigationListenerTest extends \PHPUnit\Framework\TestCase
         $menu = new MenuItem('test', new MenuFactory());
         $menu->addChild('system_tab', []);
         $event = new ConfigureMenuEvent($this->createMock(FactoryInterface::class), $menu);
+
+        $this->featureChecker->expects($this->never())
+            ->method('isFrontendApiEnabled');
 
         $this->listener->onNavigationConfigure($event);
 

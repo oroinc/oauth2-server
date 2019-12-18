@@ -1,3 +1,15 @@
+oro_api:
+    api_firewalls:
+        api_wsse_secured:
+            feature_firewall_listeners:
+                - Oro\Bundle\OAuth2ServerBundle\Security\Firewall\OAuth2Listener
+        wsse_secured:
+            feature_firewall_listeners:
+                - Oro\Bundle\OAuth2ServerBundle\Security\Firewall\OAuth2Listener
+        frontend_api_wsse_secured:
+            feature_firewall_listeners:
+                - Oro\Bundle\OAuth2ServerBundle\Security\Firewall\OAuth2Listener
+
 security:
     encoders:
         Oro\Bundle\OAuth2ServerBundle\Entity\Client: sha512

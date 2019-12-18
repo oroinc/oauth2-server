@@ -7,7 +7,8 @@ Feature: Manage Notifications for OAuth Applications
   I need to be able to create email templates and configure notification rules for a user OAuth applications
 
   Scenario: Feature Background
-    Given I login as administrator
+    Given I enable API
+    And I login as administrator
     And go to System/ User Management/ Business Units
     And click edit Main in grid
     And I fill form with:
