@@ -147,6 +147,7 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
 
     public function testFrontendGetAuthTokenWithFrontendCredentionsShouldReturnAccessAndRefreshTokens()
     {
+        $startDateTime = new \DateTime('now', new \DateTimeZone('UTC'));
         $accessToken = $this->sendFrontendPasswordAccessTokenRequest(
             'grzegorz.brzeczyszczykiewicz@example.com',
             'test'
@@ -157,6 +158,9 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
         self::assertGreaterThanOrEqual(3599, $accessToken['expires_in']);
         self::assertArrayHasKey('refresh_token', $accessToken);
         self::assertArrayHasKey('access_token', $accessToken);
+
+        $client = $this->getReference(LoadFrontendPasswordGrantClient::OAUTH_CLIENT_REFERENCE);
+        self::assertClientLastUsedValueIsCorrect($startDateTime, $client);
     }
 
     public function testFrontendGetAuthTokenWithBackendCredentionsShouldReturnUnauthorizedStatusCode()

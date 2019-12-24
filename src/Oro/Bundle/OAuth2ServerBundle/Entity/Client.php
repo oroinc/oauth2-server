@@ -98,6 +98,13 @@ class Client
     private $plainSecret;
 
     /**
+     * @var \DateTime|null
+     *
+     * @ORM\Column(name="last_used_at", type="datetime", nullable=true)
+     */
+    private $lastUsedAt;
+
+    /**
      * @var string[]
      *
      * @ORM\Column(name="grants", type="simple_array")
@@ -460,5 +467,21 @@ class Client
     public function setFrontend(bool $frontend)
     {
         $this->frontend = $frontend;
+    }
+
+    /**
+     * @return \DateTime|null
+     */
+    public function getLastUsedAt(): ?\DateTime
+    {
+        return $this->lastUsedAt;
+    }
+
+    /**
+     * @param \DateTime $lastUsedAt
+     */
+    public function setLastUsedAt(\DateTime $lastUsedAt): void
+    {
+        $this->lastUsedAt = $lastUsedAt;
     }
 }

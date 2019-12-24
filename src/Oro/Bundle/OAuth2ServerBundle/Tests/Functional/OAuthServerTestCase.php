@@ -3,6 +3,7 @@
 namespace Oro\Bundle\OAuth2ServerBundle\Tests\Functional;
 
 use Oro\Bundle\ApiBundle\Tests\Functional\RestJsonApiTestCase;
+use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Symfony\Component\HttpFoundation\Response;
 
 class OAuthServerTestCase extends RestJsonApiTestCase
@@ -53,5 +54,22 @@ class OAuthServerTestCase extends RestJsonApiTestCase
         self::assertSessionNotStarted($method, $uri, $server);
 
         return $this->client->getResponse();
+    }
+
+    /**
+     * Asserts that lastUsedAt field have correct date.
+     *
+     * @param \DateTime $beginDatetime
+     * @param Client    $client
+     */
+    public static function assertClientLastUsedValueIsCorrect(\DateTime $beginDatetime, Client $client): void
+    {
+        $beginTimestamp = $beginDatetime->getTimestamp();
+        $lastUsedAtTimestamp = $client->getLastUsedAt()->getTimestamp();
+        $currentDate = new \DateTime('now', new \DateTimeZone('UTC'));
+        $currentTimestamp = $currentDate->getTimestamp();
+
+        self::assertGreaterThanOrEqual($beginTimestamp, $lastUsedAtTimestamp);
+        self::assertLessThanOrEqual($currentTimestamp, $lastUsedAtTimestamp);
     }
 }

@@ -49,6 +49,7 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
 
     public function testGetAuthToken()
     {
+        $startDateTime = new \DateTime('now', new \DateTimeZone('UTC'));
         $accessToken = $this->sendAccessTokenRequest();
 
         self::assertEquals('Bearer', $accessToken['token_type']);
@@ -60,6 +61,9 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
         self::assertEquals('JWT', $accessTokenFirstPart['typ']);
         self::assertEquals('RS256', $accessTokenFirstPart['alg']);
         self::assertEquals(LoadClientCredentialsClient::OAUTH_CLIENT_ID, $accessTokenSecondPart['aud']);
+
+        $client = $this->getReference(LoadClientCredentialsClient::OAUTH_CLIENT_REFERENCE);
+        self::assertClientLastUsedValueIsCorrect($startDateTime, $client);
     }
 
     public function testGetAuthTokenForDeactivatedClient()
@@ -79,6 +83,9 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
             ],
             $responseContent
         );
+
+        $client = $this->getReference(LoadClientCredentialsClient::OAUTH_CLIENT_REFERENCE);
+        self::assertNull($client->getLastUsedAt());
     }
 
     public function testApiRequestWithCorrectAccessTokenShouldReturnRequestedData()

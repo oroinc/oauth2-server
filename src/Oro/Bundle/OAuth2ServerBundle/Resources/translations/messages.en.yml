@@ -45,7 +45,7 @@ oro:
                 description: URIs to which it is allowed to redirect the user back to.
             frontend:
                 label: Store front
-                description: Indicates that client should work with sore front
+                description: Indicates that client should work with the storefront.
             action:
                 add: Add Application
                 activate: Activate
@@ -53,6 +53,9 @@ oro:
             dialog:
                 create_title: Create OAuth Application
                 edit_title: Edit OAuth Application
+            last_used_at:
+                label: Last Used At
+                description: The date when the application token was last recieved.
             created_message: OAuth application has been created.
             updated_message: OAuth application has been updated.
             created_warning_message: Please copy <strong>Client Secret</strong> and save it somewhere safe. For security reasons, we cannot show it to you again.

@@ -137,6 +137,9 @@ Response Body
     "access_token": "your access token"
 }
 ```
+If the access token is received successfully, the date of getting the access token is updated
+for the [application entity](src/Oro/Bundle/OAuth2ServerBundle/Entity/Client.php), and this data is displayed
+in the applications datagrid.
 
 The received access token can be used multiple times until it expires. A new token should be requested once
 the previous token expires.

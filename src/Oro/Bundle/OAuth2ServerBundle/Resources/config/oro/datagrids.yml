@@ -90,6 +90,7 @@ datagrids:
                     - client.ownerEntityId
                     - client.ownerEntityClass
                     - client.frontend
+                    - client.lastUsedAt
                 where:
                     and:
                         - client.frontend = :frontend
@@ -103,6 +104,18 @@ datagrids:
                 type: twig
                 frontend_type: html
                 template: OroOAuth2ServerBundle:Client/Datagrid:grants.html.twig
+            lastUsedAt:
+                label: oro.oauth2server.client.last_used_at.label
+                frontend_type: datetime
+        sorters:
+            columns:
+                lastUsedAt:
+                    data_name: client.lastUsedAt
+        filters:
+            columns:
+                lastUsedAt:
+                    type: datetime
+                    data_name: client.lastUsedAt
         properties:
             view_link:
                 type:   url

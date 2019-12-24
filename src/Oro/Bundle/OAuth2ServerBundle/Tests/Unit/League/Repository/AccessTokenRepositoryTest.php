@@ -123,13 +123,18 @@ class AccessTokenRepositoryTest extends \PHPUnit\Framework\TestCase
             ->method('findOneBy')
             ->with(['identifier' => 'client_id'])
             ->willReturn($client);
-        $em->expects(self::once())
+        $em->expects(self::at(2))
             ->method('persist')
             ->with($expectedToken);
+        $em->expects(self::at(3))
+            ->method('persist')
+            ->with($client);
         $em->expects(self::once())
             ->method('flush');
 
         $this->repository->persistNewAccessToken($accessTokenEntity);
+
+        self::assertNotNull($client->getLastUsedAt());
     }
 
     public function testRevokeAccessTokenOnNonExistToken()

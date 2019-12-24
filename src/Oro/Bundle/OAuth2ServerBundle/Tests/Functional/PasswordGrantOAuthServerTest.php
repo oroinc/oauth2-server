@@ -37,6 +37,7 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
 
     public function testGetAuthToken()
     {
+        $startDateTime = new \DateTime('now', new \DateTimeZone('UTC'));
         $user = $this->getReference('user');
         $accessToken = $this->sendPasswordAccessTokenRequest($user->getUsername(), $user->getUsername());
 
@@ -51,6 +52,9 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
         self::assertEquals('JWT', $accessTokenFirstPart['typ']);
         self::assertEquals('RS256', $accessTokenFirstPart['alg']);
         self::assertEquals(LoadPasswordGrantClient::OAUTH_CLIENT_ID, $accessTokenSecondPart['aud']);
+
+        $client = $this->getReference(LoadPasswordGrantClient::OAUTH_CLIENT_REFERENCE);
+        self::assertClientLastUsedValueIsCorrect($startDateTime, $client);
     }
 
     public function testGetAuthTokenForNotExistingUser()
@@ -65,6 +69,9 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
             ],
             $responseContent
         );
+
+        $client = $this->getReference(LoadPasswordGrantClient::OAUTH_CLIENT_REFERENCE);
+        self::assertNull($client->getLastUsedAt());
     }
 
     public function testGetAuthTokenForDeactivatedUserShouldReturnUnauthorizedStatusCode()
@@ -85,6 +92,8 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
             ],
             $responseContent
         );
+        $client = $this->getReference(LoadPasswordGrantClient::OAUTH_CLIENT_REFERENCE);
+        self::assertNull($client->getLastUsedAt());
     }
 
     public function testGetAuthTokenForDeactivatedClientShouldReturnUnauthorizedStatusCode()
@@ -158,11 +167,22 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
     public function testGetRefreshedAuthToken()
     {
         $user = $this->getReference('user');
+        $client = $this->getReference(LoadPasswordGrantClient::OAUTH_CLIENT_REFERENCE);
+
         $accessToken = $this->sendPasswordAccessTokenRequest($user->getUsername(), $user->getUsername());
+        $passwordAccessDate = clone $client->getLastUsedAt();
+
+        $startDateTime = new \DateTime('now', new \DateTimeZone('UTC'));
         $refreshedToken = $this->sendRefreshAccessTokenRequest($accessToken['refresh_token']);
 
         self::assertNotEquals($accessToken['access_token'], $refreshedToken['access_token']);
         self::assertNotEquals($accessToken['refresh_token'], $refreshedToken['refresh_token']);
+
+        $updatedClient = static::getContainer()->get('doctrine')
+            ->getRepository(Client::class)
+            ->findOneBy(['identifier' => LoadPasswordGrantClient::OAUTH_CLIENT_ID]);
+        self::assertClientLastUsedValueIsCorrect($startDateTime, $updatedClient);
+        self::assertTrue($passwordAccessDate < $updatedClient->getLastUsedAt());
     }
 
     public function testGetRefreshedAuthTokenForWrongRefreshToken()

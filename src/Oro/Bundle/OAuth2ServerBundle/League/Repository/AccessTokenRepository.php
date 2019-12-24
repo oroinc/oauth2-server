@@ -50,16 +50,19 @@ class AccessTokenRepository implements AccessTokenRepositoryInterface
             throw UniqueTokenIdentifierConstraintViolationException::create();
         }
 
+        $client = $this->getClientEntity($accessTokenEntity->getClient()->getIdentifier());
+        $client->setLastUsedAt(new \DateTime('now', new \DateTimeZone('UTC')));
         $accessToken = new AccessToken(
             $accessTokenEntity->getIdentifier(),
             $accessTokenEntity->getExpiryDateTime(),
             $this->getScopeIdentifiers($accessTokenEntity->getScopes()),
-            $this->getClientEntity($accessTokenEntity->getClient()->getIdentifier()),
+            $client,
             $accessTokenEntity->getUserIdentifier()
         );
 
         $em = $this->getEntityManager();
         $em->persist($accessToken);
+        $em->persist($client);
         $em->flush();
     }
 
@@ -119,7 +122,8 @@ class AccessTokenRepository implements AccessTokenRepositoryInterface
      */
     private function getClientEntity($clientId): Client
     {
-        return $this->getEntityManager()->getRepository(Client::class)
+        return $this->getEntityManager()
+            ->getRepository(Client::class)
             ->findOneBy(['identifier' => $clientId]);
     }
 
