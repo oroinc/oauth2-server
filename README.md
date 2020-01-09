@@ -278,3 +278,9 @@ Response Body
 A new customer visitor is created after each such request.
 
 To be able to work with the same customer visitor when the access token expires, use the refresh access token request.
+
+Resources
+---------
+
+  * [OroCommerce, OroCRM and OroPlatform Documentation](https://doc.oroinc.com)
+  * [Contributing](https://doc.oroinc.com/community/contribute/)
