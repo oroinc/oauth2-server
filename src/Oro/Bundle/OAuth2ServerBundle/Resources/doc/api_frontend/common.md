@@ -1,0 +1,1 @@
+To get the OAuth access token for a customer visitor, use the **guest** value as *username* and *password* in <a href="https://doc.oroinc.com/user/back-office/system/storefront-oauth-app/#password-grant-type-generate-token" target="_blank">a request to the authorization server</a>.
