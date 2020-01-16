@@ -1,0 +1,9 @@
+services:
+    oro_oauth2_server.api_doc.documentation_provider.oauth.frontend:
+        class: Oro\Bundle\ApiBundle\ApiDoc\DocumentationProvider
+        arguments:
+            - '@@OroOAuth2ServerBundle/Resources/doc/api_frontend/common.md'
+            - '@file_locator'
+        tags:
+            - { name: oro.api.documentation_provider, requestType: frontend, priority: 200 }
+
