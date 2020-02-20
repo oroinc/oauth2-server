@@ -6,7 +6,6 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 use Oro\Bundle\CustomerBundle\Entity\CustomerUser;
 use Oro\Bundle\DataGridBundle\Event\BuildAfter;
 use Oro\Bundle\DataGridBundle\Event\OrmResultAfter;
-use Oro\Bundle\SecurityBundle\ORM\Walker\AclHelper;
 use Oro\Bundle\UserBundle\Entity\User;
 
 /**
@@ -17,17 +16,12 @@ class OwnerClientDatagridListener
     /** @var ManagerRegistry */
     private $doctrine;
 
-    /** @var AclHelper */
-    private $aclHelper;
-
     /**
      * @param ManagerRegistry $doctrine
-     * @param AclHelper       $aclHelper
      */
-    public function __construct(ManagerRegistry $doctrine, AclHelper $aclHelper)
+    public function __construct(ManagerRegistry $doctrine)
     {
         $this->doctrine = $doctrine;
-        $this->aclHelper = $aclHelper;
     }
 
     /**
@@ -105,7 +99,7 @@ class OwnerClientDatagridListener
             ->where('o.id in (:ids)')
             ->setParameter('ids', $ownerIds);
 
-        $owners = $this->aclHelper->apply($qb)->getResult();
+        $owners = $qb->getQuery()->getResult();
         $result = [];
 
         foreach ($owners as $owner) {

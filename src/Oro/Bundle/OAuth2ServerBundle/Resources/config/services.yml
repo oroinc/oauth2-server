@@ -81,7 +81,6 @@ services:
         class: Oro\Bundle\OAuth2ServerBundle\Datagrid\EventListener\OwnerClientDatagridListener
         arguments:
             - '@doctrine'
-            - '@oro_security.acl_helper'
         tags:
             - { name: kernel.event_listener, event: oro_datagrid.orm_datasource.result.after.oauth-client-backend-grid, method: addOwnerData }
             - { name: kernel.event_listener, event: oro_datagrid.datagrid.build.after.oauth-client-backend-grid, method: addOwnerColumn }

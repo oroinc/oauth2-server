@@ -6,7 +6,7 @@ use Doctrine\Bundle\DoctrineBundle\Registry;
 use Oro\Bundle\CustomerBundle\Form\Type\CustomerUserSelectType;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Provider\ClientOwnerOrganizationsProvider;
-use Oro\Bundle\UserBundle\Form\Type\UserSelectType;
+use Oro\Bundle\UserBundle\Form\Type\OrganizationUserAclSelectType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
@@ -66,7 +66,7 @@ class SystemClientType extends ClientType
 
         $event->getForm()->add(
             self::OWNER_FIELD,
-            !$client->isFrontend() ? UserSelectType::class : CustomerUserSelectType::class,
+            !$client->isFrontend() ? OrganizationUserAclSelectType::class : CustomerUserSelectType::class,
             [
                 'required' => true,
                 'mapped'   => false,
