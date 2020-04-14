@@ -16,7 +16,7 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
     /**
      * {@inheritdoc}
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->initClient();
         $this->loadFixtures([LoadPasswordGrantClient::class, LoadUser::class]);

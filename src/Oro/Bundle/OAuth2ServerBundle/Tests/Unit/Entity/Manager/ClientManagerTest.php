@@ -29,7 +29,7 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
     /** @var ClientManager */
     private $clientManager;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->doctrine = $this->createMock(ManagerRegistry::class);
         $this->encoderFactory = $this->createMock(EncoderFactoryInterface::class);

@@ -26,7 +26,7 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
     /** @var ClientRepository */
     private $clientRepository;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->doctrine = $this->createMock(ManagerRegistry::class);
         $this->encoderFactory = $this->createMock(EncoderFactoryInterface::class);

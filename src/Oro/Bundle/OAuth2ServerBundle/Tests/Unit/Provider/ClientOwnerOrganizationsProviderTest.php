@@ -22,7 +22,7 @@ class ClientOwnerOrganizationsProviderTest extends \PHPUnit\Framework\TestCase
     /** @var ClientOwnerOrganizationsProvider */
     private $organizationsProvider;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->doctrine = $this->createMock(ManagerRegistry::class);
         $this->tokenAccessor = $this->createMock(TokenAccessorInterface::class);

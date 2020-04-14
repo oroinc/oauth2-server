@@ -34,7 +34,7 @@ class FrontendUserRepositoryTest extends \PHPUnit\Framework\TestCase
     /** @var FrontendUserRepository */
     private $repository;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         if (!class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {
             self::markTestSkipped('Could be tested only with Customer bundle');

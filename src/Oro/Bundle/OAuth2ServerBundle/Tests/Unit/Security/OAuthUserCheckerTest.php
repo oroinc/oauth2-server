@@ -16,7 +16,7 @@ class OAuthUserCheckerTest extends \PHPUnit\Framework\TestCase
     /** @var OAuthUserChecker */
     private $oauthUserChecker;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $translator = $this->createMock(TranslatorInterface::class);
         $translator->expects($this->any())

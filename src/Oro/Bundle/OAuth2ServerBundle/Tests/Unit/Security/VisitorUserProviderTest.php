@@ -17,7 +17,7 @@ class VisitorUserProviderTest extends \PHPUnit\Framework\TestCase
     /** @var VisitorUserProvider */
     private $visitorUserProvider;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         if (!class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {
             self::markTestSkipped('Could be tested only with Customer bundle');

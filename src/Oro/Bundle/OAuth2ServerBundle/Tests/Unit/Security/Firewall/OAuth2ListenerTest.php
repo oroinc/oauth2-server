@@ -26,7 +26,7 @@ class OAuth2ListenerTest extends \PHPUnit\Framework\TestCase
     /** @var OAuth2Listener */
     private $listener;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->tokenStorage = $this->createMock(TokenStorageInterface::class);
         $this->authenticationManager = $this->createMock(AuthenticationManagerInterface::class);

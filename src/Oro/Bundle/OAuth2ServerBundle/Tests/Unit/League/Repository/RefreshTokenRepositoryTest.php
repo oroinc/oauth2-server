@@ -32,7 +32,7 @@ class RefreshTokenRepositoryTest extends \PHPUnit\Framework\TestCase
     /** @var RefreshTokenRepository */
     private $repository;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->doctrine = $this->createMock(ManagerRegistry::class);
         $this->userLoader = $this->createMock(UserLoaderInterface::class);

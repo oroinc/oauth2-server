@@ -20,7 +20,7 @@ class AccessTokenRepositoryTest extends \PHPUnit\Framework\TestCase
     /** @var AccessTokenRepository */
     private $repository;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->doctrine = $this->createMock(ManagerRegistry::class);
 

@@ -10,7 +10,7 @@ class ScopesFormatterTest extends \PHPUnit\Framework\TestCase
     /** @var ScopesFormatter */
     private $formatter;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $translator = $this->createMock(TranslatorInterface::class);
         $translator->expects(self::any())

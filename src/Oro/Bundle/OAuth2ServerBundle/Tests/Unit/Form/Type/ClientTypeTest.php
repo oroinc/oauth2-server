@@ -28,7 +28,7 @@ class ClientTypeTest extends TypeTestCase
     /** @var ManagerRegistry|\PHPUnit\Framework\MockObject\MockObject */
     private $doctrine;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->organizationsProvider = $this->createMock(ClientOwnerOrganizationsProvider::class);
         $this->doctrine = $this->createMock(ManagerRegistry::class);

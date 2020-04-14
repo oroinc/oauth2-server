@@ -38,7 +38,7 @@ class PasswordGrantSuccessHandlerTest extends \PHPUnit\Framework\TestCase
     /** @var UserLoader|\PHPUnit\Framework\MockObject\MockObject */
     private $backendUserLoader;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $this->doctrine = $this->createMock(ManagerRegistry::class);

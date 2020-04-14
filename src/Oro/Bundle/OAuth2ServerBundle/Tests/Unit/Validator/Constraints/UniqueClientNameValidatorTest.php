@@ -18,7 +18,7 @@ class UniqueClientNameValidatorTest extends ConstraintValidatorTestCase
     /** @var ManagerRegistry */
     private $doctrine;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->doctrine = $this->createMock(ManagerRegistry::class);
         parent::setUp();

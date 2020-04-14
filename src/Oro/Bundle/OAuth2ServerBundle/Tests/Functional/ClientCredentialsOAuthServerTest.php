@@ -14,7 +14,7 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
     /**
      * {@inheritdoc}
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->initClient();
         $this->loadFixtures([LoadClientCredentialsClient::class]);

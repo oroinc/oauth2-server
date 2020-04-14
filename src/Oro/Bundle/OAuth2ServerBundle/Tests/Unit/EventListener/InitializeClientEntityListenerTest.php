@@ -16,7 +16,7 @@ class InitializeClientEntityListenerTest extends \PHPUnit\Framework\TestCase
     /** @var InitializeClientEntityListener */
     private $listener;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->clientManager = $this->createMock(ClientManager::class);
 
