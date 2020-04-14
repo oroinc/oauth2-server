@@ -28,21 +28,19 @@ class GrantTypeTransformerTest extends \PHPUnit\Framework\TestCase
         self::assertEquals('test', $this->transformer->transform('test'));
     }
 
-    /**
-     * @expectedException \Symfony\Component\Form\Exception\TransformationFailedException
-     * @expectedExceptionMessage Expected argument of type "array" or "string", "integer" given.
-     */
     public function testTransformOnNonArrayValue()
     {
+        $this->expectException(\Symfony\Component\Form\Exception\TransformationFailedException::class);
+        $this->expectExceptionMessage('Expected argument of type "array" or "string", "integer" given.');
+
         $this->transformer->transform(1213);
     }
 
-    /**
-     * @expectedException \Symfony\Component\Form\Exception\TransformationFailedException
-     * @expectedExceptionMessage The value must contain not more than 1 element.
-     */
     public function testTransformOnMultiValuesArrayValue()
     {
+        $this->expectException(\Symfony\Component\Form\Exception\TransformationFailedException::class);
+        $this->expectExceptionMessage('The value must contain not more than 1 element.');
+
         $this->transformer->transform(['firsst', 'second']);
     }
 
@@ -66,12 +64,11 @@ class GrantTypeTransformerTest extends \PHPUnit\Framework\TestCase
         self::assertEquals(['test'], $this->transformer->reverseTransform(['test']));
     }
 
-    /**
-     * @expectedException \Symfony\Component\Form\Exception\TransformationFailedException
-     * @expectedExceptionMessage Expected argument of type "string" or "array", "integer" given.
-     */
     public function testTransformOnNonStringValue()
     {
+        $this->expectException(\Symfony\Component\Form\Exception\TransformationFailedException::class);
+        $this->expectExceptionMessage('Expected argument of type "string" or "array", "integer" given.');
+
         $this->transformer->reverseTransform(1213);
     }
 

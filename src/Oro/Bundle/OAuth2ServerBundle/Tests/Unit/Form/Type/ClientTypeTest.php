@@ -254,21 +254,19 @@ class ClientTypeTest extends TypeTestCase
         self::assertEquals(['grant1'], $client->getGrants());
     }
 
-    /**
-     * @expectedException \Symfony\Component\OptionsResolver\Exception\MissingOptionsException
-     * @expectedExceptionMessage The required option "grant_types" is missing.
-     */
     public function testSubmitWhenNoGrantTypes()
     {
+        $this->expectException(\Symfony\Component\OptionsResolver\Exception\MissingOptionsException::class);
+        $this->expectExceptionMessage('The required option "grant_types" is missing.');
+
         $this->createClientType(new Client());
     }
 
-    /**
-     * @expectedException \Symfony\Component\OptionsResolver\Exception\InvalidOptionsException
-     * @expectedExceptionMessage The option "grant_types" must not be empty.
-     */
     public function testSubmitWhenEmptyGrantTypes()
     {
+        $this->expectException(\Symfony\Component\OptionsResolver\Exception\InvalidOptionsException::class);
+        $this->expectExceptionMessage('The option "grant_types" must not be empty.');
+
         $this->createClientType(new Client(), ['grant_types' => []]);
     }
 

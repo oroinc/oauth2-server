@@ -32,12 +32,12 @@ class OAuthUserCheckerTest extends \PHPUnit\Framework\TestCase
         $this->oauthUserChecker = new OAuthUserChecker($this->userChecker, $translator);
     }
 
-    /**
-     * @expectedException League\OAuth2\Server\Exception\OAuthServerException
-     * @expectedExceptionMessage __Account is disabled._translated_
-     */
     public function testCheckUserWithInvalidUserShouldThrowException()
     {
+        $this->expectException(\League\OAuth2\Server\Exception\OAuthServerException::class);
+
+        $this->expectExceptionMessage('__Account is disabled._translated_');
+
         $user = $this->createMock(UserInterface::class);
         $this->userChecker->expects($this->once())
             ->method('checkPreAuth')

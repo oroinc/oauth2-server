@@ -6,6 +6,7 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use League\OAuth2\Server\Exception\OAuthServerException;
+use League\OAuth2\Server\Exception\UniqueTokenIdentifierConstraintViolationException;
 use Oro\Bundle\OAuth2ServerBundle\Entity\AccessToken;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Entity\RefreshToken;
@@ -85,12 +86,11 @@ class RefreshTokenRepositoryTest extends \PHPUnit\Framework\TestCase
         self::assertInstanceOf(RefreshTokenEntity::class, $this->repository->getNewRefreshToken());
     }
 
-    /**
-     * @expectedException \League\OAuth2\Server\Exception\UniqueTokenIdentifierConstraintViolationException
-     * @expectedExceptionMessage Could not create unique access token identifier
-     */
     public function testPersistNewRefreshTokenOnExistToken()
     {
+        $this->expectException(UniqueTokenIdentifierConstraintViolationException::class);
+        $this->expectExceptionMessage('Could not create unique access token identifier');
+
         $refreshTokenEntity = new RefreshTokenEntity();
         $refreshTokenEntity->setIdentifier('test_id');
 
@@ -197,11 +197,10 @@ class RefreshTokenRepositoryTest extends \PHPUnit\Framework\TestCase
         self::assertTrue($existingToken->isRevoked());
     }
 
-    /**
-     * @expectedException League\OAuth2\Server\Exception\OAuthServerException
-     */
     public function testRevokeRefreshTokenOnExistTokenAndAccessTokenWithoutUserIdentifier()
     {
+        $this->expectException(\League\OAuth2\Server\Exception\OAuthServerException::class);
+
         $accessToken = new AccessToken('test_id', new \DateTime(), ['test_scope'], new Client());
         $existingToken = new RefreshToken('test_id', new \DateTime(), $accessToken);
 
@@ -263,11 +262,10 @@ class RefreshTokenRepositoryTest extends \PHPUnit\Framework\TestCase
         self::assertFalse($this->repository->isRefreshTokenRevoked('test_id'));
     }
 
-    /**
-     * @expectedException League\OAuth2\Server\Exception\OAuthServerException
-     */
     public function testIsRefreshTokenRevokedOnNonExistingNotRevokedTokenForNotValidUser()
     {
+        $this->expectException(\League\OAuth2\Server\Exception\OAuthServerException::class);
+
         $accessToken = new AccessToken('test_auth', new \DateTime(), [], $this->createMock(Client::class), 'user_id');
         $existingToken = new RefreshToken('test_id', new \DateTime(), $accessToken);
         $user = $this->createMock(UserInterface::class);

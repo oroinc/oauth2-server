@@ -200,19 +200,15 @@ class UniqueClientNameValidatorTest extends ConstraintValidatorTestCase
             ->willReturn($rows);
     }
 
-    /**
-     * @expectedException \Symfony\Component\Validator\Exception\UnexpectedTypeException
-     */
     public function testInvalidConstraint()
     {
+        $this->expectException(\Symfony\Component\Validator\Exception\UnexpectedTypeException::class);
         $this->validator->validate(new Client(), new NotBlank());
     }
 
-    /**
-     * @expectedException \Symfony\Component\Validator\Exception\UnexpectedTypeException
-     */
     public function testInvalidValue()
     {
+        $this->expectException(\Symfony\Component\Validator\Exception\UnexpectedTypeException::class);
         $this->validator->validate(new \stdClass(), new UniqueClientName());
     }
 
@@ -235,12 +231,11 @@ class UniqueClientNameValidatorTest extends ConstraintValidatorTestCase
         $this->assertNoViolation();
     }
 
-    /**
-     * @expectedException \Symfony\Component\Validator\Exception\RuntimeException
-     * @expectedExceptionMessage The organization must be defined.
-     */
     public function testNoOrganization()
     {
+        $this->expectException(\Symfony\Component\Validator\Exception\RuntimeException::class);
+        $this->expectExceptionMessage('The organization must be defined.');
+
         $client = new Client();
         $client->setName('test');
 

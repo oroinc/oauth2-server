@@ -5,6 +5,7 @@ namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\League\Repository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
+use League\OAuth2\Server\Exception\UniqueTokenIdentifierConstraintViolationException;
 use Oro\Bundle\OAuth2ServerBundle\Entity\AccessToken;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\League\Entity\AccessTokenEntity;
@@ -67,12 +68,11 @@ class AccessTokenRepositoryTest extends \PHPUnit\Framework\TestCase
         self::assertEquals(new AccessTokenEntity(), $this->repository->getNewToken(new ClientEntity(), []));
     }
 
-    /**
-     * @expectedException \League\OAuth2\Server\Exception\UniqueTokenIdentifierConstraintViolationException
-     * @expectedExceptionMessage Could not create unique access token identifier
-     */
     public function testPersistNewAccessTokenOnExistToken()
     {
+        $this->expectException(UniqueTokenIdentifierConstraintViolationException::class);
+        $this->expectExceptionMessage('Could not create unique access token identifier');
+
         $accessTokenEntity = new AccessTokenEntity();
         $accessTokenEntity->setIdentifier('test_id');
 

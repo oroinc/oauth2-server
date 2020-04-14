@@ -131,11 +131,9 @@ class FrontendRefreshTokenRepositoryTest extends \PHPUnit\Framework\TestCase
         self::assertTrue($existingToken->isRevoked());
     }
 
-    /**
-     * @expectedException \League\OAuth2\Server\Exception\OAuthServerException
-     */
     public function testRevokeRefreshTokenOnExistTokenAndFrontendClientWithWrongVisitorIdentifier()
     {
+        $this->expectException(\League\OAuth2\Server\Exception\OAuthServerException::class);
         $client = new Client();
         $client->setFrontend(true);
         $accessToken = new AccessToken('at_test_id', new \DateTime(), ['test_scope'], $client, 'visitor:123:test');

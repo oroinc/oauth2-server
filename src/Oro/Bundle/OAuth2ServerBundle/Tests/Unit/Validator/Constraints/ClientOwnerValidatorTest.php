@@ -18,19 +18,15 @@ class ClientOwnerValidatorTest extends ConstraintValidatorTestCase
         return new ClientOwnerValidator();
     }
 
-    /**
-     * @expectedException \Symfony\Component\Validator\Exception\UnexpectedTypeException
-     */
     public function testInvalidConstraint()
     {
+        $this->expectException(\Symfony\Component\Validator\Exception\UnexpectedTypeException::class);
         $this->validator->validate(new Client(), new NotBlank());
     }
 
-    /**
-     * @expectedException \Symfony\Component\Validator\Exception\UnexpectedTypeException
-     */
     public function testInvalidValue()
     {
+        $this->expectException(\Symfony\Component\Validator\Exception\UnexpectedTypeException::class);
         $this->validator->validate(new \stdClass(), new ClientOwner());
     }
 

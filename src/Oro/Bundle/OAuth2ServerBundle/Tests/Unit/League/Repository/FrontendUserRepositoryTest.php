@@ -228,11 +228,9 @@ class FrontendUserRepositoryTest extends \PHPUnit\Framework\TestCase
         );
     }
 
-    /**
-     * @expectedException \League\OAuth2\Server\Exception\OAuthServerException
-     */
     public function testCustomerVisitorOnNotPasswordGrantType()
     {
+        $this->expectException(\League\OAuth2\Server\Exception\OAuthServerException::class);
         $client = new ClientEntity();
         $client->setFrontend(true);
 
