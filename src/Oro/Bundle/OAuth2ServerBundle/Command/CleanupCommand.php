@@ -19,6 +19,9 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  */
 class CleanupCommand extends Command implements CronCommandInterface
 {
+    /** @var string */
+    protected static $defaultName = 'oro:cron:oauth-server:cleanup';
+
     /** @var ClientCleaner */
     private $clientCleaner;
 
@@ -66,7 +69,6 @@ class CleanupCommand extends Command implements CronCommandInterface
     protected function configure()
     {
         $this
-            ->setName('oro:cron:oauth-server:cleanup')
             ->setDescription(
                 'Removes outdated OAuth 2.0 access tokens, refresh tokens'
                 . ' and OAuth 2.0 applications that belong to removed users'
