@@ -48,7 +48,7 @@ class OAuthUserChecker
                 'security'
             );
 
-            throw new OAuthServerException($exceptionMessage, 6, 'invalid_credentials', 401);
+            throw new OAuthServerException($exceptionMessage, 6, 'invalid_credentials', 401, null, null, $e);
         }
     }
 }

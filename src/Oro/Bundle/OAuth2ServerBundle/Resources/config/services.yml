@@ -284,3 +284,47 @@ services:
         class: Oro\Bundle\OAuth2ServerBundle\Security\ApiFeatureChecker
         arguments:
             - '@oro_featuretoggle.checker.feature_checker'
+
+    oro_oauth2_server.handler.get_access_token.exception_handler:
+        class: Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Exception\ExceptionHandler
+        public: true
+        arguments:
+            - !tagged oro_oauth2_server.get_access_token_exception_handler
+
+    oro_oauth2_server.handler.get_access_token.log_exception_handler:
+        class: Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Exception\LogExceptionHandler
+        public: false
+        arguments:
+            - '@logger'
+        tags:
+            - { name: oro_oauth2_server.get_access_token_exception_handler }
+
+    oro_oauth2_server.handler.get_access_token.password_grant_exception_handler:
+        class: Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Exception\PasswordGrantExceptionHandler
+        public: false
+        arguments:
+            - '@event_dispatcher'
+            - '@doctrine'
+            - '@?oro_frontend.request.frontend_helper'
+        tags:
+            - { name: oro_oauth2_server.get_access_token_exception_handler }
+
+    oro_oauth2_server.handler.get_access_token.success_handler:
+        class: Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Success\SuccessHandler
+        public: true
+        arguments:
+            - !tagged oro_oauth2_server.get_access_token_success_handler
+
+    oro_oauth2_server.handler.get_access_token.password_grant_success_handler:
+        class: Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Success\PasswordGrantSuccessHandler
+        public: false
+        arguments:
+            - '@event_dispatcher'
+            - '@request_stack'
+            - '@doctrine'
+            - '@security.token_storage'
+            - '@oro_user.security.user_loader'
+            - '@?oro_customer.security.user_loader'
+            - '@?oro_frontend.request.frontend_helper'
+        tags:
+            - { name: oro_oauth2_server.get_access_token_success_handler }
