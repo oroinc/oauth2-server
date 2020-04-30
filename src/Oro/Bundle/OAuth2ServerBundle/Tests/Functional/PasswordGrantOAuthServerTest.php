@@ -46,7 +46,7 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
         self::assertGreaterThanOrEqual(3599, $accessToken['expires_in']);
         self::assertArrayHasKey('refresh_token', $accessToken);
 
-        list($accessTokenFirstPart, $accessTokenSecondPart) = explode('.', $accessToken['access_token']);
+        [$accessTokenFirstPart, $accessTokenSecondPart] = explode('.', $accessToken['access_token']);
         $accessTokenFirstPart = self::jsonToArray(base64_decode($accessTokenFirstPart));
         $accessTokenSecondPart = self::jsonToArray(base64_decode($accessTokenSecondPart));
         self::assertEquals('JWT', $accessTokenFirstPart['typ']);
@@ -57,14 +57,91 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
         self::assertClientLastUsedValueIsCorrect($startDateTime, $client);
     }
 
+    public function testLockUserOnAttemptsLimit()
+    {
+        if (!class_exists('Oro\Bundle\UserProBundle\OroUserProBundle')) {
+            self::markTestSkipped('Could be tested only with UserPro bundle');
+        }
+
+        $configManager = $this->getConfigManager();
+        $configManager->set('oro_user_pro.failed_login_limit_enabled', true);
+        $configManager->set('oro_user_pro.failed_login_limit', 2);
+        $configManager->flush();
+
+        $user = $this->getReference('user');
+        $result = $this->sendPasswordAccessTokenRequest($user->getUsername(), 'wrong', Response::HTTP_UNAUTHORIZED);
+        self::assertEquals(
+            [
+                'error'             => 'invalid_credentials',
+                'error_description' => 'The user credentials were incorrect.',
+                'message'           => 'The user credentials were incorrect.'
+            ],
+            $result
+        );
+
+        $result = $this->sendPasswordAccessTokenRequest($user->getUsername(), 'wrong', Response::HTTP_UNAUTHORIZED);
+        self::assertEquals(
+            [
+                'error'             => 'invalid_credentials',
+                'error_description' => 'The user credentials were incorrect.',
+                'message'           => 'The user credentials were incorrect.'
+            ],
+            $result
+        );
+
+        $result = $this->sendPasswordAccessTokenRequest($user->getUsername(), 'wrong', Response::HTTP_UNAUTHORIZED);
+        self::assertEquals(
+            [
+                'error'             => 'invalid_credentials',
+                'error_description' => 'Account is locked.',
+                'message'           => 'Account is locked.'
+            ],
+            $result
+        );
+
+        $user = self::getContainer()->get('doctrine')->getRepository(User::class)->find($user->getId());
+        self::assertEquals('locked', $user->getAuthStatus()->getId());
+        self::assertEquals(3, $user->getFailedLoginCount());
+    }
+
+    public function testResetFailedLoginCounters()
+    {
+        if (!class_exists('Oro\Bundle\UserProBundle\OroUserProBundle')) {
+            self::markTestSkipped('Could be tested only with UserPro bundle');
+        }
+
+        $configManager = $this->getConfigManager();
+        $configManager->set('oro_user_pro.failed_login_limit_enabled', true);
+        $configManager->set('oro_user_pro.failed_login_limit', 2);
+        $configManager->flush();
+
+        $user = $this->getReference('user');
+        $result = $this->sendPasswordAccessTokenRequest($user->getUsername(), 'wrong', Response::HTTP_UNAUTHORIZED);
+        self::assertEquals(
+            [
+                'error'             => 'invalid_credentials',
+                'error_description' => 'The user credentials were incorrect.',
+                'message'           => 'The user credentials were incorrect.'
+            ],
+            $result
+        );
+        $user = self::getContainer()->get('doctrine')->getRepository(User::class)->find($user->getId());
+        self::assertEquals(1, $user->getFailedLoginCount());
+
+        $result = $this->sendPasswordAccessTokenRequest($user->getUsername(), $user->getUsername());
+        self::assertEquals('Bearer', $result['token_type']);
+        $user = self::getContainer()->get('doctrine')->getRepository(User::class)->find($user->getId());
+        self::assertEquals(0, $user->getFailedLoginCount());
+    }
+
     public function testGetAuthTokenForNotExistingUser()
     {
         $responseContent = $this->sendPasswordAccessTokenRequest('test', 'test', Response::HTTP_UNAUTHORIZED);
 
         self::assertEquals(
             [
-                'error' => 'invalid_credentials',
-                'message' => 'The user credentials were incorrect.',
+                'error'             => 'invalid_credentials',
+                'message'           => 'The user credentials were incorrect.',
                 'error_description' => 'The user credentials were incorrect.'
             ],
             $responseContent
@@ -86,8 +163,8 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
 
         self::assertEquals(
             [
-                'error' => 'invalid_credentials',
-                'message' => 'Account is locked.',
+                'error'             => 'invalid_credentials',
+                'message'           => 'Account is locked.',
                 'error_description' => 'Account is locked.'
             ],
             $responseContent
@@ -111,8 +188,8 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
 
         self::assertEquals(
             [
-                'error' => 'invalid_client',
-                'message' => 'Client authentication failed',
+                'error'             => 'invalid_client',
+                'message'           => 'Client authentication failed',
                 'error_description' => 'Client authentication failed'
             ],
             $responseContent
@@ -191,10 +268,10 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
 
         self::assertEquals(
             [
-                'error' => 'invalid_request',
-                'message' => 'The refresh token is invalid.',
+                'error'             => 'invalid_request',
+                'message'           => 'The refresh token is invalid.',
                 'error_description' => 'The refresh token is invalid.',
-                'hint' => 'Cannot decrypt the refresh token'
+                'hint'              => 'Cannot decrypt the refresh token'
             ],
             $responseContent
         );
@@ -255,7 +332,7 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
             ['HTTP_AUTHORIZATION' => $refreshedAuthorizationHeader]
         );
         $this->assertResponseContains(
-            ['data' => ['type' => 'users', 'id'   => '<toString(@user->id)>']],
+            ['data' => ['type' => 'users', 'id' => '<toString(@user->id)>']],
             $response
         );
     }
@@ -275,8 +352,8 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
 
         self::assertEquals(
             [
-                'error' => 'invalid_credentials',
-                'message' => 'Account is locked.',
+                'error'             => 'invalid_credentials',
+                'message'           => 'Account is locked.',
                 'error_description' => 'Account is locked.'
             ],
             $refreshedToken
@@ -301,8 +378,8 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
 
         self::assertEquals(
             [
-                'error' => 'invalid_client',
-                'message' => 'Client authentication failed',
+                'error'             => 'invalid_client',
+                'message'           => 'Client authentication failed',
                 'error_description' => 'Client authentication failed'
             ],
             $refreshedToken

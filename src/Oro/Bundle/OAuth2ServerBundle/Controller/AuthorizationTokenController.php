@@ -30,10 +30,13 @@ class AuthorizationTokenController extends Controller
         $serverResponse = new Response();
 
         try {
-            return $this->getAuthorizationServer()
+            $response = $this->getAuthorizationServer()
                 ->respondToAccessTokenRequest($serverRequest, $serverResponse);
+            $this->get('oro_oauth2_server.handler.get_access_token.success_handler')->handle($serverRequest);
+
+            return $response;
         } catch (OAuthServerException $e) {
-            $this->getLogger()->info($e->getMessage(), ['exception' => $e]);
+            $this->get('oro_oauth2_server.handler.get_access_token.exception_handler')->handle($serverRequest, $e);
 
             return $e->generateHttpResponse($serverResponse);
         }
