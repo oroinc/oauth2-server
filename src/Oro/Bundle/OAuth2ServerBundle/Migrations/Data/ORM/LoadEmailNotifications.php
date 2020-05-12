@@ -7,7 +7,6 @@ use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Common\Persistence\ObjectManager;
 use Oro\Bundle\EmailBundle\Entity\EmailTemplate;
 use Oro\Bundle\NotificationBundle\Entity\EmailNotification;
-use Oro\Bundle\NotificationBundle\Entity\Event as NotificationEvent;
 use Oro\Bundle\NotificationBundle\Entity\RecipientList;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 
@@ -58,7 +57,7 @@ class LoadEmailNotifications extends AbstractFixture implements DependentFixture
     ): EmailNotification {
         $emailNotification = new EmailNotification();
         $emailNotification->setEntityName(Client::class);
-        $emailNotification->setEvent($this->getNotificationEvent($manager, $eventName));
+        $emailNotification->setEventName($this->getNotificationEvent($eventName));
         $emailNotification->setTemplate($this->getEmailTemplate($manager, $templateName));
 
         $recipientList = new RecipientList();
@@ -72,15 +71,13 @@ class LoadEmailNotifications extends AbstractFixture implements DependentFixture
     }
 
     /**
-     * @param ObjectManager $manager
      * @param string        $name
      *
-     * @return NotificationEvent
+     * @return string
      */
-    private function getNotificationEvent(ObjectManager $manager, string $name): NotificationEvent
+    private function getNotificationEvent(string $name): string
     {
-        return $manager->getRepository(NotificationEvent::class)
-            ->findOneBy(['name' => 'oro.notification.event.entity_post_' . $name]);
+        return 'oro.notification.event.entity_post_' . $name;
     }
 
     /**
