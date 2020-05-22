@@ -63,8 +63,6 @@ class OAuth2Listener implements ListenerInterface
         );
         $token->setAttribute(OAuth2Token::PROVIDER_KEY_ATTRIBUTE, $this->providerKey);
 
-        $this->tokenStorage->setToken(
-            $this->authenticationManager->authenticate($token)
-        );
+        $this->tokenStorage->setToken($this->authenticationManager->authenticate($token));
     }
 }

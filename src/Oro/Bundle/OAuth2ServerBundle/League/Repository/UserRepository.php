@@ -53,11 +53,11 @@ class UserRepository implements UserRepositoryInterface
             return null;
         }
 
+        $this->userChecker->checkUser($user);
+
         if (!$this->isPasswordValid($user, $password)) {
             return null;
         }
-
-        $this->userChecker->checkUser($user);
 
         $userEntity = new UserEntity();
         $userEntity->setIdentifier($user->getUsername());

@@ -17,6 +17,18 @@ class OAuthServerTestCase extends RestJsonApiTestCase
     }
 
     /**
+     * {@inheritdoc}
+     */
+    protected function isStatelessRequest(array $server): bool
+    {
+        if (isset($server['HTTP_AUTHORIZATION']) && strpos($server['HTTP_AUTHORIZATION'], 'Bearer ') === 0) {
+            return true;
+        }
+
+        return parent::isStatelessRequest($server);
+    }
+
+    /**
      * @param array $requestData
      * @param int   $expectedStatusCode
      *
@@ -51,7 +63,7 @@ class OAuthServerTestCase extends RestJsonApiTestCase
     protected function sendRequest(string $method, string $uri, array $parameters = [], array $server = []): Response
     {
         $this->client->request($method, $uri, $parameters, [], $server);
-        self::assertSessionNotStarted($method, $uri, $server);
+        $this->assertSessionNotStarted($method, $uri, $server);
 
         return $this->client->getResponse();
     }
