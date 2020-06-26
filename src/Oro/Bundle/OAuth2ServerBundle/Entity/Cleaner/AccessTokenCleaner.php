@@ -3,7 +3,7 @@
 namespace Oro\Bundle\OAuth2ServerBundle\Entity\Cleaner;
 
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\DBAL\Types\Type;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\EntityManagerInterface;
 use Oro\Bundle\OAuth2ServerBundle\Entity\AccessToken;
 use Oro\Bundle\OAuth2ServerBundle\Entity\RefreshToken;
@@ -32,7 +32,7 @@ class AccessTokenCleaner
         $qb = $this->getEntityManager()->createQueryBuilder()
             ->delete(AccessToken::class, 'e')
             ->where('e.expiresAt < :now')
-            ->setParameter('now', new \DateTime('now', new \DateTimeZone('UTC')), Type::DATETIME);
+            ->setParameter('now', new \DateTime('now', new \DateTimeZone('UTC')), Types::DATETIME_MUTABLE);
 
         $refreshTokenSubquery = $this->getEntityManager()->createQueryBuilder()
             ->from(RefreshToken::class, 'r')
