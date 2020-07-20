@@ -2,9 +2,9 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Entity\Cleaner;
 
-use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ManagerRegistry;
 use Oro\Bundle\OAuth2ServerBundle\Entity\RefreshToken;
 
 /**

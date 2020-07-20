@@ -3,6 +3,7 @@
 namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Form\Transformer;
 
 use Oro\Bundle\OAuth2ServerBundle\Form\Transformer\GrantTypeTransformer;
+use Symfony\Component\Form\Exception\TransformationFailedException;
 
 class GrantTypeTransformerTest extends \PHPUnit\Framework\TestCase
 {
@@ -30,7 +31,7 @@ class GrantTypeTransformerTest extends \PHPUnit\Framework\TestCase
 
     public function testTransformOnNonArrayValue()
     {
-        $this->expectException(\Symfony\Component\Form\Exception\TransformationFailedException::class);
+        $this->expectException(TransformationFailedException::class);
         $this->expectExceptionMessage('Expected argument of type "array" or "string", "integer" given.');
 
         $this->transformer->transform(1213);
@@ -38,7 +39,7 @@ class GrantTypeTransformerTest extends \PHPUnit\Framework\TestCase
 
     public function testTransformOnMultiValuesArrayValue()
     {
-        $this->expectException(\Symfony\Component\Form\Exception\TransformationFailedException::class);
+        $this->expectException(TransformationFailedException::class);
         $this->expectExceptionMessage('The value must contain not more than 1 element.');
 
         $this->transformer->transform(['firsst', 'second']);
@@ -66,7 +67,7 @@ class GrantTypeTransformerTest extends \PHPUnit\Framework\TestCase
 
     public function testTransformOnNonStringValue()
     {
-        $this->expectException(\Symfony\Component\Form\Exception\TransformationFailedException::class);
+        $this->expectException(TransformationFailedException::class);
         $this->expectExceptionMessage('Expected argument of type "string" or "array", "integer" given.');
 
         $this->transformer->reverseTransform(1213);

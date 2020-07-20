@@ -16,6 +16,9 @@ class ClientEntity implements ClientEntityInterface
     /** @var bool */
     private $frontend = false;
 
+    /** @var bool */
+    private $plainTextPkceAllowed = false;
+
     /**
      * @param string $name
      */
@@ -46,5 +49,29 @@ class ClientEntity implements ClientEntityInterface
     public function setFrontend(bool $frontend): void
     {
         $this->frontend = $frontend;
+    }
+
+    /**
+     * @param bool $confidential
+     */
+    public function setConfidential(bool $confidential): void
+    {
+        $this->isConfidential = $confidential;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isPlainTextPkceAllowed(): bool
+    {
+        return $this->plainTextPkceAllowed;
+    }
+
+    /**
+     * @param bool $plainTextPkceAllowed
+     */
+    public function setPlainTextPkceAllowed(bool $plainTextPkceAllowed): void
+    {
+        $this->plainTextPkceAllowed = $plainTextPkceAllowed;
     }
 }

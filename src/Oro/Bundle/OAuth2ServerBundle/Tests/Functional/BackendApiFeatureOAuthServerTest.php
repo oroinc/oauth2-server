@@ -43,7 +43,7 @@ class BackendApiFeatureOAuthServerTest extends OAuthServerTestCase
                     'client_id'     => LoadClientCredentialsClient::OAUTH_CLIENT_ID,
                     'client_secret' => LoadClientCredentialsClient::OAUTH_CLIENT_SECRET
                 ],
-                Response::HTTP_NOT_FOUND
+                Response::HTTP_UNAUTHORIZED
             );
         } finally {
             $this->enableApiFeature();
@@ -51,9 +51,9 @@ class BackendApiFeatureOAuthServerTest extends OAuthServerTestCase
 
         self::assertEquals(
             [
-                'error'             => 'not_available',
-                'error_description' => 'Not found',
-                'message'           => 'Not found'
+                'error'             => 'invalid_client',
+                'error_description' => 'Client authentication failed',
+                'message'           => 'Client authentication failed'
             ],
             $response
         );

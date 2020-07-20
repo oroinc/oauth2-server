@@ -2,9 +2,9 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\League\Repository;
 
-use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
+use Doctrine\Persistence\ManagerRegistry;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use League\OAuth2\Server\Exception\UniqueTokenIdentifierConstraintViolationException;
 use Oro\Bundle\OAuth2ServerBundle\Entity\AccessToken;
@@ -114,8 +114,8 @@ class RefreshTokenRepositoryTest extends \PHPUnit\Framework\TestCase
     {
         $scope = new ScopeEntity();
         $scope->setIdentifier('test_scope');
-        $expireDate = new \DateTime();
-        $expireRefreshTokenDate = new \DateTime('2120-01-01');
+        $expireDate = new \DateTimeImmutable();
+        $expireRefreshTokenDate = new \DateTimeImmutable('2120-01-01');
         $clientEntity = new ClientEntity();
         $clientEntity->setIdentifier('client_id');
         $accessTokenEntity = new AccessTokenEntity();
@@ -131,8 +131,18 @@ class RefreshTokenRepositoryTest extends \PHPUnit\Framework\TestCase
 
         $client = new Client();
         $client->setIdentifier('client_id');
-        $accessToken = new AccessToken('test_id', $expireDate, ['test_scope'], $client, 'user_id');
-        $expectedRefreshToken = new RefreshToken('refresh_token_id', $expireRefreshTokenDate, $accessToken);
+        $accessToken = new AccessToken(
+            'test_id',
+            \DateTime::createFromImmutable($expireDate),
+            ['test_scope'],
+            $client,
+            'user_id'
+        );
+        $expectedRefreshToken = new RefreshToken(
+            'refresh_token_id',
+            \DateTime::createFromImmutable($expireRefreshTokenDate),
+            $accessToken
+        );
 
         $em = $this->expectGetEntityManager();
         $accessTokenRepository = $this->createMock(EntityRepository::class);
@@ -199,8 +209,6 @@ class RefreshTokenRepositoryTest extends \PHPUnit\Framework\TestCase
 
     public function testRevokeRefreshTokenOnExistTokenAndAccessTokenWithoutUserIdentifier()
     {
-        $this->expectException(\League\OAuth2\Server\Exception\OAuthServerException::class);
-
         $accessToken = new AccessToken('test_id', new \DateTime(), ['test_scope'], new Client());
         $existingToken = new RefreshToken('test_id', new \DateTime(), $accessToken);
 
@@ -210,6 +218,8 @@ class RefreshTokenRepositoryTest extends \PHPUnit\Framework\TestCase
             ->method('findOneBy')
             ->with(['identifier' => 'test_id'])
             ->willReturn($existingToken);
+
+        $this->expectException(OAuthServerException::class);
 
         $this->repository->revokeRefreshToken('test_id');
     }
@@ -264,8 +274,6 @@ class RefreshTokenRepositoryTest extends \PHPUnit\Framework\TestCase
 
     public function testIsRefreshTokenRevokedOnNonExistingNotRevokedTokenForNotValidUser()
     {
-        $this->expectException(\League\OAuth2\Server\Exception\OAuthServerException::class);
-
         $accessToken = new AccessToken('test_auth', new \DateTime(), [], $this->createMock(Client::class), 'user_id');
         $existingToken = new RefreshToken('test_id', new \DateTime(), $accessToken);
         $user = $this->createMock(UserInterface::class);
@@ -277,13 +285,16 @@ class RefreshTokenRepositoryTest extends \PHPUnit\Framework\TestCase
         $this->userChecker->expects($this->once())
             ->method('checkUser')
             ->with($user)
-            ->willThrowException(OAuthServerException::invalidCredentials());
+            ->willThrowException(OAuthServerException::invalidGrant());
 
         $repository = $this->expectGetRepository(RefreshToken::class);
         $repository->expects(self::once())
             ->method('findOneBy')
             ->with(['identifier' => 'test_id'])
             ->willReturn($existingToken);
+
+        $this->expectException(OAuthServerException::class);
+        $this->expectExceptionCode(10); // invalid grant
 
         self::assertFalse($this->repository->isRefreshTokenRevoked('test_id'));
     }

@@ -2,6 +2,7 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Security;
 
+use League\OAuth2\Server\Exception\OAuthServerException;
 use Oro\Bundle\OAuth2ServerBundle\Security\OAuthUserChecker;
 use Oro\Bundle\UserBundle\Entity\UserInterface;
 use Symfony\Component\Security\Core\Exception\DisabledException;
@@ -34,17 +35,20 @@ class OAuthUserCheckerTest extends \PHPUnit\Framework\TestCase
 
     public function testCheckUserWithInvalidUserShouldThrowException()
     {
-        $this->expectException(\League\OAuth2\Server\Exception\OAuthServerException::class);
-
-        $this->expectExceptionMessage('__Account is disabled._translated_');
-
         $user = $this->createMock(UserInterface::class);
         $this->userChecker->expects($this->once())
             ->method('checkPreAuth')
             ->with($user)
             ->willThrowException(new DisabledException());
 
-        $this->oauthUserChecker->checkUser($user);
+        try {
+            $this->oauthUserChecker->checkUser($user);
+            $this->fail('Expencted ' . OAuthServerException::class);
+        } catch (OAuthServerException $e) {
+            $this->assertEquals('invalid_grant', $e->getErrorType());
+            $this->assertEquals(10, $e->getCode());
+            $this->assertEquals('__Account is disabled._translated_', $e->getHint());
+        }
     }
 
     public function testCheckUserWithValidUserShouldNotThrowException()

@@ -69,34 +69,67 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
         $configManager->flush();
 
         $user = $this->getReference('user');
-        $result = $this->sendPasswordAccessTokenRequest($user->getUsername(), 'wrong', Response::HTTP_UNAUTHORIZED);
+        $responseContent = $this->sendPasswordAccessTokenRequest(
+            $user->getUsername(),
+            'wrong',
+            Response::HTTP_BAD_REQUEST
+        );
         self::assertEquals(
             [
-                'error'             => 'invalid_credentials',
-                'error_description' => 'The user credentials were incorrect.',
-                'message'           => 'The user credentials were incorrect.'
+                'error'             => 'invalid_grant',
+                'message'           => 'The provided authorization grant (e.g., authorization code,'
+                    . ' resource owner credentials) or refresh token is invalid, expired, revoked,'
+                    . ' does not match the redirection URI used in the authorization request,'
+                    . ' or was issued to another client.',
+                'error_description' => 'The provided authorization grant (e.g., authorization code,'
+                    . ' resource owner credentials) or refresh token is invalid, expired, revoked,'
+                    . ' does not match the redirection URI used in the authorization request,'
+                    . ' or was issued to another client.',
+                'hint'              => ''
             ],
-            $result
+            $responseContent
         );
 
-        $result = $this->sendPasswordAccessTokenRequest($user->getUsername(), 'wrong', Response::HTTP_UNAUTHORIZED);
+        $responseContent = $this->sendPasswordAccessTokenRequest(
+            $user->getUsername(),
+            'wrong',
+            Response::HTTP_BAD_REQUEST
+        );
         self::assertEquals(
             [
-                'error'             => 'invalid_credentials',
-                'error_description' => 'The user credentials were incorrect.',
-                'message'           => 'The user credentials were incorrect.'
+                'error'             => 'invalid_grant',
+                'message'           => 'The provided authorization grant (e.g., authorization code,'
+                    . ' resource owner credentials) or refresh token is invalid, expired, revoked,'
+                    . ' does not match the redirection URI used in the authorization request,'
+                    . ' or was issued to another client.',
+                'error_description' => 'The provided authorization grant (e.g., authorization code,'
+                    . ' resource owner credentials) or refresh token is invalid, expired, revoked,'
+                    . ' does not match the redirection URI used in the authorization request,'
+                    . ' or was issued to another client.',
+                'hint'              => ''
             ],
-            $result
+            $responseContent
         );
 
-        $result = $this->sendPasswordAccessTokenRequest($user->getUsername(), 'wrong', Response::HTTP_UNAUTHORIZED);
+        $responseContent = $this->sendPasswordAccessTokenRequest(
+            $user->getUsername(),
+            'wrong',
+            Response::HTTP_BAD_REQUEST
+        );
         self::assertEquals(
             [
-                'error'             => 'invalid_credentials',
-                'error_description' => 'Account is locked.',
-                'message'           => 'Account is locked.'
+                'error'             => 'invalid_grant',
+                'message'           => 'The provided authorization grant (e.g., authorization code,'
+                    . ' resource owner credentials) or refresh token is invalid, expired, revoked,'
+                    . ' does not match the redirection URI used in the authorization request,'
+                    . ' or was issued to another client.',
+                'error_description' => 'The provided authorization grant (e.g., authorization code,'
+                    . ' resource owner credentials) or refresh token is invalid, expired, revoked,'
+                    . ' does not match the redirection URI used in the authorization request,'
+                    . ' or was issued to another client.',
+                'hint'              => 'Account is locked.'
             ],
-            $result
+            $responseContent
         );
 
         $user = self::getContainer()->get('doctrine')->getRepository(User::class)->find($user->getId());
@@ -116,33 +149,51 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
         $configManager->flush();
 
         $user = $this->getReference('user');
-        $result = $this->sendPasswordAccessTokenRequest($user->getUsername(), 'wrong', Response::HTTP_UNAUTHORIZED);
+        $responseContent = $this->sendPasswordAccessTokenRequest(
+            $user->getUsername(),
+            'wrong',
+            Response::HTTP_BAD_REQUEST
+        );
         self::assertEquals(
             [
-                'error'             => 'invalid_credentials',
-                'error_description' => 'The user credentials were incorrect.',
-                'message'           => 'The user credentials were incorrect.'
+                'error'             => 'invalid_grant',
+                'message'           => 'The provided authorization grant (e.g., authorization code,'
+                    . ' resource owner credentials) or refresh token is invalid, expired, revoked,'
+                    . ' does not match the redirection URI used in the authorization request,'
+                    . ' or was issued to another client.',
+                'error_description' => 'The provided authorization grant (e.g., authorization code,'
+                    . ' resource owner credentials) or refresh token is invalid, expired, revoked,'
+                    . ' does not match the redirection URI used in the authorization request,'
+                    . ' or was issued to another client.',
+                'hint'              => ''
             ],
-            $result
+            $responseContent
         );
         $user = self::getContainer()->get('doctrine')->getRepository(User::class)->find($user->getId());
         self::assertEquals(1, $user->getFailedLoginCount());
 
-        $result = $this->sendPasswordAccessTokenRequest($user->getUsername(), $user->getUsername());
-        self::assertEquals('Bearer', $result['token_type']);
+        $responseContent = $this->sendPasswordAccessTokenRequest($user->getUsername(), $user->getUsername());
+        self::assertEquals('Bearer', $responseContent['token_type']);
         $user = self::getContainer()->get('doctrine')->getRepository(User::class)->find($user->getId());
         self::assertEquals(0, $user->getFailedLoginCount());
     }
 
     public function testGetAuthTokenForNotExistingUser()
     {
-        $responseContent = $this->sendPasswordAccessTokenRequest('test', 'test', Response::HTTP_UNAUTHORIZED);
+        $responseContent = $this->sendPasswordAccessTokenRequest('test', 'test', Response::HTTP_BAD_REQUEST);
 
         self::assertEquals(
             [
-                'error'             => 'invalid_credentials',
-                'message'           => 'The user credentials were incorrect.',
-                'error_description' => 'The user credentials were incorrect.'
+                'error'             => 'invalid_grant',
+                'message'           => 'The provided authorization grant (e.g., authorization code,'
+                    . ' resource owner credentials) or refresh token is invalid, expired, revoked,'
+                    . ' does not match the redirection URI used in the authorization request,'
+                    . ' or was issued to another client.',
+                'error_description' => 'The provided authorization grant (e.g., authorization code,'
+                    . ' resource owner credentials) or refresh token is invalid, expired, revoked,'
+                    . ' does not match the redirection URI used in the authorization request,'
+                    . ' or was issued to another client.',
+                'hint'              => ''
             ],
             $responseContent
         );
@@ -159,13 +210,20 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
         $this->getEntityManager()->flush();
         $userName = $user->getUsername();
 
-        $responseContent = $this->sendPasswordAccessTokenRequest($userName, $userName, Response::HTTP_UNAUTHORIZED);
+        $responseContent = $this->sendPasswordAccessTokenRequest($userName, $userName, Response::HTTP_BAD_REQUEST);
 
         self::assertEquals(
             [
-                'error'             => 'invalid_credentials',
-                'message'           => 'Account is locked.',
-                'error_description' => 'Account is locked.'
+                'error'             => 'invalid_grant',
+                'message'           => 'The provided authorization grant (e.g., authorization code,'
+                    . ' resource owner credentials) or refresh token is invalid, expired, revoked,'
+                    . ' does not match the redirection URI used in the authorization request,'
+                    . ' or was issued to another client.',
+                'error_description' => 'The provided authorization grant (e.g., authorization code,'
+                    . ' resource owner credentials) or refresh token is invalid, expired, revoked,'
+                    . ' does not match the redirection URI used in the authorization request,'
+                    . ' or was issued to another client.',
+                'hint'              => 'Account is locked.'
             ],
             $responseContent
         );
@@ -347,14 +405,21 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
 
         $refreshedToken = $this->sendRefreshAccessTokenRequest(
             $accessToken['refresh_token'],
-            Response::HTTP_UNAUTHORIZED
+            Response::HTTP_BAD_REQUEST
         );
 
         self::assertEquals(
             [
-                'error'             => 'invalid_credentials',
-                'message'           => 'Account is locked.',
-                'error_description' => 'Account is locked.'
+                'error'             => 'invalid_grant',
+                'message'           => 'The provided authorization grant (e.g., authorization code,'
+                    . ' resource owner credentials) or refresh token is invalid, expired, revoked,'
+                    . ' does not match the redirection URI used in the authorization request,'
+                    . ' or was issued to another client.',
+                'error_description' => 'The provided authorization grant (e.g., authorization code,'
+                    . ' resource owner credentials) or refresh token is invalid, expired, revoked,'
+                    . ' does not match the redirection URI used in the authorization request,'
+                    . ' or was issued to another client.',
+                'hint'              => 'Account is locked.'
             ],
             $refreshedToken
         );

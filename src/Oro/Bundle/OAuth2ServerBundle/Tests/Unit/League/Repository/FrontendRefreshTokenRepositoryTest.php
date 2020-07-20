@@ -2,9 +2,10 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\League\Repository;
 
-use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
+use Doctrine\Persistence\ManagerRegistry;
+use League\OAuth2\Server\Exception\OAuthServerException;
 use Oro\Bundle\CustomerBundle\Entity\CustomerVisitorManager;
 use Oro\Bundle\OAuth2ServerBundle\Entity\AccessToken;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
@@ -133,7 +134,6 @@ class FrontendRefreshTokenRepositoryTest extends \PHPUnit\Framework\TestCase
 
     public function testRevokeRefreshTokenOnExistTokenAndFrontendClientWithWrongVisitorIdentifier()
     {
-        $this->expectException(\League\OAuth2\Server\Exception\OAuthServerException::class);
         $client = new Client();
         $client->setFrontend(true);
         $accessToken = new AccessToken('at_test_id', new \DateTime(), ['test_scope'], $client, 'visitor:123:test');
@@ -164,6 +164,8 @@ class FrontendRefreshTokenRepositoryTest extends \PHPUnit\Framework\TestCase
             ->method('persist');
         $em->expects(self::never())
             ->method('flush');
+
+        $this->expectException(OAuthServerException::class);
 
         $this->repository->revokeRefreshToken('test_id');
     }

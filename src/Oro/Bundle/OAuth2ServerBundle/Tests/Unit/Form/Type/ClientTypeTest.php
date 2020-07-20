@@ -2,9 +2,9 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Form\Type;
 
-use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
+use Doctrine\Persistence\ManagerRegistry;
 use Oro\Bundle\EntityConfigBundle\Provider\ConfigProvider;
 use Oro\Bundle\FormBundle\Form\Extension\TooltipFormExtension;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
@@ -19,6 +19,8 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\Test\TypeTestCase;
+use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
+use Symfony\Component\OptionsResolver\Exception\MissingOptionsException;
 
 class ClientTypeTest extends TypeTestCase
 {
@@ -256,7 +258,7 @@ class ClientTypeTest extends TypeTestCase
 
     public function testSubmitWhenNoGrantTypes()
     {
-        $this->expectException(\Symfony\Component\OptionsResolver\Exception\MissingOptionsException::class);
+        $this->expectException(MissingOptionsException::class);
         $this->expectExceptionMessage('The required option "grant_types" is missing.');
 
         $this->createClientType(new Client());
@@ -264,7 +266,7 @@ class ClientTypeTest extends TypeTestCase
 
     public function testSubmitWhenEmptyGrantTypes()
     {
-        $this->expectException(\Symfony\Component\OptionsResolver\Exception\InvalidOptionsException::class);
+        $this->expectException(InvalidOptionsException::class);
         $this->expectExceptionMessage('The option "grant_types" must not be empty.');
 
         $this->createClientType(new Client(), ['grant_types' => []]);

@@ -2,8 +2,8 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Validator\Constraints;
 
-use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ManagerRegistry;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Symfony\Component\Validator\Constraint;

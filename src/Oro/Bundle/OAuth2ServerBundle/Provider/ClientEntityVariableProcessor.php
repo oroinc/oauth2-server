@@ -2,7 +2,7 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Provider;
 
-use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\Persistence\ManagerRegistry;
 use Oro\Bundle\EntityBundle\Twig\Sandbox\TemplateData;
 use Oro\Bundle\EntityBundle\Twig\Sandbox\VariableProcessorInterface;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;

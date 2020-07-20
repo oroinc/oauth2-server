@@ -2,7 +2,7 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Provider;
 
-use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\Persistence\ManagerRegistry;
 use League\OAuth2\Server\AuthorizationValidators\AuthorizationValidatorInterface;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Oro\Bundle\CustomerBundle\Entity\CustomerUser;

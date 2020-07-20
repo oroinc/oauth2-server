@@ -2,8 +2,8 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Handler\GetAccessToken\Success;
 
+use Doctrine\ORM\EntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use Doctrine\Persistence\ObjectRepository;
 use Oro\Bundle\CustomerBundle\Security\CustomerUserLoader;
 use Oro\Bundle\FrontendBundle\Request\FrontendHelper;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
@@ -126,7 +126,7 @@ class PasswordGrantSuccessHandlerTest extends \PHPUnit\Framework\TestCase
         $client->setFrontend($isFrontend);
         $client->setOrganization($organization);
 
-        $repository = $this->createMock(ObjectRepository::class);
+        $repository = $this->createMock(EntityRepository::class);
         $repository->expects(self::once())
             ->method('findOneBy')
             ->with(['identifier' => $identifier])

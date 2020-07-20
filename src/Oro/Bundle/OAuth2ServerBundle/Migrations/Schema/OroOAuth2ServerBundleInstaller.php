@@ -13,7 +13,7 @@ class OroOAuth2ServerBundleInstaller implements Installation
      */
     public function getMigrationVersion()
     {
-        return 'v1_3';
+        return 'v1_4';
     }
 
     /**
@@ -54,6 +54,8 @@ class OroOAuth2ServerBundleInstaller implements Installation
         $table->addColumn('owner_entity_class', 'string', ['length' => 255, 'notnull' => false]);
         $table->addColumn('owner_entity_id', 'integer', ['notnull' => false]);
         $table->addColumn('last_used_at', 'datetime', ['comment' => '(DC2Type:datetime)', 'notnull' => false]);
+        $table->addColumn('confidential', 'boolean', ['default' => '1']);
+        $table->addColumn('plain_text_pkce_allowed', 'boolean', ['default' => '0']);
         $table->setPrimaryKey(['id']);
         $table->addUniqueIndex(['identifier'], 'oro_oauth2_client_uidx');
         $table->addIndex(['organization_id'], 'IDX_2A8C454232C8A3DE');

@@ -2,8 +2,8 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\League\Repository;
 
-use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ManagerRegistry;
 use League\OAuth2\Server\Entities\RefreshTokenEntityInterface;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use League\OAuth2\Server\Exception\UniqueTokenIdentifierConstraintViolationException;
@@ -67,7 +67,7 @@ class RefreshTokenRepository implements RefreshTokenRepositoryInterface
 
         $refreshToken = new RefreshToken(
             $refreshTokenEntity->getIdentifier(),
-            $refreshTokenEntity->getExpiryDateTime(),
+            \DateTime::createFromImmutable($refreshTokenEntity->getExpiryDateTime()),
             $accessToken
         );
 
@@ -123,11 +123,10 @@ class RefreshTokenRepository implements RefreshTokenRepositoryInterface
     private function findRefreshTokenEntity(EntityManagerInterface $em, string $tokenId): ?RefreshToken
     {
         $token = $em->getRepository(RefreshToken::class)->findOneBy(['identifier' => $tokenId]);
-
         if (null !== $token) {
             $userIdentifier = $token->getAccessToken()->getUserIdentifier();
             if (null === $userIdentifier) {
-                throw OAuthServerException::invalidCredentials();
+                throw OAuthServerException::invalidGrant();
             }
             $this->checkUser($this->getUserLoader($token), $userIdentifier);
         }

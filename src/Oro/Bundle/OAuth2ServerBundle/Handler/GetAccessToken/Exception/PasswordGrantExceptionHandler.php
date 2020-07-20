@@ -20,6 +20,9 @@ use Symfony\Component\Security\Core\Exception\AuthenticationException;
  */
 class PasswordGrantExceptionHandler implements ExceptionHandlerInterface
 {
+    /** @see \League\OAuth2\Server\Exception\OAuthServerException::invalidGrant */
+    private const INVALID_GRANT_EXCEPTION_CODE = 10;
+
     /** @var EventDispatcherInterface */
     private $eventDispatcher;
 
@@ -81,7 +84,7 @@ class PasswordGrantExceptionHandler implements ExceptionHandlerInterface
         $exceptionCode = $exception->getCode();
         if ($exception->getPrevious() instanceof AuthenticationException) {
             $authenticationException = $exception->getPrevious();
-        } elseif ($exceptionCode === 6) {
+        } elseif (self::INVALID_GRANT_EXCEPTION_CODE === $exceptionCode) {
             $authenticationException = new BadCredentialsException(
                 $exception->getMessage(),
                 $exceptionCode,

@@ -145,7 +145,7 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
         return $response;
     }
 
-    public function testFrontendGetAuthTokenWithFrontendCredentionsShouldReturnAccessAndRefreshTokens()
+    public function testFrontendGetAuthTokenWithFrontendCredentialsShouldReturnAccessAndRefreshTokens()
     {
         $startDateTime = new \DateTime('now', new \DateTimeZone('UTC'));
         $accessToken = $this->sendFrontendPasswordAccessTokenRequest(
@@ -163,38 +163,52 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
         self::assertClientLastUsedValueIsCorrect($startDateTime, $client);
     }
 
-    public function testFrontendGetAuthTokenWithBackendCredentionsShouldReturnUnauthorizedStatusCode()
+    public function testFrontendGetAuthTokenWithBackendCredentialsShouldReturnBadRequestStatusCode()
     {
         $user = $this->getReference('user');
         $responseContent = $this->sendFrontendPasswordAccessTokenRequest(
             $user->getUsername(),
             $user->getUsername(),
-            Response::HTTP_UNAUTHORIZED
+            Response::HTTP_BAD_REQUEST
         );
 
         self::assertEquals(
             [
-                'error' => 'invalid_credentials',
-                'message' => 'The user credentials were incorrect.',
-                'error_description' => 'The user credentials were incorrect.'
+                'error'             => 'invalid_grant',
+                'message'           => 'The provided authorization grant (e.g., authorization code,'
+                    . ' resource owner credentials) or refresh token is invalid, expired, revoked,'
+                    . ' does not match the redirection URI used in the authorization request,'
+                    . ' or was issued to another client.',
+                'error_description' => 'The provided authorization grant (e.g., authorization code,'
+                    . ' resource owner credentials) or refresh token is invalid, expired, revoked,'
+                    . ' does not match the redirection URI used in the authorization request,'
+                    . ' or was issued to another client.',
+                'hint'              => ''
             ],
             $responseContent
         );
     }
 
-    public function testBackendGetAuthTokenWithFrontendCredentionsShouldReturnUnauthorizedStatusCode()
+    public function testBackendGetAuthTokenWithFrontendCredentialsShouldReturnBadRequestStatusCode()
     {
         $responseContent = $this->sendBackendPasswordAccessTokenRequest(
             'grzegorz.brzeczyszczykiewicz@example.com',
             'test',
-            Response::HTTP_UNAUTHORIZED
+            Response::HTTP_BAD_REQUEST
         );
 
         self::assertEquals(
             [
-                'error' => 'invalid_credentials',
-                'message' => 'The user credentials were incorrect.',
-                'error_description' => 'The user credentials were incorrect.'
+                'error'             => 'invalid_grant',
+                'message'           => 'The provided authorization grant (e.g., authorization code,'
+                    . ' resource owner credentials) or refresh token is invalid, expired, revoked,'
+                    . ' does not match the redirection URI used in the authorization request,'
+                    . ' or was issued to another client.',
+                'error_description' => 'The provided authorization grant (e.g., authorization code,'
+                    . ' resource owner credentials) or refresh token is invalid, expired, revoked,'
+                    . ' does not match the redirection URI used in the authorization request,'
+                    . ' or was issued to another client.',
+                'hint'              => ''
             ],
             $responseContent
         );
@@ -209,14 +223,21 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
         $responseContent = $this->sendFrontendPasswordAccessTokenRequest(
             'grzegorz.brzeczyszczykiewicz@example.com',
             'test',
-            Response::HTTP_UNAUTHORIZED
+            Response::HTTP_BAD_REQUEST
         );
 
         self::assertEquals(
             [
-                'error' => 'invalid_credentials',
-                'message' => 'Account is locked.',
-                'error_description' => 'Account is locked.'
+                'error'             => 'invalid_grant',
+                'message'           => 'The provided authorization grant (e.g., authorization code,'
+                    . ' resource owner credentials) or refresh token is invalid, expired, revoked,'
+                    . ' does not match the redirection URI used in the authorization request,'
+                    . ' or was issued to another client.',
+                'error_description' => 'The provided authorization grant (e.g., authorization code,'
+                    . ' resource owner credentials) or refresh token is invalid, expired, revoked,'
+                    . ' does not match the redirection URI used in the authorization request,'
+                    . ' or was issued to another client.',
+                'hint'              => 'Account is locked.'
             ],
             $responseContent
         );
@@ -308,10 +329,10 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
 
         self::assertEquals(
             [
-                'error' => 'invalid_request',
+                'error'             => 'invalid_request',
                 'error_description' => 'The refresh token is invalid.',
-                'hint' => 'Token is not linked to client',
-                'message' => 'The refresh token is invalid.'
+                'hint'              => 'Token is not linked to client',
+                'message'           => 'The refresh token is invalid.'
             ],
             $responseContent
         );
@@ -336,10 +357,10 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
 
         self::assertEquals(
             [
-                'error' => 'invalid_request',
+                'error'             => 'invalid_request',
                 'error_description' => 'The refresh token is invalid.',
-                'hint' => 'Token is not linked to client',
-                'message' => 'The refresh token is invalid.'
+                'hint'              => 'Token is not linked to client',
+                'message'           => 'The refresh token is invalid.'
             ],
             $responseContent
         );

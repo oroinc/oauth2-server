@@ -176,6 +176,20 @@ class Client
     private $ownerEntityId;
 
     /**
+     * @var bool
+     *
+     * @ORM\Column(name="confidential", type="boolean", options={"default"=true})
+     */
+    private $confidential = true;
+
+    /**
+     * @var bool
+     *
+     * @ORM\Column(name="plain_text_pkce_allowed", type="boolean", options={"default"=false})
+     */
+    private $plainTextPkceAllowed = false;
+
+    /**
      * Gets the entity identifier.
      *
      * @return int|null
@@ -483,5 +497,49 @@ class Client
     public function setLastUsedAt(\DateTime $lastUsedAt): void
     {
         $this->lastUsedAt = $lastUsedAt;
+    }
+
+    /**
+     * Indicates whether the client is a confidential or a public.
+     * @link https://tools.ietf.org/html/rfc6749#section-2.1
+     *
+     * @return bool
+     */
+    public function isConfidential()
+    {
+        return $this->confidential;
+    }
+
+    /**
+     * Sets the flag that indicates whether the client is a confidential or a public.
+     * @link https://tools.ietf.org/html/rfc6749#section-2.1
+     *
+     * @param bool $confidential
+     */
+    public function setConfidential(bool $confidential)
+    {
+        $this->confidential = $confidential;
+    }
+
+    /**
+     * Indicates whether the PKCE code challenge can be send as a plain text.
+     * @link https://tools.ietf.org/html/rfc7636#section-4.3
+     *
+     * @return bool
+     */
+    public function isPlainTextPkceAllowed()
+    {
+        return $this->plainTextPkceAllowed;
+    }
+
+    /**
+     * Sets the flag that indicates whether the PKCE code challenge can be send as a plain text.
+     * @link https://tools.ietf.org/html/rfc7636#section-4.3
+     *
+     * @param bool $plainTextPkceAllowed
+     */
+    public function setPlainTextPkceAllowed(bool $plainTextPkceAllowed)
+    {
+        $this->plainTextPkceAllowed = $plainTextPkceAllowed;
     }
 }

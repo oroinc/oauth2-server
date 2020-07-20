@@ -2,6 +2,7 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\League\Repository;
 
+use League\OAuth2\Server\Exception\OAuthServerException;
 use Oro\Bundle\OAuth2ServerBundle\League\Entity\ClientEntity;
 use Oro\Bundle\OAuth2ServerBundle\League\Entity\UserEntity;
 use Oro\Bundle\OAuth2ServerBundle\League\Repository\FrontendUserRepository;
@@ -230,9 +231,10 @@ class FrontendUserRepositoryTest extends \PHPUnit\Framework\TestCase
 
     public function testCustomerVisitorOnNotPasswordGrantType()
     {
-        $this->expectException(\League\OAuth2\Server\Exception\OAuthServerException::class);
         $client = new ClientEntity();
         $client->setFrontend(true);
+
+        $this->expectException(OAuthServerException::class);
 
         $this->repository->getUserEntityByUserCredentials('guest', 'guest', 'test', $client);
     }

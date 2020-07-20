@@ -6,6 +6,7 @@ use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Validator\Constraints\ClientOwner;
 use Oro\Bundle\OAuth2ServerBundle\Validator\Constraints\ClientOwnerValidator;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 use Symfony\Component\Validator\Test\ConstraintValidatorTestCase;
 
 class ClientOwnerValidatorTest extends ConstraintValidatorTestCase
@@ -20,13 +21,13 @@ class ClientOwnerValidatorTest extends ConstraintValidatorTestCase
 
     public function testInvalidConstraint()
     {
-        $this->expectException(\Symfony\Component\Validator\Exception\UnexpectedTypeException::class);
+        $this->expectException(UnexpectedTypeException::class);
         $this->validator->validate(new Client(), new NotBlank());
     }
 
     public function testInvalidValue()
     {
-        $this->expectException(\Symfony\Component\Validator\Exception\UnexpectedTypeException::class);
+        $this->expectException(UnexpectedTypeException::class);
         $this->validator->validate(new \stdClass(), new ClientOwner());
     }
 

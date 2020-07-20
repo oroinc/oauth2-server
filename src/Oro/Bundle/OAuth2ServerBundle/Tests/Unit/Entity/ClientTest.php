@@ -140,4 +140,50 @@ class ClientTest extends \PHPUnit\Framework\TestCase
         self::assertSame($ownerEntityClass, $entity->getOwnerEntityClass());
         self::assertSame($ownerEntityId, $entity->getOwnerEntityId());
     }
+
+    public function testFrontend()
+    {
+        $entity = new Client();
+        self::assertFalse($entity->isFrontend());
+
+        $entity->setFrontend(true);
+        self::assertTrue($entity->isFrontend());
+
+        $entity->setFrontend(false);
+        self::assertFalse($entity->isFrontend());
+    }
+
+    public function testLastUsedAt()
+    {
+        $entity = new Client();
+        self::assertNull($entity->getLastUsedAt());
+
+        $lastUsedAt = new \DateTime();
+        $entity->setLastUsedAt($lastUsedAt);
+        self::assertSame($lastUsedAt, $entity->getLastUsedAt());
+    }
+
+    public function testConfidential()
+    {
+        $entity = new Client();
+        self::assertTrue($entity->isConfidential());
+
+        $entity->setConfidential(false);
+        self::assertFalse($entity->isConfidential());
+
+        $entity->setConfidential(true);
+        self::assertTrue($entity->isConfidential());
+    }
+
+    public function testPlainTextPkceAllowed()
+    {
+        $entity = new Client();
+        self::assertFalse($entity->isPlainTextPkceAllowed());
+
+        $entity->setPlainTextPkceAllowed(true);
+        self::assertTrue($entity->isPlainTextPkceAllowed());
+
+        $entity->setPlainTextPkceAllowed(false);
+        self::assertFalse($entity->isPlainTextPkceAllowed());
+    }
 }

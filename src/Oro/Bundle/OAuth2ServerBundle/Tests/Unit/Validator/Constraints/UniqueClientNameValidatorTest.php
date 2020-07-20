@@ -2,15 +2,17 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Validator\Constraints;
 
-use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
+use Doctrine\Persistence\ManagerRegistry;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Validator\Constraints\UniqueClientName;
 use Oro\Bundle\OAuth2ServerBundle\Validator\Constraints\UniqueClientNameValidator;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Exception\RuntimeException;
+use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 use Symfony\Component\Validator\Test\ConstraintValidatorTestCase;
 
 class UniqueClientNameValidatorTest extends ConstraintValidatorTestCase
@@ -202,13 +204,13 @@ class UniqueClientNameValidatorTest extends ConstraintValidatorTestCase
 
     public function testInvalidConstraint()
     {
-        $this->expectException(\Symfony\Component\Validator\Exception\UnexpectedTypeException::class);
+        $this->expectException(UnexpectedTypeException::class);
         $this->validator->validate(new Client(), new NotBlank());
     }
 
     public function testInvalidValue()
     {
-        $this->expectException(\Symfony\Component\Validator\Exception\UnexpectedTypeException::class);
+        $this->expectException(UnexpectedTypeException::class);
         $this->validator->validate(new \stdClass(), new UniqueClientName());
     }
 
@@ -233,7 +235,7 @@ class UniqueClientNameValidatorTest extends ConstraintValidatorTestCase
 
     public function testNoOrganization()
     {
-        $this->expectException(\Symfony\Component\Validator\Exception\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('The organization must be defined.');
 
         $client = new Client();

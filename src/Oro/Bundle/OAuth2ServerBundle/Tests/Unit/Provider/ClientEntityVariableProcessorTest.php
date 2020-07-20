@@ -2,8 +2,8 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Provider;
 
-use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ManagerRegistry;
 use Oro\Bundle\EntityBundle\Twig\Sandbox\TemplateData;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Provider\ClientEntityVariableProcessor;

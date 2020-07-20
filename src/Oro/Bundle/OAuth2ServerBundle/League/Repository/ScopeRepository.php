@@ -3,7 +3,6 @@
 namespace Oro\Bundle\OAuth2ServerBundle\League\Repository;
 
 use League\OAuth2\Server\Entities\ClientEntityInterface;
-use League\OAuth2\Server\Entities\ScopeEntityInterface;
 use League\OAuth2\Server\Repositories\ScopeRepositoryInterface;
 use Oro\Bundle\OAuth2ServerBundle\League\Entity\ScopeEntity;
 
@@ -15,7 +14,7 @@ class ScopeRepository implements ScopeRepositoryInterface
     /**
      * {@inheritdoc}
      */
-    public function getScopeEntityByIdentifier($identifier): ScopeEntityInterface
+    public function getScopeEntityByIdentifier($identifier)
     {
         $scopeEntity = new ScopeEntity();
         $scopeEntity->setIdentifier($identifier);
@@ -31,7 +30,7 @@ class ScopeRepository implements ScopeRepositoryInterface
         $grantType,
         ClientEntityInterface $clientEntity,
         $userIdentifier = null
-    ): array {
+    ) {
         return $scopes;
     }
 }

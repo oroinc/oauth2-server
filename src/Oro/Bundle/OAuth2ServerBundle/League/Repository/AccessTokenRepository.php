@@ -2,8 +2,8 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\League\Repository;
 
-use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ManagerRegistry;
 use League\OAuth2\Server\Entities\AccessTokenEntityInterface;
 use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Exception\UniqueTokenIdentifierConstraintViolationException;
@@ -37,7 +37,14 @@ class AccessTokenRepository implements AccessTokenRepositoryInterface
         array $scopes,
         $userIdentifier = null
     ): AccessTokenEntityInterface {
-        return new AccessTokenEntity();
+        $accessToken = new AccessTokenEntity();
+        $accessToken->setClient($clientEntity);
+        $accessToken->setUserIdentifier($userIdentifier);
+        foreach ($scopes as $scope) {
+            $accessToken->addScope($scope);
+        }
+
+        return $accessToken;
     }
 
     /**
@@ -54,7 +61,7 @@ class AccessTokenRepository implements AccessTokenRepositoryInterface
         $client->setLastUsedAt(new \DateTime('now', new \DateTimeZone('UTC')));
         $accessToken = new AccessToken(
             $accessTokenEntity->getIdentifier(),
-            $accessTokenEntity->getExpiryDateTime(),
+            \DateTime::createFromImmutable($accessTokenEntity->getExpiryDateTime()),
             $this->getScopeIdentifiers($accessTokenEntity->getScopes()),
             $client,
             $accessTokenEntity->getUserIdentifier()

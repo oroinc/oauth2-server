@@ -68,7 +68,7 @@ class FrontendUserRepository extends UserRepository
                 return $userEntity;
             }
 
-            throw OAuthServerException::invalidCredentials();
+            throw OAuthServerException::invalidGrant();
         }
 
         return parent::getUserEntityByUserCredentials($username, $password, $grantType, $clientEntity);

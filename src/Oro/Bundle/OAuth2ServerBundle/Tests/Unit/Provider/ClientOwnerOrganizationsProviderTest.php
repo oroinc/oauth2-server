@@ -3,8 +3,8 @@
 namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Provider;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ManagerRegistry;
 use Oro\Bundle\OAuth2ServerBundle\Provider\ClientOwnerOrganizationsProvider;
 use Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Fixtures\Entity\ExtendedOrganization;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;

@@ -57,7 +57,7 @@ class FrontendApiFeatureOAuthServerTest extends OAuthServerTestCase
                     'username'      => 'grzegorz.brzeczyszczykiewicz@example.com',
                     'password'      => 'test'
                 ],
-                Response::HTTP_NOT_FOUND
+                Response::HTTP_UNAUTHORIZED
             );
         } finally {
             $this->enableApiFeature(self::API_FEATURE_NAME);
@@ -65,9 +65,9 @@ class FrontendApiFeatureOAuthServerTest extends OAuthServerTestCase
 
         self::assertEquals(
             [
-                'error'             => 'not_available',
-                'error_description' => 'Not found',
-                'message'           => 'Not found'
+                'error'             => 'invalid_client',
+                'error_description' => 'Client authentication failed',
+                'message'           => 'Client authentication failed'
             ],
             $response
         );

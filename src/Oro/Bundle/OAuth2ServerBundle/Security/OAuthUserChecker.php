@@ -42,13 +42,9 @@ class OAuthUserChecker
             $this->userChecker->checkPreAuth($user);
             $this->userChecker->checkPostAuth($user);
         } catch (AuthenticationException $e) {
-            $exceptionMessage = $this->translator->trans(
-                $e->getMessageKey(),
-                $e->getMessageData(),
-                'security'
+            throw OAuthServerException::invalidGrant(
+                $this->translator->trans($e->getMessageKey(), $e->getMessageData(), 'security')
             );
-
-            throw new OAuthServerException($exceptionMessage, 6, 'invalid_credentials', 401, null, null, $e);
         }
     }
 }

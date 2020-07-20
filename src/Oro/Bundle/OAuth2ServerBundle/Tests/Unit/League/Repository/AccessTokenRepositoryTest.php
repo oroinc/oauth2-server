@@ -2,9 +2,9 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\League\Repository;
 
-use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
+use Doctrine\Persistence\ManagerRegistry;
 use League\OAuth2\Server\Exception\UniqueTokenIdentifierConstraintViolationException;
 use Oro\Bundle\OAuth2ServerBundle\Entity\AccessToken;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
@@ -65,7 +65,29 @@ class AccessTokenRepositoryTest extends \PHPUnit\Framework\TestCase
 
     public function testGetNewToken()
     {
-        self::assertEquals(new AccessTokenEntity(), $this->repository->getNewToken(new ClientEntity(), []));
+        $client = new ClientEntity();
+        $scope1 = new ScopeEntity();
+        $scope1->setIdentifier('test_scope1');
+        $scope2 = new ScopeEntity();
+        $scope2->setIdentifier('test_scope2');
+        $scopes = [$scope1, $scope2];
+        $userIdentifier = 'user_identifier';
+        $accessToken = $this->repository->getNewToken($client, $scopes, $userIdentifier);
+        self::assertInstanceOf(AccessTokenEntity::class, $accessToken);
+        self::assertSame($client, $accessToken->getClient());
+        self::assertSame($scopes, $accessToken->getScopes());
+        self::assertSame($userIdentifier, $accessToken->getUserIdentifier());
+    }
+
+    public function testGetNewTokenWithoutUserIdentifier()
+    {
+        $client = new ClientEntity();
+        $scopes = [];
+        $accessToken = $this->repository->getNewToken($client, $scopes);
+        self::assertInstanceOf(AccessTokenEntity::class, $accessToken);
+        self::assertSame($client, $accessToken->getClient());
+        self::assertSame($scopes, $accessToken->getScopes());
+        self::assertNull($accessToken->getUserIdentifier());
     }
 
     public function testPersistNewAccessTokenOnExistToken()
@@ -91,7 +113,7 @@ class AccessTokenRepositoryTest extends \PHPUnit\Framework\TestCase
     {
         $scope = new ScopeEntity();
         $scope->setIdentifier('test_scope');
-        $expireDate = new \DateTime();
+        $expireDate = new \DateTimeImmutable();
         $clientEntity = new ClientEntity();
         $clientEntity->setIdentifier('client_id');
         $accessTokenEntity = new AccessTokenEntity();
@@ -103,7 +125,13 @@ class AccessTokenRepositoryTest extends \PHPUnit\Framework\TestCase
 
         $client = new Client();
         $client->setIdentifier('client_id');
-        $expectedToken = new AccessToken('test_id', $expireDate, ['test_scope'], $client, 'user_id');
+        $expectedToken = new AccessToken(
+            'test_id',
+            \DateTime::createFromImmutable($expireDate),
+            ['test_scope'],
+            $client,
+            'user_id'
+        );
 
         $em = $this->expectGetEntityManager();
         $accessTokenRepository = $this->createMock(EntityRepository::class);

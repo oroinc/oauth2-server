@@ -2,10 +2,9 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\League\Repository;
 
-use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\Common\Persistence\ObjectRepository;
+use Doctrine\ORM\EntityRepository;
+use Doctrine\Persistence\ManagerRegistry;
 use League\OAuth2\Server\Entities\ClientEntityInterface;
-use League\OAuth2\Server\Exception\OAuthServerException;
 use League\OAuth2\Server\Repositories\ClientRepositoryInterface;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\League\Entity\ClientEntity;
@@ -44,44 +43,74 @@ class ClientRepository implements ClientRepositoryInterface
     /**
      * {@inheritdoc}
      */
-    public function getClientEntity(
-        $clientIdentifier,
-        $grantType = null,
-        $clientSecret = null,
-        $mustValidateSecret = true
-    ): ?ClientEntityInterface {
+    public function getClientEntity($clientIdentifier): ?ClientEntityInterface
+    {
         /** @var Client $client */
-        $client = $this->getRepository()->findOneBy(['identifier' => $clientIdentifier]);
+        $client = $this->getClient($clientIdentifier);
         if (null === $client) {
             return null;
         }
 
-        if (!$client->isActive()) {
+        if (!$this->isClientEnabled($client)) {
             return null;
-        }
-
-        if (!$this->isGrantSupported($client, $grantType)) {
-            return null;
-        }
-
-        if ($mustValidateSecret && !$this->isPasswordValid($client, $clientSecret)) {
-            return null;
-        }
-
-        if (!$client->getOrganization()->isEnabled()) {
-            return null;
-        }
-
-        if (!$this->featureChecker->isEnabledByClient($client)) {
-            throw new OAuthServerException('Not found', 404, 'not_available', 404);
         }
 
         $clientEntity = new ClientEntity();
         $clientEntity->setIdentifier($client->getIdentifier());
         $clientEntity->setRedirectUri(\array_map('strval', $client->getRedirectUris()));
         $clientEntity->setFrontend($client->isFrontend());
+        $clientEntity->setConfidential($client->isConfidential());
+        $clientEntity->setPlainTextPkceAllowed($client->isPlainTextPkceAllowed());
 
         return $clientEntity;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function validateClient($clientIdentifier, $clientSecret, $grantType)
+    {
+        $client = $this->getClient($clientIdentifier);
+        if (null === $client) {
+            return false;
+        }
+
+        if (!$this->isClientEnabled($client)) {
+            return false;
+        }
+
+        if (!$this->isGrantSupported($client, $grantType)) {
+            return false;
+        }
+
+        if (!$this->isPasswordValid($client, $clientSecret)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @param string $clientId
+     *
+     * @return Client|null
+     */
+    private function getClient(string $clientId): ?Client
+    {
+        return $this->getRepository()->findOneBy(['identifier' => $clientId]);
+    }
+
+    /**
+     * @param Client $client
+     *
+     * @return bool
+     */
+    private function isClientEnabled(Client $client): bool
+    {
+        return
+            $client->isActive()
+            && $this->featureChecker->isEnabledByClient($client)
+            && $client->getOrganization()->isEnabled();
     }
 
     /**
@@ -129,9 +158,9 @@ class ClientRepository implements ClientRepositoryInterface
     }
 
     /**
-     * @return ObjectRepository
+     * @return EntityRepository
      */
-    private function getRepository(): ObjectRepository
+    private function getRepository(): EntityRepository
     {
         return $this->doctrine->getRepository(Client::class);
     }

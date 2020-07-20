@@ -2,8 +2,8 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Handler\GetAccessToken\Exception;
 
+use Doctrine\ORM\EntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use Doctrine\Persistence\ObjectRepository;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Oro\Bundle\FrontendBundle\Request\FrontendHelper;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
@@ -36,7 +36,7 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
      */
     private function mockDoctrine(string $identifier, Client $client): void
     {
-        $repository = $this->createMock(ObjectRepository::class);
+        $repository = $this->createMock(EntityRepository::class);
         $repository->expects(self::once())
             ->method('findOneBy')
             ->with(['identifier' => $identifier])
@@ -72,7 +72,7 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
 
         $exception = new OAuthServerException(
             'test',
-            6,
+            10,
             'invalid_credentials',
             401,
             null,
@@ -99,8 +99,8 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
         $token = new FailedUserOAuth2Token('testUser');
         $token->setAttributes($tokenParameters);
 
-        $exception = new OAuthServerException('test', 6, 'invalid_credentials');
-        $expectedException = new BadCredentialsException('test', 6, $exception);
+        $exception = new OAuthServerException('test', 10, 'invalid_credentials');
+        $expectedException = new BadCredentialsException('test', 10, $exception);
         $expectedException->setToken($token);
 
         $this->eventDispatcher->expects(self::once())
@@ -156,8 +156,8 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
         $token = new FailedUserOAuth2Token('testUser');
         $token->setAttributes($tokenParameters);
 
-        $exception = new OAuthServerException('test', 6, 'invalid_credentials');
-        $expectedException = new BadCredentialsException('test', 6, $exception);
+        $exception = new OAuthServerException('test', 10, 'invalid_credentials');
+        $expectedException = new BadCredentialsException('test', 10, $exception);
         $expectedException->setToken($token);
 
         $this->eventDispatcher->expects(self::once())
@@ -194,8 +194,8 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
         $token = new FailedUserOAuth2Token('testUser');
         $token->setAttributes($tokenParameters);
 
-        $exception = new OAuthServerException('test', 6, 'invalid_credentials');
-        $expectedException = new BadCredentialsException('test', 6, $exception);
+        $exception = new OAuthServerException('test', 10, 'invalid_credentials');
+        $expectedException = new BadCredentialsException('test', 10, $exception);
         $expectedException->setToken($token);
 
         $this->eventDispatcher->expects(self::once())
@@ -235,7 +235,7 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
         $token = new FailedUserOAuth2Token('testUser');
         $token->setAttributes($tokenParameters);
 
-        $exception = new OAuthServerException('test', 6, 'invalid_credentials');
+        $exception = new OAuthServerException('test', 10, 'invalid_credentials');
 
         $this->eventDispatcher->expects(self::once())
             ->method('dispatch')
