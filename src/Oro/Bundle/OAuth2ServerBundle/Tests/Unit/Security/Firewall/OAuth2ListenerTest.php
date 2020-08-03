@@ -2,6 +2,7 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Security\Authentication\Firewall;
 
+use Laminas\Diactoros\ServerRequest;
 use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\OAuth2Token;
 use Oro\Bundle\OAuth2ServerBundle\Security\Firewall\OAuth2Listener;
 use Symfony\Bridge\PsrHttpMessage\HttpMessageFactoryInterface;
@@ -10,7 +11,6 @@ use Symfony\Component\HttpKernel\Event\GetResponseEvent;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\Security\Core\Authentication\AuthenticationManagerInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Zend\Diactoros\ServerRequest;
 
 class OAuth2ListenerTest extends \PHPUnit\Framework\TestCase
 {
@@ -85,6 +85,7 @@ class OAuth2ListenerTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider bearerAuthorizationHeaderDataProvider
+     * @param string $bearerAuthorizationHeader
      */
     public function testHandleWithCorrectAuthorizationHeader(string $bearerAuthorizationHeader)
     {

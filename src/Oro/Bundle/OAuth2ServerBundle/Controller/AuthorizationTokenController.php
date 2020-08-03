@@ -2,8 +2,10 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Controller;
 
+use Laminas\Diactoros\Response;
 use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\Exception\OAuthServerException;
+use LogicException;
 use Oro\Bundle\OAuth2ServerBundle\League\Exception\CryptKeyNotFoundException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -11,7 +13,6 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
-use Zend\Diactoros\Response;
 
 /**
  * The controller that implement OAuth 2.0 authorization server entry point.
@@ -99,7 +100,7 @@ class AuthorizationTokenController extends Controller
     {
         try {
             return $this->get('oro_oauth2_server.league.authorization_server');
-        } catch (\LogicException $e) {
+        } catch (LogicException $e) {
             $this->getLogger()->warning($e->getMessage(), ['exception' => $e]);
 
             throw CryptKeyNotFoundException::create($e);

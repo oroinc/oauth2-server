@@ -4,6 +4,7 @@ namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Handler\GetAccessToken\Except
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Laminas\Diactoros\ServerRequest;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Oro\Bundle\FrontendBundle\Request\FrontendHelper;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
@@ -14,7 +15,6 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Security\Core\AuthenticationEvents;
 use Symfony\Component\Security\Core\Event\AuthenticationFailureEvent;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
-use Zend\Diactoros\ServerRequest;
 
 class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
 {
