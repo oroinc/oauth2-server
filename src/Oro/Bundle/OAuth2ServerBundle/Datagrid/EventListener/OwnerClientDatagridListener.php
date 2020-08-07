@@ -39,8 +39,8 @@ class OwnerClientDatagridListener
                 [
                     'owner' => [
                         'label'         => $isFrontend
-                            ? 'oro.customer.customeruser.entity_plural_label'
-                            : 'oro.user.entity_plural_label',
+                            ? 'oro.customer.customeruser.entity_label'
+                            : 'oro.user.entity_label',
                         'type'          => 'twig',
                         'frontend_type' => 'html',
                         'template'      => 'OroOAuth2ServerBundle:Client/Datagrid:owners.html.twig',

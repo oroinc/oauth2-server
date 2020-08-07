@@ -24,6 +24,7 @@ services:
             - '@oro_oauth2_server.client_cleaner'
             - '@oro_oauth2_server.access_token_cleaner'
             - '@oro_oauth2_server.refresh_token_cleaner'
+            - '@oro_oauth2_server.auth_code_cleaner'
         tags: [console.command]
 
     oro_oauth2_server.client_cleaner:
@@ -41,6 +42,12 @@ services:
 
     oro_oauth2_server.refresh_token_cleaner:
         class: Oro\Bundle\OAuth2ServerBundle\Entity\Cleaner\RefreshTokenCleaner
+        public: false
+        arguments:
+            - '@doctrine'
+
+    oro_oauth2_server.auth_code_cleaner:
+        class: Oro\Bundle\OAuth2ServerBundle\Entity\Cleaner\AuthCodeCleaner
         public: false
         arguments:
             - '@doctrine'
@@ -129,6 +136,10 @@ services:
             - '@doctrine'
         tags: [validator.constraint_validator]
 
+    Oro\Bundle\OAuth2ServerBundle\Validator\Constraints\ClientRedirectUrisValidator:
+        public: false
+        tags: [validator.constraint_validator]
+
     Oro\Bundle\OAuth2ServerBundle\Validator\Constraints\ClientOwnerValidator:
         public: false
         tags: [validator.constraint_validator]
@@ -159,6 +170,14 @@ services:
 
     oro_oauth2_server.league.repository.refresh_token_repository:
         class: Oro\Bundle\OAuth2ServerBundle\League\Repository\RefreshTokenRepository
+        public: false
+        arguments:
+            - '@doctrine'
+            - '@oro_user.security.user_loader'
+            - '@oro_oauth2_server.security.user_checker'
+
+    oro_oauth2_server.league.repository.auth_code_repository:
+        class: Oro\Bundle\OAuth2ServerBundle\League\Repository\AuthCodeRepository
         public: false
         arguments:
             - '@doctrine'
@@ -328,3 +347,18 @@ services:
             - '@?oro_frontend.request.frontend_helper'
         tags:
             - { name: oro_oauth2_server.get_access_token_success_handler }
+
+    oro_oauth2_server.handler.authorize_client.handler:
+        class: Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\AuthorizeClientHandler
+        public: true
+        arguments:
+            - !tagged oro_oauth2_server.authorize_client_handler
+
+    oro_oauth2_server.handler.authorize_client.log_handler:
+        class: Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\LogAuthorizeClientHandler
+        public: false
+        arguments:
+            - '@monolog.logger.oro_account_security'
+            - '@oro_user.provider.user_logging_info_provider'
+        tags:
+            - { name: oro_oauth2_server.authorize_client_handler }

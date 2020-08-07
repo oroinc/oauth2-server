@@ -12,7 +12,7 @@
     {% if is_granted('oro_oauth2_create') %}
     <div class="btn-group">
         {{ UI.addButton({
-            'path': path(isFrontend ? 'oro_oauth2_storefront_create' : 'oro_oauth2_create'),
+            'path': path(isFrontend ? 'oro_oauth2_frontend_create' : 'oro_oauth2_create'),
             'entity_label': 'oro.oauth2server.client.entity_label'|trans
         }) }}
     </div>

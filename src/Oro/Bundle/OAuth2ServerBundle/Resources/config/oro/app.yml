@@ -14,6 +14,23 @@ security:
     encoders:
         Oro\Bundle\OAuth2ServerBundle\Entity\Client: sha512
     firewalls:
+        oauth2_authorization_login:
+            pattern: '^/oauth2-token/login$'
+            provider: chain_provider
+            anonymous: true
+            logout_on_user_change: true
+            context: main
+        oauth2_authorization_authenticate:
+            pattern: '^/oauth2-token/(authorize|login-check)'
+            provider: chain_provider
+            context: main
+            organization-form-login:
+                csrf_token_generator: security.csrf.token_manager
+                check_path: oro_oauth2_server_login_check
+                login_path: oro_oauth2_server_login_form
+            logout:
+                path: oro_user_security_logout
+            anonymous: false
         oauth2_authorization_server:
             pattern:   '^/oauth2-token$'
             stateless: true

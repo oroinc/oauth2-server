@@ -28,7 +28,7 @@ use Symfony\Component\Translation\TranslatorInterface;
 class ClientController extends AbstractController
 {
     private const SUPPORTED_CLIENT_TYPES = [
-        'storefront' => ['isFrontend' => true],
+        'frontend'   => ['isFrontend' => true],
         'backoffice' => ['isFrontend' => false]
     ];
 
@@ -72,9 +72,9 @@ class ClientController extends AbstractController
      *     defaults={"type": "backoffice"}
      * )
      * @Route(
-     *     "/storefront",
-     *     name="oro_oauth2_storefront_index",
-     *     defaults={"type": "storefront"}
+     *     "/frontend",
+     *     name="oro_oauth2_frontend_index",
+     *     defaults={"type": "frontend"}
      * )
      * @Template("OroOAuth2ServerBundle:Client:index.html.twig")
      *
@@ -104,10 +104,10 @@ class ClientController extends AbstractController
      *     defaults={"type": "backoffice"}
      * )
      * @Route(
-     *     "/storefront/{id}",
-     *     name="oro_oauth2_storefront_view",
+     *     "/frontend/{id}",
+     *     name="oro_oauth2_frontend_view",
      *     requirements={"id"="\d+"},
-     *     defaults={"type": "storefront"}
+     *     defaults={"type": "frontend"}
      * )
      *
      * @Template("OroOAuth2ServerBundle:Client:view.html.twig")
@@ -144,9 +144,9 @@ class ClientController extends AbstractController
      *     methods={"GET", "POST"}
      * )
      * @Route(
-     *     "/create/storefront",
-     *     name="oro_oauth2_storefront_create",
-     *     defaults={"type": "storefront"},
+     *     "/create/frontend",
+     *     name="oro_oauth2_frontend_create",
+     *     defaults={"type": "frontend"},
      *     methods={"GET", "POST"}
      * )
      *
@@ -198,9 +198,9 @@ class ClientController extends AbstractController
      *     requirements={"id"="\d+"}
      * )
      * @Route(
-     *     "/update/storefront/{id}",
-     *     name="oro_oauth2_storefront_update",
-     *     defaults={"type": "storefront"},
+     *     "/update/frontend/{id}",
+     *     name="oro_oauth2_frontend_update",
+     *     defaults={"type": "frontend"},
      *     methods={"GET", "POST"},
      *     requirements={"id"="\d+"}
      * )
@@ -433,11 +433,11 @@ class ClientController extends AbstractController
             if ($isSystemApp) {
                 if (null === $entity->getId()) {
                     $formAction = $this->generateUrl(
-                        $entity->isFrontend() ? 'oro_oauth2_storefront_create' : 'oro_oauth2_create'
+                        $entity->isFrontend() ? 'oro_oauth2_frontend_create' : 'oro_oauth2_create'
                     );
                 } else {
                     $formAction = $this->generateUrl(
-                        $entity->isFrontend() ? 'oro_oauth2_storefront_update' : 'oro_oauth2_update',
+                        $entity->isFrontend() ? 'oro_oauth2_frontend_update' : 'oro_oauth2_update',
                         ['id' => $entity->getId()]
                     );
                 }
@@ -504,7 +504,7 @@ class ClientController extends AbstractController
      */
     private function checkTypeEnabled(string $type): void
     {
-        if ($type === 'storefront') {
+        if ($type === 'frontend') {
             if (!class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')
                 || !$this->featureChecker->isFrontendApiEnabled()
             ) {
@@ -521,7 +521,7 @@ class ClientController extends AbstractController
      */
     private function checkClientApplicableForType(Client $client, string $type): void
     {
-        $isFrontend = $type === 'storefront';
+        $isFrontend = $type === 'frontend';
         if ($client->isFrontend() !== $isFrontend) {
             throw $this->createNotFoundException();
         }

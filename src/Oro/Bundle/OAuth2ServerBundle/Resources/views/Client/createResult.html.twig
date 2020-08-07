@@ -14,7 +14,7 @@
     {% if is_granted('VIEW', entity) %}
         {{ UI.button({
             'path': path(
-                entity.frontend ? 'oro_oauth2_storefront_view' : 'oro_oauth2_view',
+                entity.frontend ? 'oro_oauth2_frontend_view' : 'oro_oauth2_view',
                 { id: entity.id }
             ),
             'title': entityLabel,
@@ -27,7 +27,7 @@
     {% if is_granted('EDIT', entity) %}
         {{ UI.editButton({
             'path' : path(
-                entity.frontend ? 'oro_oauth2_storefront_update' : 'oro_oauth2_update',
+                entity.frontend ? 'oro_oauth2_frontend_update' : 'oro_oauth2_update',
                 { id: entity.id }
             ),
             'entity_label': entityLabel
@@ -38,7 +38,7 @@
 {% block pageHeader %}
     {% set breadcrumbs = {
         'entity':      entity,
-        'indexPath':   path(entity.frontend ? 'oro_oauth2_storefront_index' : 'oro_oauth2_index'),
+        'indexPath':   path(entity.frontend ? 'oro_oauth2_frontend_index' : 'oro_oauth2_index'),
         'indexLabel':  (entity.frontend
         ? 'oro.oauth2server.menu.frontend_oauth_application.label'
         : 'oro.oauth2server.menu.backoffice_oauth_application.label'

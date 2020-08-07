@@ -2,7 +2,8 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Form\Type;
 
-use Doctrine\Bundle\DoctrineBundle\Registry;
+use Doctrine\Common\Util\ClassUtils;
+use Doctrine\Persistence\ManagerRegistry;
 use Oro\Bundle\CustomerBundle\Form\Type\CustomerUserSelectType;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Provider\ClientOwnerOrganizationsProvider;
@@ -14,18 +15,18 @@ use Symfony\Component\Form\FormEvents;
 /**
  * The form for OAuth 2.0 client with owner field.
  */
-class SystemClientType extends ClientType
+class SystemClientType extends AbstractClientType
 {
     public const OWNER_FIELD = 'owner';
 
-    /** @var Registry */
+    /** @var ManagerRegistry */
     private $doctrine;
 
     /**
      * @param ClientOwnerOrganizationsProvider $organizationsProvider
-     * @param Registry                         $doctrine
+     * @param ManagerRegistry                  $doctrine
      */
-    public function __construct(ClientOwnerOrganizationsProvider $organizationsProvider, Registry $doctrine)
+    public function __construct(ClientOwnerOrganizationsProvider $organizationsProvider, ManagerRegistry $doctrine)
     {
         parent::__construct($organizationsProvider);
         $this->doctrine = $doctrine;
@@ -34,7 +35,7 @@ class SystemClientType extends ClientType
     /**
      * {@inheritdoc}
      */
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         parent::buildForm($builder, $options);
 
@@ -60,7 +61,7 @@ class SystemClientType extends ClientType
     {
         /** @var Client $client */
         $client = $event->getData();
-        if ($client->getId() && in_array('password', $client->getGrants(), true)) {
+        if ($client->getId() && !\in_array('client_credentials', $client->getGrants(), true)) {
             return;
         }
 
@@ -71,8 +72,8 @@ class SystemClientType extends ClientType
                 'required' => true,
                 'mapped'   => false,
                 'label'    => !$client->isFrontend()
-                    ? 'oro.user.entity_plural_label'
-                    : 'oro.customer.customeruser.entity_plural_label',
+                    ? 'oro.user.entity_label'
+                    : 'oro.customer.customeruser.entity_label',
                 'disabled' => null !== $client->getId()
             ]
         );
@@ -90,7 +91,7 @@ class SystemClientType extends ClientType
      *
      * @param FormEvent $event
      */
-    private function setOwnerValue(FormEvent $event)
+    private function setOwnerValue(FormEvent $event): void
     {
         if (!$event->getForm()->has(self::OWNER_FIELD)) {
             return;
@@ -101,9 +102,8 @@ class SystemClientType extends ClientType
             return;
         }
 
-        $event->getData()->setOwnerEntity(
-            get_class($owner),
-            $owner->getId()
-        );
+        /** @var Client $client */
+        $client = $event->getData();
+        $client->setOwnerEntity(ClassUtils::getClass($owner), $owner->getId());
     }
 }

@@ -115,6 +115,15 @@ class RefreshTokenRepository implements RefreshTokenRepositoryInterface
     }
 
     /**
+     * @param UserLoaderInterface $userLoader
+     * @param string              $userIdentifier
+     */
+    protected function checkUser(UserLoaderInterface $userLoader, string $userIdentifier): void
+    {
+        $this->userChecker->checkUser($userLoader->loadUser($userIdentifier));
+    }
+
+    /**
      * @param EntityManagerInterface $em
      * @param string                 $tokenId
      *
@@ -132,15 +141,6 @@ class RefreshTokenRepository implements RefreshTokenRepositoryInterface
         }
 
         return $token;
-    }
-
-    /**
-     * @param UserLoaderInterface $userLoader
-     * @param string              $userIdentifier
-     */
-    protected function checkUser(UserLoaderInterface $userLoader, string $userIdentifier): void
-    {
-        $this->userChecker->checkUser($userLoader->loadUser($userIdentifier));
     }
 
     /**

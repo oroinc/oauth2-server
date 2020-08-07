@@ -6,7 +6,10 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\Persistence\ManagerRegistry;
 use Oro\Bundle\EntityConfigBundle\Provider\ConfigProvider;
+use Oro\Bundle\FormBundle\Form\Extension\CollectionExtension;
+use Oro\Bundle\FormBundle\Form\Extension\ConstraintAsOptionExtension;
 use Oro\Bundle\FormBundle\Form\Extension\TooltipFormExtension;
+use Oro\Bundle\FormBundle\Validator\ConstraintFactory;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Form\Type\ClientType;
 use Oro\Bundle\OAuth2ServerBundle\Provider\ClientOwnerOrganizationsProvider;
@@ -16,11 +19,20 @@ use Oro\Bundle\TranslationBundle\Translation\Translator;
 use Oro\Component\Testing\Unit\PreloadedExtension;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
+use Symfony\Component\Form\Extension\Validator\Type\FormTypeValidatorExtension;
+use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\Test\TypeTestCase;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\OptionsResolver\Exception\MissingOptionsException;
+use Symfony\Component\Translation\IdentityTranslator;
+use Symfony\Component\Validator\ConstraintValidatorFactory;
+use Symfony\Component\Validator\Context\ExecutionContextFactory;
+use Symfony\Component\Validator\Mapping\Factory\LazyLoadingMetadataFactory;
+use Symfony\Component\Validator\Mapping\Loader\LoaderChain;
+use Symfony\Component\Validator\Validator\RecursiveValidator;
 
 class ClientTypeTest extends TypeTestCase
 {
@@ -43,6 +55,12 @@ class ClientTypeTest extends TypeTestCase
      */
     protected function getExtensions()
     {
+        $validator = new RecursiveValidator(
+            new ExecutionContextFactory(new IdentityTranslator()),
+            new LazyLoadingMetadataFactory(new LoaderChain([])),
+            new ConstraintValidatorFactory()
+        );
+
         return [
             new PreloadedExtension(
                 [
@@ -50,17 +68,23 @@ class ClientTypeTest extends TypeTestCase
                     new EntityType($this->doctrine)
                 ],
                 [
-                    FormType::class   => [
+                    FormType::class       => [
                         new TooltipFormExtension(
                             $this->createMock(ConfigProvider::class),
                             $this->createMock(Translator::class)
-                        )
+                        ),
+                        new FormTypeValidatorExtension($validator),
+                        new ConstraintAsOptionExtension(new ConstraintFactory())
                     ],
-                    ChoiceType::class => [
+                    ChoiceType::class     => [
                         new TranslatableChoiceTypeExtension()
+                    ],
+                    CollectionType::class => [
+                        new CollectionExtension()
                     ]
                 ]
-            )
+            ),
+            new ValidatorExtension($validator)
         ];
     }
 
@@ -296,7 +320,7 @@ class ClientTypeTest extends TypeTestCase
         self::assertEquals(['grant1'], $client->getGrants());
     }
 
-    public function testSubmitWhenOneGrantTypeAndInvisibleGrantTypes()
+    public function testSubmitWhenOnlyClientCredentialsGrantTypeEnabledAndInvisibleGrantTypes()
     {
         $client = new Client();
         $submittedData = [
@@ -309,7 +333,7 @@ class ClientTypeTest extends TypeTestCase
             ->method('isMultiOrganizationSupported')
             ->willReturn(false);
 
-        $form = $this->createClientType($client, ['grant_types' => ['grant1']]);
+        $form = $this->createClientType($client, ['grant_types' => ['client_credentials']]);
         $form->submit($submittedData);
         self::assertTrue($form->isSynchronized());
         self::assertTrue($form->isSubmitted());
@@ -319,6 +343,31 @@ class ClientTypeTest extends TypeTestCase
         self::assertEquals('test name', $client->getName());
         self::assertTrue($client->isActive());
         self::assertEquals(['grant1'], $client->getGrants());
+    }
+
+    public function testSubmitWhenOnlyOneGrantTypeEnabledAndItIsNotClientCredentialsAndInvisibleGrantTypes()
+    {
+        $client = new Client();
+        $submittedData = [
+            'name'   => 'test name',
+            'active' => 1,
+            'grants' => 'grant1'
+        ];
+
+        $this->organizationsProvider->expects(self::once())
+            ->method('isMultiOrganizationSupported')
+            ->willReturn(false);
+
+        $form = $this->createClientType($client, ['grant_types' => ['authorization_code']]);
+        $form->submit($submittedData);
+        self::assertTrue($form->isSynchronized());
+        self::assertTrue($form->isSubmitted());
+        self::assertFalse($form->has('organization'));
+        self::assertFalse($form->has('grants'));
+
+        self::assertEquals('test name', $client->getName());
+        self::assertTrue($client->isActive());
+        self::assertNull($client->getGrants());
     }
 
     public function testSubmitWhenSeveralGrantTypeAndInvisibleGrantTypes()
@@ -343,5 +392,34 @@ class ClientTypeTest extends TypeTestCase
         self::assertEquals('test name', $client->getName());
         self::assertTrue($client->isActive());
         self::assertNull($client->getGrants());
+    }
+
+    public function testSubmitForNewAuthorizationCodeClient()
+    {
+        $client = new Client();
+        $submittedData = [
+            'name'         => 'test name',
+            'active'       => 1,
+            'grants'       => 'authorization_code',
+            'redirectUris' => ['http://example.com']
+        ];
+
+        $this->organizationsProvider->expects(self::once())
+            ->method('isMultiOrganizationSupported')
+            ->willReturn(false);
+        $this->organizationsProvider->expects(self::never())
+            ->method('getClientOwnerOrganizations');
+        $this->organizationsProvider->expects(self::never())
+            ->method('isOrganizationSelectorRequired');
+
+        $form = $this->createClientType($client, ['grant_types' => ['client_credentials', 'authorization_code']]);
+        $form->submit($submittedData);
+        self::assertTrue($form->isSynchronized());
+        self::assertTrue($form->isSubmitted());
+
+        self::assertEquals('test name', $client->getName());
+        self::assertTrue($client->isActive());
+        self::assertEquals(['authorization_code'], $client->getGrants());
+        self::assertEquals(['http://example.com'], $client->getRedirectUris());
     }
 }

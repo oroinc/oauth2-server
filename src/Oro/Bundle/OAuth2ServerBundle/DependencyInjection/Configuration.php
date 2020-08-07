@@ -44,9 +44,18 @@ class Configuration implements ConfigurationInterface
                 ->min(0)
                 ->defaultValue(18144000) // 30 days
             ->end()
+            ->integerNode('auth_code_lifetime')
+                ->info('The lifetime in seconds of the authorization code.')
+                ->min(0)
+                ->defaultValue(600) // 10 minutes
+            ->end()
             ->booleanNode('enable_refresh_token')
-                ->info('Determines if refresh token grant is enabled.')
-                ->defaultValue(true)
+                ->info('Determines if the refresh token grant is enabled.')
+                ->defaultTrue()
+            ->end()
+            ->booleanNode('enable_auth_code')
+                ->info('Determines if the authorization code grant is enabled.')
+                ->defaultTrue()
             ->end()
             ->scalarNode('private_key')
                 ->info(

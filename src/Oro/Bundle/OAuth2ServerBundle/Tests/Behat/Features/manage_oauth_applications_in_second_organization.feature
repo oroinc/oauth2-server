@@ -17,8 +17,8 @@ Feature: Manage OAuth Applications in second organization
     And I click "Create OAuth Application"
     And I fill form with:
       | Application Name | Client App         |
-      | Grants           | Client Credentials |
-      | Users            | John Doe           |
+      | Grant Type       | Client Credentials |
+      | User             | John Doe           |
     And I click "Save and Close"
     Then I should see "OAuth application has been created." flash message
     And I should see "Please copy Client Secret and save it somewhere safe. For security reasons, we cannot show it to you again."
@@ -27,11 +27,11 @@ Feature: Manage OAuth Applications in second organization
     When I click "View"
     Then I should see OAuth Application with:
       | Application Name | Client App         |
-      | Grants           | Client Credentials |
-      | Users            | John Doe           |
+      | Grant Type       | Client Credentials |
+      | User             | John Doe           |
 
   Scenario: View OAuth application in grid
     When I go to System/User Management/OAuth Applications
     Then I should see following grid:
-      | Application Name | Users    |
+      | Application Name | User     |
       | Client App       | John Doe |

@@ -9,7 +9,7 @@ use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
 /**
- * Validates that OAuth 2.0 client with client_credentials grant have assigned user information.
+ * Validates that OAuth 2.0 client with "client_credentials" grant is assigned to a user.
  */
 class ClientOwnerValidator extends ConstraintValidator
 {
@@ -26,14 +26,11 @@ class ClientOwnerValidator extends ConstraintValidator
         }
 
         $grants = $value->getGrants();
-        if (null === $grants) {
+        if (null === $grants || !\in_array('client_credentials', $grants, true)) {
             return;
         }
 
-        $ownerClass = $value->getOwnerEntityClass();
-        $ownerId = $value->getOwnerEntityId();
-
-        if ((!$ownerClass || !$ownerId) && in_array('client_credentials', $grants, true)) {
+        if (!$value->getOwnerEntityClass() || !$value->getOwnerEntityId()) {
             $this->context->buildViolation($constraint->message)
                 ->atPath(SystemClientType::OWNER_FIELD)
                 ->addViolation();
