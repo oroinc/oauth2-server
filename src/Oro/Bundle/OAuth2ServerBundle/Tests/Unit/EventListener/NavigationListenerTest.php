@@ -45,7 +45,7 @@ class NavigationListenerTest extends \PHPUnit\Framework\TestCase
 
         $this->listener->onNavigationConfigure($event);
 
-        $this->assertNull($menu->getChild('storefront_oauth_applications'));
+        $this->assertNull($menu->getChild('frontend_oauth_applications'));
     }
 
     public function testOnNavigationConfigureWithSystemTab()
@@ -73,7 +73,7 @@ class NavigationListenerTest extends \PHPUnit\Framework\TestCase
 
         $this->listener->onNavigationConfigure($event);
 
-        $menuItem = $menu->getChild('system_tab')->getChild('storefront_oauth_applications');
+        $menuItem = $menu->getChild('system_tab')->getChild('frontend_oauth_applications');
         $this->assertEquals('oro.oauth2server.menu.frontend_oauth_application.label', $menuItem->getLabel());
         $this->assertEquals(21, $menuItem->getExtra('position'));
     }
@@ -103,7 +103,7 @@ class NavigationListenerTest extends \PHPUnit\Framework\TestCase
 
         $this->listener->onNavigationConfigure($event);
 
-        $this->assertNull($menu->getChild('system_tab')->getChild('storefront_oauth_applications'));
+        $this->assertNull($menu->getChild('system_tab')->getChild('frontend_oauth_applications'));
     }
 
     public function testOnNavigationConfigureWithSystemTabWothoutUserInToken()
@@ -125,7 +125,7 @@ class NavigationListenerTest extends \PHPUnit\Framework\TestCase
 
         $this->listener->onNavigationConfigure($event);
 
-        $this->assertNull($menu->getChild('system_tab')->getChild('storefront_oauth_applications'));
+        $this->assertNull($menu->getChild('system_tab')->getChild('frontend_oauth_applications'));
     }
 
     public function testOnNavigationConfigureWithoutCustomerPortal()
@@ -143,6 +143,6 @@ class NavigationListenerTest extends \PHPUnit\Framework\TestCase
 
         $this->listener->onNavigationConfigure($event);
 
-        $this->assertNull($menu->getChild('system_tab')->getChild('storefront_oauth_applications'));
+        $this->assertNull($menu->getChild('system_tab')->getChild('frontend_oauth_applications'));
     }
 }

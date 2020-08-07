@@ -4,6 +4,7 @@ namespace Oro\Bundle\OAuth2ServerBundle\Command;
 
 use Oro\Bundle\CronBundle\Command\CronCommandInterface;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Cleaner\AccessTokenCleaner;
+use Oro\Bundle\OAuth2ServerBundle\Entity\Cleaner\AuthCodeCleaner;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Cleaner\ClientCleaner;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Cleaner\RefreshTokenCleaner;
 use Symfony\Component\Console\Command\Command;
@@ -16,6 +17,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  * * outdated OAuth 2.0 access tokens
  * * outdated OAuth 2.0 refresh tokens
  * * OAuth 2.0 clients that belong to removed users
+ * * outdated OAuth 2.0 auth codes
  */
 class CleanupCommand extends Command implements CronCommandInterface
 {
@@ -31,6 +33,9 @@ class CleanupCommand extends Command implements CronCommandInterface
     /** @var RefreshTokenCleaner */
     private $refreshTokenCleaner;
 
+    /** @var AuthCodeCleaner */
+    private $authCodeCleaner;
+
     /**
      * @param ClientCleaner       $clientCleaner
      * @param AccessTokenCleaner  $accessTokenCleaner
@@ -45,6 +50,14 @@ class CleanupCommand extends Command implements CronCommandInterface
         $this->clientCleaner = $clientCleaner;
         $this->accessTokenCleaner = $accessTokenCleaner;
         $this->refreshTokenCleaner = $refreshTokenCleaner;
+    }
+
+    /**
+     * @param AuthCodeCleaner $authCodeCleaner
+     */
+    public function setAuthCodeCleaner(AuthCodeCleaner $authCodeCleaner)
+    {
+        $this->authCodeCleaner = $authCodeCleaner;
     }
 
     /**
@@ -90,6 +103,9 @@ class CleanupCommand extends Command implements CronCommandInterface
 
         $io->comment('Removing OAuth 2.0 applications that belong to removed users...');
         $this->clientCleaner->cleanUp();
+
+        $io->comment('Removing outdated OAuth 2.0 auth codes...');
+        $this->authCodeCleaner->cleanUp();
 
         $io->success('Completed');
     }

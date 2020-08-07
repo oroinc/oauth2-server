@@ -6,6 +6,7 @@ use Doctrine\Common\DataFixtures\AbstractFixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Common\Persistence\ObjectManager;
 use Oro\Bundle\OAuth2ServerBundle\Entity\AccessToken;
+use Oro\Bundle\OAuth2ServerBundle\Entity\AuthCode;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
 use Oro\Bundle\OAuth2ServerBundle\Entity\RefreshToken;
@@ -119,6 +120,20 @@ class LoadCleanupCommandData extends AbstractFixture implements ContainerAwareIn
                 $accessTokenForClientThatShouldBeRemoved
             )
         );
+        $manager->persist(
+            $this->createAuthCode(
+                $client1,
+                'auth_code_not_expired',
+                new \DateTime('now + 1 minute')
+            )
+        );
+        $manager->persist(
+            $this->createAuthCode(
+                $client1,
+                'auth_code_expired',
+                new \DateTime('now - 1 second')
+            )
+        );
 
         $manager->flush();
     }
@@ -189,5 +204,17 @@ class LoadCleanupCommandData extends AbstractFixture implements ContainerAwareIn
         AccessToken $accessToken
     ): RefreshToken {
         return new RefreshToken($identifier, $expiresAt, $accessToken);
+    }
+
+    /**
+     * @param Client    $client
+     * @param string    $identifier
+     * @param \DateTime $expiresAt
+     *
+     * @return AuthCode
+     */
+    private function createAuthCode(Client $client, string $identifier, \DateTime $expiresAt): AuthCode
+    {
+        return new AuthCode($identifier, $expiresAt, ['all'], $client, 'test');
     }
 }

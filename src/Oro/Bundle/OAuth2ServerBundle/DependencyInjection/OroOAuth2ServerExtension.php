@@ -3,9 +3,11 @@
 namespace Oro\Bundle\OAuth2ServerBundle\DependencyInjection;
 
 use League\OAuth2\Server\CryptKey;
+use League\OAuth2\Server\Grant\AuthCodeGrant;
 use League\OAuth2\Server\Grant\ClientCredentialsGrant;
 use League\OAuth2\Server\Grant\PasswordGrant;
 use League\OAuth2\Server\Grant\RefreshTokenGrant;
+use Oro\Bundle\OAuth2ServerBundle\League\Repository\FrontendAuthCodeRepository;
 use Oro\Bundle\OAuth2ServerBundle\League\Repository\FrontendRefreshTokenRepository;
 use Oro\Bundle\OAuth2ServerBundle\League\Repository\FrontendUserRepository;
 use Oro\Component\DependencyInjection\ExtendedContainerBuilder;
@@ -34,6 +36,7 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
     private const AUTHORIZATION_SERVER_SERVICE     = 'oro_oauth2_server.league.authorization_server';
     private const USER_REPOSITORY_SERVICE          = 'oro_oauth2_server.league.repository.user_repository';
     private const REFRESH_TOKEN_REPOSITORY_SERVICE = 'oro_oauth2_server.league.repository.refresh_token_repository';
+    private const AUTH_CODE_REPOSITORY_SERVICE     = 'oro_oauth2_server.league.repository.auth_code_repository';
     private const FRONTEND_USER_LOADER_SERVICE     = 'oro_customer.security.user_loader';
     private const CUSTOMER_VISITOR_MANAGER_SERVICE = 'oro_customer.customer_visitor_manager';
 
@@ -48,6 +51,9 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
         $loader->load('services.yml');
         $loader->load('services_api.yml');
         $loader->load('controllers.yml');
+        if (class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {
+            $loader->load('services_frontend.yml');
+        }
 
         if ('test' === $container->getParameter('kernel.environment')) {
             $keysFileLocator = new FileLocator(__DIR__ . '/../Tests/Functional/Environment/keys');
@@ -68,6 +74,7 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
     {
         if ($container instanceof ExtendedContainerBuilder) {
             $this->configureSecurityFirewalls($container);
+            $this->reconfigureLoginFirewalls($container);
         }
 
         if ('test' === $container->getParameter('kernel.environment')) {
@@ -120,6 +127,10 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
                 ->setClass(FrontendRefreshTokenRepository::class)
                 ->addArgument(new Reference(self::FRONTEND_USER_LOADER_SERVICE))
                 ->addArgument(new Reference(self::CUSTOMER_VISITOR_MANAGER_SERVICE));
+            $container->getDefinition(self::AUTH_CODE_REPOSITORY_SERVICE)
+                ->setClass(FrontendAuthCodeRepository::class)
+                ->addArgument(new Reference(self::FRONTEND_USER_LOADER_SERVICE))
+                ->addArgument(new Reference(self::CUSTOMER_VISITOR_MANAGER_SERVICE));
         }
     }
 
@@ -144,6 +155,10 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
         $refreshTokenEnabled = $config['enable_refresh_token'];
         $refreshTokenLifetime = $refreshTokenEnabled
             ? $this->getTokenLifetime($config['refresh_token_lifetime'])
+            : null;
+        $authCodeEnabled = $config['enable_auth_code'];
+        $authCodeLifetime = $refreshTokenEnabled
+            ? $this->getTokenLifetime($config['auth_code_lifetime'])
             : null;
 
         $this->enableGrantType(
@@ -172,6 +187,17 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
                 $accessTokenLifetime,
                 $refreshTokenLifetime,
                 false
+            );
+        }
+
+        if ($authCodeEnabled) {
+            $this->enableGrantType(
+                $container,
+                $authorizationServer,
+                'authorization_code',
+                $this->getAuthCodeGrant($authCodeLifetime),
+                $accessTokenLifetime,
+                $refreshTokenLifetime
             );
         }
 
@@ -266,6 +292,20 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
     }
 
     /**
+     * @param string $authCodeLifetime
+     *
+     * @return Definition
+     */
+    private function getAuthCodeGrant(string $authCodeLifetime): Definition
+    {
+        return new Definition(AuthCodeGrant::class, [
+            new Reference(self::AUTH_CODE_REPOSITORY_SERVICE),
+            new Reference(self::REFRESH_TOKEN_REPOSITORY_SERVICE),
+            new Definition(\DateInterval::class, [$authCodeLifetime])
+        ]);
+    }
+
+    /**
      * @param ExtendedContainerBuilder $container
      */
     private function configureSecurityFirewalls(ExtendedContainerBuilder $container): void
@@ -292,6 +332,48 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
                 $securityConfigs[0]['firewalls'][$firewallName]['oauth2'] = $config;
             }
         }
+        $container->setExtensionConfig('security', $securityConfigs);
+    }
+
+    /**
+     * @param ExtendedContainerBuilder $container
+     */
+    private function reconfigureLoginFirewalls(ExtendedContainerBuilder $container): void
+    {
+        $securityConfigs = $container->getExtensionConfig('security');
+        $firewalls = $securityConfigs[0]['firewalls'];
+
+        // enable basic authorization for test env
+        if ('test' === $container->getParameter('kernel.environment')) {
+            $firewalls['oauth2_authorization_authenticate']['organization-http-basic'] = [
+                'realm' => "AccountUser REST Area"
+            ];
+        }
+
+        if (class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {
+            // move backend firewalls
+            foreach (['oauth2_authorization_login', 'oauth2_authorization_authenticate'] as $firewallName) {
+                $pattern = $firewalls[$firewallName]['pattern'];
+                $firewalls[$firewallName]['pattern'] = str_replace(
+                    '^/',
+                    '^%web_backend_prefix%/',
+                    $pattern
+                );
+            }
+
+            // add frontend firewalls
+            $frontendFirewalls = Yaml::parseFile(__DIR__ . '/../Resources/config/frontend_oauth_firewalls.yml');
+            $firewalls = array_merge($frontendFirewalls, $firewalls);
+
+            // enable basic authorization for test env
+            if ('test' === $container->getParameter('kernel.environment')) {
+                $firewalls['oauth2_frontend_authorization_authenticate']['organization-http-basic'] = [
+                    'realm' => "AccountUser REST Area"
+                ];
+            }
+        }
+
+        $securityConfigs[0]['firewalls'] = $firewalls;
         $container->setExtensionConfig('security', $securityConfigs);
     }
 }

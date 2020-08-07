@@ -72,7 +72,7 @@ class AccessToken
     /**
      * @param string      $identifier
      * @param \DateTime   $expiresAt
-     * @param array       $scopes
+     * @param string[]    $scopes
      * @param Client      $client
      * @param string|null $userIdentifier
      */

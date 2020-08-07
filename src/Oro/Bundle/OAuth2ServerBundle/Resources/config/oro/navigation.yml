@@ -17,10 +17,10 @@ navigation:
                                     backoffice_oauth_applications: ~
     titles:
         oro_oauth2_index: ~
-        oro_oauth2_storefront_index: ~
+        oro_oauth2_frontend_index: ~
         oro_oauth2_view: '%application.name% - oro.ui.view'
-        oro_oauth2_storefront_view: '%application.name% - oro.ui.view'
+        oro_oauth2_frontend_view: '%application.name% - oro.ui.view'
         oro_oauth2_update: '%application.name% - oro.ui.edit'
-        oro_oauth2_storefront_update: '%application.name% - oro.ui.edit'
+        oro_oauth2_frontend_update: '%application.name% - oro.ui.edit'
         oro_oauth2_create: 'oro.ui.create'
-        oro_oauth2_storefront_create: 'oro.ui.create'
+        oro_oauth2_frontend_create: 'oro.ui.create'

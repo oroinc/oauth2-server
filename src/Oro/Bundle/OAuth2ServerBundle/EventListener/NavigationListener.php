@@ -63,17 +63,17 @@ class NavigationListener
         }
 
         $systemTabMenuItem->addChild(
-            'storefront_oauth_applications',
+            'frontend_oauth_applications',
             [
                 'label'           => 'oro.oauth2server.menu.frontend_oauth_application.label',
-                'route'           => 'oro_oauth2_storefront_index',
+                'route'           => 'oro_oauth2_frontend_index',
                 'linkAttributes'  => ['class' => 'no-hash'],
                 'extras'          => [
                     'position' => 21, // just after the User management.
                     'routes'   => [
-                        'oro_oauth2_storefront_view',
-                        'oro_oauth2_storefront_create',
-                        'oro_oauth2_storefront_update'
+                        'oro_oauth2_frontend_view',
+                        'oro_oauth2_frontend_create',
+                        'oro_oauth2_frontend_update'
                     ]
                 ],
             ]

@@ -4,15 +4,15 @@
 {% oro_title_set({ params : {"%application.name%": form.vars.data.name} }) %}
 
 {% block navButtons %}
-    {{ UI.cancelButton(path(form.vars.data.frontend ? 'oro_oauth2_storefront_index' : 'oro_oauth2_index')) }}
+    {{ UI.cancelButton(path(form.vars.data.frontend ? 'oro_oauth2_frontend_index' : 'oro_oauth2_index')) }}
 
     {% set html = UI.saveAndCloseButton({
-        'route': form.vars.data.frontend ? 'oro_oauth2_storefront_view' : 'oro_oauth2_view',
+        'route': form.vars.data.frontend ? 'oro_oauth2_frontend_view' : 'oro_oauth2_view',
         'params': {'id': '$id'}
     }) %}
 
     {% set html = html ~ UI.saveAndStayButton({
-        'route': form.vars.data.frontend ? 'oro_oauth2_storefront_update' : 'oro_oauth2_update',
+        'route': form.vars.data.frontend ? 'oro_oauth2_frontend_update' : 'oro_oauth2_update',
         'params': {'id': '$id'}
     }) %}
     {{ UI.dropdownSaveButton({'html': html}) }}
@@ -21,7 +21,7 @@
 {% block pageHeader %}
     {% set title = 'oro.ui.update_entity'|trans({'%entityName%':
         (form.vars.data.frontend
-            ? 'oro.oauth2server.client.entity_storefront_label'
+            ? 'oro.oauth2server.client.entity_frontend_label'
             : 'oro.oauth2server.client.entity_label'
         )|trans
     }) %}
@@ -32,22 +32,10 @@
     {% set id = 'oauth-application' %}
 
     {% set grantsRow %}
-        {% if 'hidden' in form.grants.vars.block_prefixes|keys %}
-            <div data-validation-ignore="true">
-                <div class="client-grants">
-                    {{ form_row(form.grants) }}
-                </div>
-            </div>
+        {% if 'hidden' in form.grants.vars.block_prefixes %}
+            <div data-validation-ignore="true">{{ form_row(form.grants) }}</div>
         {% else %}
-            <div class="client-grants">
-                {{ form_row(form.grants) }}
-            </div>
-        {% endif %}
-    {% endset %}
-
-    {% set ownerField %}
-        {% if form.owner is defined %}
-            {{ form_row(form.owner) }}
+            {{ form_row(form.grants, {'group_attr': {'class': 'client-grants'}}) }}
         {% endif %}
     {% endset %}
 
@@ -62,7 +50,8 @@
                     form_row(form.name),
                     form_row(form.active),
                     grantsRow,
-                    ownerField
+                    form.redirectUris is defined ? form_row_collection(form.redirectUris) : '',
+                    form.owner is defined ? form_row(form.owner) : ''
                 ]
             }
         ]

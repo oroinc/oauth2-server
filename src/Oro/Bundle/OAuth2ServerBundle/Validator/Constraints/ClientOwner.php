@@ -5,8 +5,8 @@ namespace Oro\Bundle\OAuth2ServerBundle\Validator\Constraints;
 use Symfony\Component\Validator\Constraint;
 
 /**
- * This constraint can be used to check if OAuth 2.0 client with client_credentials grant
- * have assigned user information.
+ * This constraint can be used to check if OAuth 2.0 client with "client_credentials" grant
+ * is assigned to a user.
  */
 class ClientOwner extends Constraint
 {

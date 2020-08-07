@@ -25,7 +25,7 @@ Feature: Manage Notifications for OAuth Applications
       | Type          | Plain Text                                                                                    |
       | Entity Name   | OAuth Application                                                                             |
       | Subject       | Changed "{{ entity.name }}" belongs to {{ entity.user.firstName }} {{ entity.user.lastName }} |
-      | Content       | For {{ entity.user }}. Grants: {{ entity.grants }}. Scopes: {{ entity.scopes }}.              |
+      | Content       | For {{ entity.user }}. Grant Type: {{ entity.grants }}. Scopes: {{ entity.scopes }}.              |
     When I save and close form
     Then I should see "Template saved" flash message
 
@@ -51,4 +51,4 @@ Feature: Manage Notifications for OAuth Applications
     And An email containing the following was sent:
       | To      | main_bu@example.org                                            |
       | Subject | Changed "Test OAuth Application (changed)" belongs to John Doe |
-      | Body    | For John Doe. Grants: Client Credentials. Scopes: all.         |
+      | Body    | For John Doe. Grant Type: Client Credentials. Scopes: all.         |

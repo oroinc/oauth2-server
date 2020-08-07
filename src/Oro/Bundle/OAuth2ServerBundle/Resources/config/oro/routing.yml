@@ -18,3 +18,20 @@ oro_oauth2_server_client:
     resource: "@OroOAuth2ServerBundle/Controller/ClientController.php"
     type: annotation
     prefix: /oauth2
+
+oro_oauth2_server_login_check:
+    path: '/oauth2-token/login-check'
+    defaults:
+        _controller: OroOAuth2ServerBundle:Login:check
+
+oro_oauth2_server_login_form:
+    path: '/oauth2-token/login'
+    defaults:
+        type: backoffice
+        _controller: OroOAuth2ServerBundle:Login:login
+
+oro_oauth2_server_authenticate:
+    path: '/oauth2-token/authorize'
+    defaults:
+        type: backoffice
+        _controller: OroOAuth2ServerBundle:AuthorizeClient:authorize

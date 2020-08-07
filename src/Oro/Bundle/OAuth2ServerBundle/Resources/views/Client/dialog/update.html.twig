@@ -13,10 +13,10 @@
         {{ form_row(form.name) }}
         {{ form_row(form.active) }}
         {% if form.grants is defined %}
-            {% if 'hidden' in form.grants.vars.block_prefixes|keys %}
+            {% if 'hidden' in form.grants.vars.block_prefixes %}
                 <div data-validation-ignore="true">{{ form_row(form.grants) }}</div>
             {% else %}
-                {{ form_row(form.grants) }}
+                {{ form_row(form.grants, {'group_attr': {'class': 'client-grants'}}) }}
             {% endif %}
         {% endif %}
         {{ form_rest(form) }}

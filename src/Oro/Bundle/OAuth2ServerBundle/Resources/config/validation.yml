@@ -1,6 +1,7 @@
 Oro\Bundle\OAuth2ServerBundle\Entity\Client:
     constraints:
         - Oro\Bundle\OAuth2ServerBundle\Validator\Constraints\UniqueClientName: ~
+        - Oro\Bundle\OAuth2ServerBundle\Validator\Constraints\ClientRedirectUris: ~
         - Oro\Bundle\OAuth2ServerBundle\Validator\Constraints\ClientOwner: ~
     properties:
         name:
