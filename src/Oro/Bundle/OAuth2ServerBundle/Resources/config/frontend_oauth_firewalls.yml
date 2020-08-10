@@ -1,0 +1,18 @@
+oauth2_frontend_authorization_login:
+    pattern: ^/oauth2-token/login$
+    provider: commerce_customer_user
+    anonymous: true
+    logout_on_user_change: true
+    context: customer_identity
+    anonymous_customer_user: false
+oauth2_frontend_authorization_authenticate:
+    pattern: ^/oauth2-token/(authorize|login-check)
+    provider: commerce_customer_user
+    context: customer_identity
+    organization-form-login:
+        csrf_token_generator: security.csrf.token_manager
+        check_path: oro_oauth2_server_frontend_login_check
+        login_path: oro_oauth2_server_frontend_login_form
+    logout:
+        path: oro_customer_customer_user_security_logout
+    anonymous_customer_user: false

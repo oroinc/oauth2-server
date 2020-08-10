@@ -7,7 +7,7 @@
     {% if is_granted('DELETE', entity) %}
         {{ UI.deleteButton({
             'dataUrl': path('oro_oauth2_server_client_delete', {'id': entity.id}),
-            'dataRedirect': path(entity.frontend ? 'oro_oauth2_storefront_index' : 'oro_oauth2_index'),
+            'dataRedirect': path(entity.frontend ? 'oro_oauth2_frontend_index' : 'oro_oauth2_index'),
             'aCss': 'no-hash remove-button',
             'id': 'btn-remove-business_unit',
             'dataId': entity.id,
@@ -17,7 +17,7 @@
     {% if is_granted('EDIT', entity) %}
         {{ UI.editButton({
             'path' : path(
-                entity.frontend ? 'oro_oauth2_storefront_update' : 'oro_oauth2_update',
+                entity.frontend ? 'oro_oauth2_frontend_update' : 'oro_oauth2_update',
                 { id: entity.id }
             ),
             'entity_label': (entity.frontend
@@ -31,7 +31,7 @@
 {% block pageHeader %}
     {% set breadcrumbs = {
         'entity':      entity,
-        'indexPath':   path(entity.frontend ? 'oro_oauth2_storefront_index' : 'oro_oauth2_index'),
+        'indexPath':   path(entity.frontend ? 'oro_oauth2_frontend_index' : 'oro_oauth2_index'),
         'indexLabel':  (entity.frontend
                             ? 'oro.oauth2server.menu.frontend_oauth_application.label'
                             : 'oro.oauth2server.menu.backoffice_oauth_application.label'
@@ -72,11 +72,14 @@
                     {{ UI.renderProperty('oro.oauth2server.client.identifier.label'|trans, entity.identifier) }}
                     {{ UI.renderProperty('oro.oauth2server.client.name.label'|trans, entity.name) }}
                     {{ UI.renderProperty('oro.oauth2server.client.grants.label'|trans, grants) }}
+                    {% if 'authorization_code' in entity.grants %}
+                        {{ UI.renderHtmlProperty('oro.oauth2server.client.redirect_uris.label'|trans, entity.redirectUris|join('\n')|nl2br) }}
+                    {% endif -%}
                     {% if user is not null %}
                         {{ UI.renderHtmlProperty(
                             (entity.frontend
-                                ? 'oro.customer.customeruser.entity_plural_label'
-                                : 'oro.user.entity_plural_label'
+                                ? 'oro.customer.customeruser.entity_label'
+                                : 'oro.user.entity_label'
                             )|trans,
                             UI.entityViewLink(
                                 user,

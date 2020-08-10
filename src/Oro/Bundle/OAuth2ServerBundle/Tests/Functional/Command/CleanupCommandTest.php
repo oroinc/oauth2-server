@@ -4,6 +4,7 @@ namespace Oro\Bundle\OAuth2ServerBundle\Tests\Functional\Command;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Oro\Bundle\OAuth2ServerBundle\Entity\AccessToken;
+use Oro\Bundle\OAuth2ServerBundle\Entity\AuthCode;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Entity\RefreshToken;
 use Oro\Bundle\OAuth2ServerBundle\Tests\Functional\DataFixtures\LoadCleanupCommandData;
@@ -50,5 +51,9 @@ class CleanupCommandTest extends WebTestCase
         self::assertNull(
             $refreshTokenRepo->findOneBy(['identifier' => 'refresh_token_for_client_that_should_be_removed'])
         );
+
+        $authCodeRepo = $em->getRepository(AuthCode::class);
+        self::assertNull($authCodeRepo->findOneBy(['identifier' => 'auth_code_expired']));
+        self::assertNotNull($authCodeRepo->findOneBy(['identifier' => 'auth_code_not_expired']));
     }
 }

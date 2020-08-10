@@ -1,5 +1,4 @@
 @regression
-#@fixture-OroCustomerBundle:CustomerUserFixture.yml
 @fixture-OroOAuth2ServerBundle:manage_notifications_for_oauth_applications.yml
 
 Feature: Manage Backoffice OAuth Applications
@@ -20,8 +19,8 @@ Feature: Manage Backoffice OAuth Applications
     When I click "Create OAuth Application"
     And I fill form with:
       | Application Name | Client App         |
-      | Grants           | Client Credentials |
-      | Users            | John Doe           |
+      | Grant Type       | Client Credentials |
+      | User             | John Doe           |
     And I click "Save and Close"
     Then I should see "OAuth application has been created." flash message
     And I should see "Please copy Client Secret and save it somewhere safe. For security reasons, we cannot show it to you again."
@@ -32,8 +31,9 @@ Feature: Manage Backoffice OAuth Applications
     When I click "View"
     Then I should see OAuth Application with:
       | Application Name | Client App         |
-      | Grants           | Client Credentials |
-      | Users            | John Doe           |
+      | Grant Type       | Client Credentials |
+      | User             | John Doe           |
+    And I should not see "Redirect URLs"
 
   Scenario: Delete OAuth application from view page
     When I click "Delete"
@@ -43,28 +43,28 @@ Feature: Manage Backoffice OAuth Applications
     Then I should see "OAuth Application deleted" flash message
     And I should see "Test OAuth Application" in grid with following data:
       | Application Name | Test OAuth Application |
-      | Grants           | Client Credentials |
+      | Grant Type       | Client Credentials |
       | Active           | Yes               |
 
   Scenario: New OAuth application name validation
     When I go to System/User Management/OAuth Applications
     And I click "Create OAuth Application"
     And I fill form with:
-      | Grants           | Client Credentials |
-      | Users            | John Doe           |
+      | Grant Type       | Client Credentials |
+      | User             | John Doe           |
     And click "Save"
     Then I should see validation errors:
       | Application Name | This value should not be blank. |
     Then I click "Cancel"
 
-  Scenario: New OAuth application users validation for Client Credentials grant
+  Scenario: New OAuth application user validation for Client Credentials grant
     When I click "Create OAuth Application"
     And I fill form with:
       | Application Name | Test App           |
-      | Grants           | Client Credentials |
+      | Grant Type       | Client Credentials |
     And click "Save"
     Then I should see validation errors:
-      | Users | This value should not be blank. |
+      | User | This value should not be blank. |
     Then I click "Cancel"
 
   Scenario: Create Password grant OAuth application
@@ -72,8 +72,9 @@ Feature: Manage Backoffice OAuth Applications
     And I click "Create OAuth Application"
     And I fill form with:
       | Application Name | Client App |
-      | Grants           | Password   |
-    And I should not see "Users"
+      | Grant Type       | Password   |
+    And I should not see "User*"
+    And I should not see "Redirect URLs"
     And I click "Save and Close"
     Then I should see "OAuth application has been created." flash message
     And I should see "Please copy Client Secret and save it somewhere safe. For security reasons, we cannot show it to you again."
@@ -82,7 +83,8 @@ Feature: Manage Backoffice OAuth Applications
 
   Scenario: Edit Password grant OAuth application
     When I click "Edit"
-    Then I should not see "Users"
+    Then I should not see "User*"
+    And I should not see "Redirect URLs"
     And I should see "Client ID"
     When I fill form with:
       | Application Name | Client App edited |
@@ -90,7 +92,7 @@ Feature: Manage Backoffice OAuth Applications
     Then I should see "OAuth application has been updated." flash message
     And I should see OAuth Application with:
       | Application Name | Client App edited |
-      | Grants           | Password          |
+      | Grant Type       | Password          |
 
   Scenario: Deactivate OAuth application
     When I go to System/User Management/OAuth Applications
@@ -113,5 +115,43 @@ Feature: Manage Backoffice OAuth Applications
     When I click "Yes"
     Then I should see "Deleted successfully" flash message
     And I should see following grid:
-      | Application Name        | Active |
-      | Test OAuth Application  | Yes    |
+      | Application Name       | Active |
+      | Test OAuth Application | Yes    |
+
+  Scenario: New Auth Code grant OAuth application Redirect URLs validation
+    When I go to System/User Management/OAuth Applications
+    And I click "Create OAuth Application"
+    And I fill form with:
+      | Application Name | Auth Code App      |
+      | Grant Type       | Authorization Code |
+    And click "Save"
+    Then I should see "At least one redirect URL should be specified."
+    Then I click "Cancel"
+
+  Scenario: Create Auth Code grant OAuth application
+    When I go to System/User Management/OAuth Applications
+    And I click "Create OAuth Application"
+    And I fill form with:
+      | Application Name | Auth Code App                           |
+      | Grant Type       | Authorization Code                      |
+      | Redirect URLs    | [https://test.com, https://another.com] |
+    And I should not see "User*"
+    And I click "Save and Close"
+    Then I should see "OAuth application has been created." flash message
+    And I should see "Please copy Client Secret and save it somewhere safe. For security reasons, we cannot show it to you again."
+    And I should see "Client ID"
+    And I should see "Client Secret"
+
+  Scenario: Edit Auth Code grant OAuth application
+    When I click "Edit"
+    Then I should not see "User*"
+    And I should see "Client ID"
+    When I fill form with:
+      | Application Name | Auth Code App edited |
+    And click "Save and Close"
+    Then I should see "OAuth application has been updated." flash message
+    And I should see OAuth Application with:
+      | Application Name | Auth Code App edited |
+      | Grant Type       | Authorization Code   |
+    And I should see "https://test.com"
+    And I should see "https://another.com"

@@ -45,8 +45,59 @@ class FrontendApiFeatureOAuthServerTest extends OAuthServerTestCase
         self::assertEquals('Bearer', $accessToken['token_type']);
     }
 
+    public function testGetAuthTokenOnEnabledFeatureAndDisabledGuestAccess()
+    {
+        $configManager = $this->getConfigManager();
+        $configManager->set('oro_frontend.guest_access_enabled', false);
+        $configManager->flush();
+
+        $accessToken = $this->sendTokenRequest(
+            [
+                'grant_type'    => 'password',
+                'client_id'     => LoadFrontendPasswordGrantClient::OAUTH_CLIENT_ID,
+                'client_secret' => LoadFrontendPasswordGrantClient::OAUTH_CLIENT_SECRET,
+                'username'      => 'grzegorz.brzeczyszczykiewicz@example.com',
+                'password'      => 'test'
+            ],
+            Response::HTTP_OK
+        );
+
+        self::assertEquals('Bearer', $accessToken['token_type']);
+    }
+
     public function testGetAuthTokenOnDisabledFeature()
     {
+        $this->disableApiFeature(self::API_FEATURE_NAME);
+        try {
+            $response = $this->sendTokenRequest(
+                [
+                    'grant_type'    => 'password',
+                    'client_id'     => LoadFrontendPasswordGrantClient::OAUTH_CLIENT_ID,
+                    'client_secret' => LoadFrontendPasswordGrantClient::OAUTH_CLIENT_SECRET,
+                    'username'      => 'grzegorz.brzeczyszczykiewicz@example.com',
+                    'password'      => 'test'
+                ],
+                Response::HTTP_NOT_FOUND
+            );
+        } finally {
+            $this->enableApiFeature(self::API_FEATURE_NAME);
+        }
+
+        self::assertEquals(
+            [
+                'error'             => 'not_available',
+                'error_description' => 'Not found',
+                'message'           => 'Not found'
+            ],
+            $response
+        );
+    }
+
+    public function testTryToGetAuthTokenOnDisabledFeatureAndDisabledGuestAccess()
+    {
+        $configManager = $this->getConfigManager();
+        $configManager->set('oro_frontend.guest_access_enabled', false);
+        $configManager->flush();
         $this->disableApiFeature(self::API_FEATURE_NAME);
         try {
             $response = $this->sendTokenRequest(

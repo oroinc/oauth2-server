@@ -6,12 +6,12 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\EntityManagerInterface;
 use League\OAuth2\Server\Entities\AccessTokenEntityInterface;
 use League\OAuth2\Server\Entities\ClientEntityInterface;
+use League\OAuth2\Server\Entities\ScopeEntityInterface;
 use League\OAuth2\Server\Exception\UniqueTokenIdentifierConstraintViolationException;
 use League\OAuth2\Server\Repositories\AccessTokenRepositoryInterface;
 use Oro\Bundle\OAuth2ServerBundle\Entity\AccessToken;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\League\Entity\AccessTokenEntity;
-use Oro\Bundle\OAuth2ServerBundle\League\Entity\ScopeEntity;
 
 /**
  * The implementation of the access token entity repository for "league/oauth2-server" library.
@@ -120,7 +120,7 @@ class AccessTokenRepository implements AccessTokenRepositoryInterface
      *
      * @return Client
      */
-    private function getClientEntity($clientId): Client
+    private function getClientEntity(string $clientId): Client
     {
         return $this->getEntityManager()
             ->getRepository(Client::class)
@@ -128,14 +128,14 @@ class AccessTokenRepository implements AccessTokenRepositoryInterface
     }
 
     /**
-     * @param ScopeEntity[] $scopes
+     * @param ScopeEntityInterface[] $scopes
      *
      * @return string[]
      */
     private function getScopeIdentifiers(array $scopes): array
     {
         return array_map(
-            function (ScopeEntity $scope) {
+            function (ScopeEntityInterface $scope) {
                 return $scope->getIdentifier();
             },
             $scopes

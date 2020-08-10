@@ -144,11 +144,11 @@ datagrids:
         properties:
             view_link:
                 type:   url
-                route:  oro_oauth2_storefront_view
+                route:  oro_oauth2_frontend_view
                 params: [ id ]
             update_link:
                 type: url
-                route: oro_oauth2_storefront_update
+                route: oro_oauth2_frontend_update
                 params: [ id ]
 
     oauth-client-with-owner-grid:

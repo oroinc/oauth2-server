@@ -2,31 +2,6 @@
 {% import 'OroUIBundle::macros.html.twig' as UI %}
 
 {% block content_data %}
-    <script type="text/javascript">
-        loadModules(['jquery'], function($){
-            $(function() {
-                var clientGrantsChoice = '.client-grants input:radio';
-                var clientOwnerSelect = '#client-owner';
-
-                $(document).ready(function() {
-                    if ($(clientGrantsChoice).prop('checked') && $(clientGrantsChoice).val() === 'client_credentials') {
-                        $(clientOwnerSelect).removeClass('hide');
-                    } else {
-                        $(clientOwnerSelect).addClass('hide');
-                    }
-                });
-
-                $(document).on('change', clientGrantsChoice, function() {
-                    if ($(this).prop('checked') && $(this).val() === 'client_credentials') {
-                        $(clientOwnerSelect).removeClass('hide');
-                    } else {
-                        $(clientOwnerSelect).addClass('hide');
-                    }
-                });
-            });
-        });
-    </script>
-
     {% if not form.vars.valid and form.vars.errors|length %}
         <div class="alert alert-error" role="alert">
             <div class="message">
@@ -41,22 +16,11 @@
         {{ form_row(form.name) }}
         {{ form_row(form.active) }}
         {% if form.grants is defined %}
-            {% if 'hidden' in form.grants.vars.block_prefixes|keys %}
-                <div data-validation-ignore="true">
-                    <div class="client-grants">
-                        {{ form_row(form.grants) }}
-                    </div>
-                </div>
+            {% if 'hidden' in form.grants.vars.block_prefixes %}
+                <div data-validation-ignore="true">{{ form_row(form.grants) }}</div>
             {% else %}
-                <div class="client-grants">
-                    {{ form_row(form.grants) }}
-                </div>
+                {{ form_row(form.grants, {'group_attr': {'class': 'client-grants'}}) }}
             {% endif %}
-        {% endif %}
-        {% if form.owner is defined %}
-            <div id="client-owner" class="hide">
-                {{ form_row(form.owner) }}
-            </div>
         {% endif %}
         {{ form_rest(form) }}
         <div class="widget-actions form-actions">

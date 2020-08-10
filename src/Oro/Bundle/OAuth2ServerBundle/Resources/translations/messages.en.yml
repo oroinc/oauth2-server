@@ -2,7 +2,7 @@ oro:
     oauth2server:
         client:
             entity_label: OAuth Application
-            entity_storefront_label: Storefront OAuth Application
+            entity_frontend_label: Storefront OAuth Application
             entity_plural_label: OAuth Applications
             entity_grid_all_view_label: All %entity_plural_label%
             id:
@@ -18,8 +18,8 @@ oro:
                     active: Active
                     inactive: Inactive
             grants:
-                label: Grants
-                description: The grant types supported by the application. For details see <a href="https://oauth.net/2/grant-types/" target="_blank" class="no-hash">OAuth 2.0 Grant Types</a>.
+                label: Grant Type
+                description: The grant type supported by the application. For details see <a href="https://oauth.net/2/grant-types/" target="_blank" class="no-hash">OAuth 2.0 Grant Types</a>.
             scopes:
                 label: Scopes
                 description: The scopes to which the application can have access.
@@ -42,8 +42,9 @@ oro:
                 label: Organization
                 description: The organization the client issued to.
             redirect_uris:
-                label: Redirect URIs
-                description: URIs to which it is allowed to redirect the user back to.
+                label: Redirect URLs
+                description: The list of URLs to which it is allowed to redirect the user back to.
+                add: Add URL
             frontend:
                 label: Store front
                 description: Indicates that client should work with the storefront.
@@ -61,7 +62,7 @@ oro:
             updated_message: OAuth application has been updated.
             created_warning_message: Please copy <strong>Client Secret</strong> and save it somewhere safe. For security reasons, we cannot show it to you again.
             datagrid:
-                entity_hint: Applications
+                entity_hint: OAuth Applications
         scopes:
             all: all
         grant_types:
@@ -74,3 +75,11 @@ oro:
         menu:
             backoffice_oauth_application.label: OAuth Applications
             frontend_oauth_application.label: Storefront OAuth Applications
+        auth_code:
+            grant: Grant
+            cancel: Cancel
+            login_message: Sign in to continue to "%app_name%".
+            authorize_message: '"%app_name%" wants to access your account.'
+            authorize_description: |
+                <p>Granting <b>"%app_name%"</b> permission will provide access to all API resources available to your user based on your role and permissions. This means that this application will be able to potentially read, edit, and delete information on your behalf.</p>
+                <p>Please be selective of which third party applications are granted access as well as the level of permission granted to them.</p>

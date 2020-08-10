@@ -1,0 +1,22 @@
+oro_oauth2_server_frontend_login_check:
+    path: '/oauth2-token/login-check'
+    defaults:
+        _controller: OroOAuth2ServerBundle:Login:check
+    options:
+        frontend: true
+
+oro_oauth2_server_frontend_login_form:
+    path: '/oauth2-token/login'
+    defaults:
+        type: frontend
+        _controller: OroOAuth2ServerBundle:Login:login
+    options:
+        frontend: true
+
+oro_oauth2_server_frontend_authenticate:
+    path: '/oauth2-token/authorize'
+    defaults:
+        type: frontend
+        _controller: OroOAuth2ServerBundle:AuthorizeClient:authorize
+    options:
+        frontend: true
