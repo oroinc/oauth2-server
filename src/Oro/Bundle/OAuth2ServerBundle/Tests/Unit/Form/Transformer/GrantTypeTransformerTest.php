@@ -5,6 +5,9 @@ namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Form\Transformer;
 use Oro\Bundle\OAuth2ServerBundle\Form\Transformer\GrantTypeTransformer;
 use Symfony\Component\Form\Exception\TransformationFailedException;
 
+/**
+ * @SuppressWarnings(PHPMD.TooManyPublicMethods)
+ */
 class GrantTypeTransformerTest extends \PHPUnit\Framework\TestCase
 {
     private $transformer;

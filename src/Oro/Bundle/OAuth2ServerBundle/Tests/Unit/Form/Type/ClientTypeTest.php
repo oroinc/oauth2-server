@@ -34,6 +34,9 @@ use Symfony\Component\Validator\Mapping\Factory\LazyLoadingMetadataFactory;
 use Symfony\Component\Validator\Mapping\Loader\LoaderChain;
 use Symfony\Component\Validator\Validator\RecursiveValidator;
 
+/**
+ * @SuppressWarnings(PHPMD.TooManyPublicMethods)
+ */
 class ClientTypeTest extends TypeTestCase
 {
     /** @var ClientOwnerOrganizationsProvider|\PHPUnit\Framework\MockObject\MockObject */

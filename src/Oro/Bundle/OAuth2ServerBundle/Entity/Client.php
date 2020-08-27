@@ -34,6 +34,7 @@ use Oro\Bundle\OrganizationBundle\Entity\Organization;
  *      }
  *  }
  * )
+ * @SuppressWarnings(PHPMD.TooManyFields)
  */
 class Client
 {

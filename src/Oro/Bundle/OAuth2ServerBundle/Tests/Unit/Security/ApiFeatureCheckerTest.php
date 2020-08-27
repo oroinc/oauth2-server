@@ -8,6 +8,9 @@ use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Security\ApiFeatureChecker;
 use Oro\Bundle\UserBundle\Entity\User;
 
+/**
+ * @SuppressWarnings(PHPMD.TooManyPublicMethods)
+ */
 class ApiFeatureCheckerTest extends \PHPUnit\Framework\TestCase
 {
     /** @var FeatureChecker|\PHPUnit\Framework\MockObject\MockObject */

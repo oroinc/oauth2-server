@@ -5,6 +5,9 @@ namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Entity;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 
+/**
+ * @SuppressWarnings(PHPMD.TooManyPublicMethods)
+ */
 class ClientTest extends \PHPUnit\Framework\TestCase
 {
     public function testGetId()
