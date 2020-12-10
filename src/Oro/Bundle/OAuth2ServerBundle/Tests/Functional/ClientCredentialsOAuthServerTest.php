@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @dbIsolationPerTest
+ * @SuppressWarnings(PHPMD.TooManyPublicMethods)
  */
 class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
 {
@@ -21,20 +22,32 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
     }
 
     /**
-     * @param int $expectedStatusCode
+     * @param int   $expectedStatusCode
+     * @param array $server
      *
-     * @return array
+     * @return Response
      */
-    private function sendAccessTokenRequest(int $expectedStatusCode = Response::HTTP_OK): array
+    private function sendAccessTokenRequest(int $expectedStatusCode = Response::HTTP_OK, array $server = []): Response
     {
-        return $this->sendTokenRequest(
+        $response = $this->sendRequest(
+            'POST',
+            $this->getUrl('oro_oauth2_server_auth_token'),
             [
                 'grant_type'    => 'client_credentials',
                 'client_id'     => LoadClientCredentialsClient::OAUTH_CLIENT_ID,
                 'client_secret' => LoadClientCredentialsClient::OAUTH_CLIENT_SECRET
             ],
-            $expectedStatusCode
+            $server
         );
+
+        self::assertResponseStatusCodeEquals($response, $expectedStatusCode);
+        if (Response::HTTP_OK === $expectedStatusCode) {
+            self::assertResponseContentTypeEquals($response, 'application/json; charset=UTF-8');
+        } elseif ($expectedStatusCode >= Response::HTTP_BAD_REQUEST) {
+            self::assertResponseContentTypeEquals($response, 'application/json');
+        }
+
+        return $response;
     }
 
     /**
@@ -42,7 +55,10 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
      */
     private function getBearerAuthHeaderValue(): string
     {
-        $responseData = $this->sendAccessTokenRequest();
+        $response = $this->sendAccessTokenRequest();
+        self::assertFalse($response->headers->has('Access-Control-Allow-Origin'));
+
+        $responseData = self::jsonToArray($response->getContent());
 
         return sprintf('Bearer %s', $responseData['access_token']);
     }
@@ -50,12 +66,16 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
     public function testGetAuthToken()
     {
         $startDateTime = new \DateTime('now', new \DateTimeZone('UTC'));
-        $accessToken = $this->sendAccessTokenRequest();
+
+        $response = $this->sendAccessTokenRequest();
+        self::assertFalse($response->headers->has('Access-Control-Allow-Origin'));
+
+        $accessToken = self::jsonToArray($response->getContent());
 
         self::assertEquals('Bearer', $accessToken['token_type']);
         self::assertLessThanOrEqual(3600, $accessToken['expires_in']);
         self::assertGreaterThanOrEqual(3599, $accessToken['expires_in']);
-        list($accessTokenFirstPart, $accessTokenSecondPart) = explode('.', $accessToken['access_token']);
+        [$accessTokenFirstPart, $accessTokenSecondPart] = explode('.', $accessToken['access_token']);
         $accessTokenFirstPart = self::jsonToArray(base64_decode($accessTokenFirstPart));
         $accessTokenSecondPart = self::jsonToArray(base64_decode($accessTokenSecondPart));
         self::assertEquals('JWT', $accessTokenFirstPart['typ']);
@@ -73,12 +93,65 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
         $client->setActive(false);
         $this->getEntityManager()->flush();
 
-        $responseContent = $this->sendAccessTokenRequest(Response::HTTP_UNAUTHORIZED);
+        $response = $this->sendAccessTokenRequest(Response::HTTP_UNAUTHORIZED);
+        self::assertFalse($response->headers->has('Access-Control-Allow-Origin'));
+
+        $responseContent = self::jsonToArray($response->getContent());
 
         self::assertEquals(
             [
-                'error' => 'invalid_client',
-                'message' => 'Client authentication failed',
+                'error'             => 'invalid_client',
+                'message'           => 'Client authentication failed',
+                'error_description' => 'Client authentication failed'
+            ],
+            $responseContent
+        );
+
+        $client = $this->getReference(LoadClientCredentialsClient::OAUTH_CLIENT_REFERENCE);
+        self::assertNull($client->getLastUsedAt());
+    }
+
+    public function testGetAuthTokenForCorsRequest()
+    {
+        $startDateTime = new \DateTime('now', new \DateTimeZone('UTC'));
+        $origin = 'https://oauth.test.com';
+
+        $response = $this->sendAccessTokenRequest(Response::HTTP_OK, ['HTTP_Origin' => $origin]);
+        self::assertEquals($origin, $response->headers->get('Access-Control-Allow-Origin'));
+
+        $accessToken = self::jsonToArray($response->getContent());
+
+        self::assertEquals('Bearer', $accessToken['token_type']);
+        self::assertLessThanOrEqual(3600, $accessToken['expires_in']);
+        self::assertGreaterThanOrEqual(3599, $accessToken['expires_in']);
+        [$accessTokenFirstPart, $accessTokenSecondPart] = explode('.', $accessToken['access_token']);
+        $accessTokenFirstPart = self::jsonToArray(base64_decode($accessTokenFirstPart));
+        $accessTokenSecondPart = self::jsonToArray(base64_decode($accessTokenSecondPart));
+        self::assertEquals('JWT', $accessTokenFirstPart['typ']);
+        self::assertEquals('RS256', $accessTokenFirstPart['alg']);
+        self::assertEquals(LoadClientCredentialsClient::OAUTH_CLIENT_ID, $accessTokenSecondPart['aud']);
+
+        $client = $this->getReference(LoadClientCredentialsClient::OAUTH_CLIENT_REFERENCE);
+        self::assertClientLastUsedValueIsCorrect($startDateTime, $client);
+    }
+
+    public function testGetAuthTokenForDeactivatedClientForCorsRequest()
+    {
+        /** @var Client $client */
+        $client = $this->getReference(LoadClientCredentialsClient::OAUTH_CLIENT_REFERENCE);
+        $client->setActive(false);
+        $this->getEntityManager()->flush();
+
+        $origin = 'https://oauth.test.com';
+        $response = $this->sendAccessTokenRequest(Response::HTTP_UNAUTHORIZED, ['HTTP_Origin' => $origin]);
+        self::assertEquals($origin, $response->headers->get('Access-Control-Allow-Origin'));
+
+        $responseContent = self::jsonToArray($response->getContent());
+
+        self::assertEquals(
+            [
+                'error'             => 'invalid_client',
+                'message'           => 'Client authentication failed',
                 'error_description' => 'Client authentication failed'
             ],
             $responseContent

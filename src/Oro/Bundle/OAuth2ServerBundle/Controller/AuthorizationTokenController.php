@@ -5,7 +5,6 @@ namespace Oro\Bundle\OAuth2ServerBundle\Controller;
 use Laminas\Diactoros\Response;
 use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\Exception\OAuthServerException;
-use LogicException;
 use Oro\Bundle\OAuth2ServerBundle\League\Exception\CryptKeyNotFoundException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -34,13 +33,19 @@ class AuthorizationTokenController extends Controller
             $response = $this->getAuthorizationServer()
                 ->respondToAccessTokenRequest($serverRequest, $serverResponse);
             $this->get('oro_oauth2_server.handler.get_access_token.success_handler')->handle($serverRequest);
-
-            return $response;
         } catch (OAuthServerException $e) {
             $this->get('oro_oauth2_server.handler.get_access_token.exception_handler')->handle($serverRequest, $e);
-
-            return $e->generateHttpResponse($serverResponse);
+            $response = $e->generateHttpResponse($serverResponse);
         }
+
+        if ($this->isCorsTokenRequest($serverRequest)) {
+            $origin = $this->getTokenRequestOrigin($serverRequest);
+            if ($this->isAllowedOrigin($origin)) {
+                $response = $response->withHeader('Access-Control-Allow-Origin', $origin);
+            }
+        }
+
+        return $response;
     }
 
     /**
@@ -56,8 +61,7 @@ class AuthorizationTokenController extends Controller
         $response->headers->set('Allow', 'OPTIONS, POST');
         if ($this->isCorsRequest($request)) {
             $origin = $request->headers->get('Origin');
-            $allowedOrigins = $this->getParameter('oro_oauth2_server.cors.allow_origins');
-            if (in_array($origin, $allowedOrigins, true)) {
+            if ($this->isAllowedOrigin($origin)) {
                 $response->headers->set('Access-Control-Allow-Origin', $origin);
             }
             $requestMethod = $request->headers->get('Access-Control-Request-Method');
@@ -94,13 +98,64 @@ class AuthorizationTokenController extends Controller
     }
 
     /**
+     * @param ServerRequestInterface $request
+     *
+     * @return bool
+     */
+    private function isCorsTokenRequest(ServerRequestInterface $request): bool
+    {
+        return
+            $request->hasHeader('Origin')
+            && $this->getTokenRequestOrigin($request) !== $this->getTokenRequestSchemeAndHttpHost($request);
+    }
+
+    /**
+     * @param ServerRequestInterface $request
+     *
+     * @return string
+     */
+    private function getTokenRequestOrigin(ServerRequestInterface $request): string
+    {
+        $value = $request->getHeader('Origin');
+
+        return reset($value);
+    }
+
+    /**
+     * @param ServerRequestInterface $request
+     *
+     * @return string
+     */
+    private function getTokenRequestSchemeAndHttpHost(ServerRequestInterface $request): string
+    {
+        $uri = $request->getUri();
+        $result = $uri->getScheme() . '://' . $uri->getHost();
+        $port = $uri->getPort();
+        if (null !== $port) {
+            $result .= ':' . (string)$port;
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param string $origin
+     *
+     * @return bool
+     */
+    private function isAllowedOrigin(string $origin): bool
+    {
+        return \in_array($origin, $this->getParameter('oro_oauth2_server.cors.allow_origins'), true);
+    }
+
+    /**
      * @return AuthorizationServer
      */
     private function getAuthorizationServer(): AuthorizationServer
     {
         try {
             return $this->get('oro_oauth2_server.league.authorization_server');
-        } catch (LogicException $e) {
+        } catch (\LogicException $e) {
             $this->getLogger()->warning($e->getMessage(), ['exception' => $e]);
 
             throw CryptKeyNotFoundException::create($e);
