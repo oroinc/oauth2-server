@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Oro\Bundle\OAuth2ServerBundle\Command;
 
@@ -13,7 +14,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
- * The command that removes the following data:
+ * Removes outdated OAuth tokens, codes and applications.
+ *
+ * The following data is removed:
  * * outdated OAuth 2.0 access tokens
  * * outdated OAuth 2.0 refresh tokens
  * * OAuth 2.0 clients that belong to removed users
@@ -24,24 +27,11 @@ class CleanupCommand extends Command implements CronCommandInterface
     /** @var string */
     protected static $defaultName = 'oro:cron:oauth-server:cleanup';
 
-    /** @var ClientCleaner */
-    private $clientCleaner;
+    private ClientCleaner $clientCleaner;
+    private AccessTokenCleaner $accessTokenCleaner;
+    private RefreshTokenCleaner $refreshTokenCleaner;
+    private AuthCodeCleaner $authCodeCleaner;
 
-    /** @var AccessTokenCleaner */
-    private $accessTokenCleaner;
-
-    /** @var RefreshTokenCleaner */
-    private $refreshTokenCleaner;
-
-    /** @var AuthCodeCleaner */
-    private $authCodeCleaner;
-
-    /**
-     * @param ClientCleaner       $clientCleaner
-     * @param AccessTokenCleaner  $accessTokenCleaner
-     * @param RefreshTokenCleaner $refreshTokenCleaner
-     * @param AuthCodeCleaner     $authCodeCleaner
-     */
     public function __construct(
         ClientCleaner $clientCleaner,
         AccessTokenCleaner $accessTokenCleaner,
@@ -55,37 +45,34 @@ class CleanupCommand extends Command implements CronCommandInterface
         $this->authCodeCleaner = $authCodeCleaner;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getDefaultDefinition()
     {
         return '0 0 * * *';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function isActive()
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    /** @noinspection PhpMissingParentCallCommonInspection */
     protected function configure()
     {
         $this
-            ->setDescription(
-                'Removes outdated OAuth 2.0 access tokens, refresh tokens'
-                . ' and OAuth 2.0 applications that belong to removed users'
-            );
+            ->setDescription('Removes outdated OAuth tokens, codes and applications.')
+            ->setHelp(
+                <<<'HELP'
+The <info>%command.name%</info> command removes outdated OAuth 2.0 access tokens, refresh tokens
+and auth codes. It also removes OAuth 2.0 applications that belong to removed users.
+
+  <info>php %command.full_name%</info>
+
+HELP
+            )
+        ;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    /** @noinspection PhpMissingParentCallCommonInspection */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $io = new SymfonyStyle($input, $output);
