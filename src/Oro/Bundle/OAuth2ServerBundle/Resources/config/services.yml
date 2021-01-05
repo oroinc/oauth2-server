@@ -288,9 +288,8 @@ services:
         tags:
             - { name: oro_notification.additional_email_association_provider }
 
-    oro_oauth2_server.client_entity_virtual_relation_provider:
+    oro_oauth2_server.virtual_relation_provider.client_entity:
         class: Oro\Bundle\OAuth2ServerBundle\Provider\ClientEntityVirtualRelationProvider
-        public: false
         arguments:
             - '%oro_oauth2_server.supported_client_owners%'
             - '@oro_entity.doctrine_helper'
