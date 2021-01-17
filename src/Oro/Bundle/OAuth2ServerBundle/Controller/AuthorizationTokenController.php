@@ -9,14 +9,14 @@ use Oro\Bundle\OAuth2ServerBundle\League\Exception\CryptKeyNotFoundException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
  * The controller that implement OAuth 2.0 authorization server entry point.
  */
-class AuthorizationTokenController extends Controller
+class AuthorizationTokenController extends AbstractController
 {
     /**
      * Gets OAuth 2.0 access token.
@@ -69,7 +69,7 @@ class AuthorizationTokenController extends Controller
                 $response->headers->set('Access-Control-Allow-Methods', $response->headers->get('Allow'));
                 $response->headers->remove('Allow');
                 $response->headers->set('Access-Control-Allow-Headers', 'Content-Type');
-                $preflightMaxAge = $this->getParameter('oro_oauth2_server.cors.preflight_max_age');
+                $preflightMaxAge = $this->container->getParameter('oro_oauth2_server.cors.preflight_max_age');
                 if ($preflightMaxAge > 0) {
                     $response->headers->set('Access-Control-Max-Age', $preflightMaxAge);
                     // although OPTIONS requests are not cacheable, add "Cache-Control" header
@@ -145,7 +145,7 @@ class AuthorizationTokenController extends Controller
      */
     private function isAllowedOrigin(string $origin): bool
     {
-        return \in_array($origin, $this->getParameter('oro_oauth2_server.cors.allow_origins'), true);
+        return \in_array($origin, $this->container->getParameter('oro_oauth2_server.cors.allow_origins'), true);
     }
 
     /**

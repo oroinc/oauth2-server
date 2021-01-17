@@ -9,7 +9,7 @@ use Oro\Bundle\OAuth2ServerBundle\League\Entity\UserEntity;
 use Oro\Bundle\OAuth2ServerBundle\League\Exception\CryptKeyNotFoundException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
@@ -18,7 +18,7 @@ use Zend\Diactoros\Response;
 /**
  * The controller that allows to authorize client during authorization code grant flow.
  */
-class AuthorizeClientController extends Controller
+class AuthorizeClientController extends AbstractController
 {
     /**
      * Processes the authorize client form page.
