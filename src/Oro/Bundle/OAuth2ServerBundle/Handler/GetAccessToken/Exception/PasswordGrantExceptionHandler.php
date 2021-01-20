@@ -112,7 +112,7 @@ class PasswordGrantExceptionHandler implements ExceptionHandlerInterface
                 ['identifier' => $parameters['client_id']]
             );
 
-            if ($client->isFrontend()) {
+            if ($client && $client->isFrontend()) {
                 $this->frontendHelper->emulateFrontendRequest();
             } else {
                 $this->frontendHelper->emulateBackendRequest();
