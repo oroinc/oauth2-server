@@ -1,6 +1,6 @@
 <?php
 
-namespace Unit\League\Entity;
+namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\League\Entity;
 
 use Oro\Bundle\OAuth2ServerBundle\League\Entity\ClientEntity;
 
