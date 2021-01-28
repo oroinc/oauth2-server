@@ -2,6 +2,7 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Controller;
 
+use GuzzleHttp\Psr7\Response;
 use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
@@ -13,7 +14,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
-use Zend\Diactoros\Response;
 
 /**
  * The controller that allows to authorize client during authorization code grant flow.
@@ -65,6 +65,7 @@ class AuthorizeClientController extends AbstractController
 
                 $this->get('oro_oauth2_server.handler.authorize_client.handler')
                     ->handle($client, $loggedUser, $isAuthorized);
+
                 return $authServer->completeAuthorizationRequest($authRequest, new Response());
             }
         } catch (OAuthServerException $exception) {
