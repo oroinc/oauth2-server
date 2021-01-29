@@ -5,7 +5,7 @@ namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Handler\GetAccessToken\Succes
 use Doctrine\ORM\EntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Exception;
-use Laminas\Diactoros\ServerRequest;
+use GuzzleHttp\Psr7\ServerRequest;
 use Oro\Bundle\CustomerBundle\Security\CustomerUserLoader;
 use Oro\Bundle\FrontendBundle\Request\FrontendHelper;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
@@ -72,7 +72,7 @@ class PasswordGrantSuccessHandlerTest extends TestCase
 
     public function testHandleOnNonPasswordGrant()
     {
-        $request = new ServerRequest([], [], null, null, 'php://input', [], [], [], ['grant_type' => 'client']);
+        $request = (new ServerRequest('GET', ''))->withParsedBody(['grant_type' => 'client']);
 
         $this->eventDispatcher->expects(self::never())
             ->method('dispatch');
@@ -88,7 +88,7 @@ class PasswordGrantSuccessHandlerTest extends TestCase
             'client_id'  => 'test',
             'username'   => 'testUser',
         ];
-        $request = new ServerRequest([], [], null, null, 'php://input', [], [], [], $requestParameters);
+        $request = (new ServerRequest('GET', ''))->withParsedBody($requestParameters);
 
         $organization = new Organization();
         $user = new User();
@@ -151,7 +151,7 @@ class PasswordGrantSuccessHandlerTest extends TestCase
             'client_id'  => 'test',
             'username'   => 'testUser',
         ];
-        $request = new ServerRequest([], [], null, null, 'php://input', [], [], [], $requestParameters);
+        $request = (new ServerRequest('GET', ''))->withParsedBody($requestParameters);
 
         $organization = new Organization();
         $user = $this->createMock(UserInterface::class);
@@ -204,7 +204,7 @@ class PasswordGrantSuccessHandlerTest extends TestCase
             'client_id'  => 'test',
             'username'   => 'testUser',
         ];
-        $request = new ServerRequest([], [], null, null, 'php://input', [], [], [], $requestParameters);
+        $request = (new ServerRequest('GET', ''))->withParsedBody($requestParameters);
 
         $organization = new Organization();
         $user = new User();
@@ -259,7 +259,7 @@ class PasswordGrantSuccessHandlerTest extends TestCase
             'client_id'  => 'test',
             'username'   => 'testUser',
         ];
-        $request = new ServerRequest([], [], null, null, 'php://input', [], [], [], $requestParameters);
+        $request = (new ServerRequest('GET', ''))->withParsedBody($requestParameters);
 
         $organization = new Organization();
         $user = new User();

@@ -2,7 +2,7 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Security\Authentication\Firewall;
 
-use Laminas\Diactoros\ServerRequest;
+use GuzzleHttp\Psr7\ServerRequest;
 use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\OAuth2Token;
 use Oro\Bundle\OAuth2ServerBundle\Security\Firewall\OAuth2Listener;
 use Symfony\Bridge\PsrHttpMessage\HttpMessageFactoryInterface;
@@ -90,7 +90,7 @@ class OAuth2ListenerTest extends \PHPUnit\Framework\TestCase
     public function testHandleWithCorrectAuthorizationHeader(string $bearerAuthorizationHeader)
     {
         $headers = ['Authorization' => $bearerAuthorizationHeader];
-        $serverRequest = new ServerRequest([], [], 'http://test.com/test_api', 'POST', 'php://input', $headers);
+        $serverRequest = (new ServerRequest('POST', 'http://test.com/test_api', $headers));
 
         $request = Request::create($serverRequest->getUri(), $serverRequest->getMethod());
         $request->headers->add($headers);

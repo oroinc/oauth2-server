@@ -4,7 +4,7 @@ namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Handler\GetAccessToken\Except
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use Laminas\Diactoros\ServerRequest;
+use GuzzleHttp\Psr7\ServerRequest;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Oro\Bundle\FrontendBundle\Request\FrontendHelper;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
@@ -50,8 +50,7 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
 
     public function testHandleOnNonPasswordGrant()
     {
-        $request = new ServerRequest([], [], null, null, 'php://input', [], [], [], ['grant_type' => 'client']);
-
+        $request = (new ServerRequest('GET', ''))->withParsedBody(['grant_type' => 'client']);
         $this->eventDispatcher->expects(self::never())
             ->method('dispatch');
 
@@ -62,7 +61,7 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
     public function testHandleWithPreviousAuthenticationException()
     {
         $tokenParameters = ['grant_type' => 'password', 'username' => 'testUser'];
-        $request = new ServerRequest([], [], null, null, 'php://input', [], [], [], $tokenParameters);
+        $request = (new ServerRequest('GET', ''))->withParsedBody($tokenParameters);
 
         $token = new FailedUserOAuth2Token('testUser');
         $token->setAttributes($tokenParameters);
@@ -94,7 +93,7 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
     public function testHandleWithOAuthBadCredentialsException()
     {
         $tokenParameters = ['grant_type' => 'password', 'username' => 'testUser'];
-        $request = new ServerRequest([], [], null, null, 'php://input', [], [], [], $tokenParameters);
+        $request = (new ServerRequest('GET', ''))->withParsedBody($tokenParameters);
 
         $token = new FailedUserOAuth2Token('testUser');
         $token->setAttributes($tokenParameters);
@@ -117,7 +116,7 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
     public function testHandleWithNonOAuthBadCredentialsException()
     {
         $tokenParameters = ['grant_type' => 'password', 'username' => 'testUser'];
-        $request = new ServerRequest([], [], null, null, 'php://input', [], [], [], $tokenParameters);
+        $request = (new ServerRequest('GET', ''))->withParsedBody($tokenParameters);
 
         $token = new FailedUserOAuth2Token('testUser');
         $token->setAttributes($tokenParameters);
@@ -151,7 +150,7 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
         $client->setFrontend(true);
 
         $tokenParameters = ['grant_type' => 'password', 'username' => 'testUser', 'client_id' => 'test_client'];
-        $request = new ServerRequest([], [], null, null, 'php://input', [], [], [], $tokenParameters);
+        $request = (new ServerRequest('GET', ''))->withParsedBody($tokenParameters);
 
         $token = new FailedUserOAuth2Token('testUser');
         $token->setAttributes($tokenParameters);
@@ -189,7 +188,7 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
         $client->setFrontend(false);
 
         $tokenParameters = ['grant_type' => 'password', 'username' => 'testUser', 'client_id' => 'test_client'];
-        $request = new ServerRequest([], [], null, null, 'php://input', [], [], [], $tokenParameters);
+        $request = (new ServerRequest('GET', ''))->withParsedBody($tokenParameters);
 
         $token = new FailedUserOAuth2Token('testUser');
         $token->setAttributes($tokenParameters);
@@ -230,7 +229,7 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
         $client->setFrontend(false);
 
         $tokenParameters = ['grant_type' => 'password', 'username' => 'testUser', 'client_id' => 'test_client'];
-        $request = new ServerRequest([], [], null, null, 'php://input', [], [], [], $tokenParameters);
+        $request = (new ServerRequest('GET', ''))->withParsedBody($tokenParameters);
 
         $token = new FailedUserOAuth2Token('testUser');
         $token->setAttributes($tokenParameters);
