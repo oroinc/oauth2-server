@@ -252,4 +252,48 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
         $handler = new PasswordGrantExceptionHandler($this->eventDispatcher, $this->doctrine, $frontendHelper);
         $handler->handle($request, $exception);
     }
+
+    public function testWithWrongClientId()
+    {
+        if (!class_exists('Oro\Bundle\FrontendBundle\Request\FrontendHelper')) {
+            self::markTestSkipped('Could be tested only with Frontend bundle');
+        }
+
+        $tokenParameters = ['grant_type' => 'password', 'username' => 'user', 'client_id' => 'test_client'];
+        $request = new ServerRequest([], [], null, null, 'php://input', [], [], [], $tokenParameters);
+
+        $token = new FailedUserOAuth2Token('user');
+        $token->setAttributes($tokenParameters);
+
+        $exception = new OAuthServerException('test', 10, 'invalid_credentials');
+        $expectedException = new BadCredentialsException('test', 10, $exception);
+        $expectedException->setToken($token);
+
+        $this->eventDispatcher->expects(self::once())
+            ->method('dispatch')
+            ->with(
+                new AuthenticationFailureEvent($token, $expectedException),
+                AuthenticationEvents::AUTHENTICATION_FAILURE
+            );
+
+        $repository = $this->createMock(EntityRepository::class);
+        $repository->expects(self::once())
+            ->method('findOneBy')
+            ->with(['identifier' => 'test_client'])
+            ->willReturn(null);
+
+        $this->doctrine->expects(self::once())
+            ->method('getRepository')
+            ->with(Client::class)
+            ->willReturn($repository);
+
+        $frontendHelper = $this->createMock(FrontendHelper::class);
+        $frontendHelper->expects(self::once())
+            ->method('emulateBackendRequest');
+        $frontendHelper->expects(self::once())
+            ->method('resetRequestEmulation');
+
+        $handler = new PasswordGrantExceptionHandler($this->eventDispatcher, $this->doctrine, $frontendHelper);
+        $handler->handle($request, $exception);
+    }
 }
