@@ -260,7 +260,7 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
         }
 
         $tokenParameters = ['grant_type' => 'password', 'username' => 'user', 'client_id' => 'test_client'];
-        $request = new ServerRequest([], [], null, null, 'php://input', [], [], [], $tokenParameters);
+        $request = (new ServerRequest('GET', ''))->withParsedBody($tokenParameters);
 
         $token = new FailedUserOAuth2Token('user');
         $token->setAttributes($tokenParameters);
