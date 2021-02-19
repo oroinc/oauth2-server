@@ -62,7 +62,7 @@
                     </form>
                 </div>
             </div>
-            <div class="login-copyright">{{ 'oro.auth.copy'|trans }}</div>
+            <div class="login-copyright">{{ 'oro.copyright'|trans({ '{{year}}': 'now'|date('Y') }) }}</div>
         </div>
     </div>
     <script type="text/javascript">
