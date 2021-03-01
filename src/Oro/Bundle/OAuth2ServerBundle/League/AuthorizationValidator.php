@@ -51,7 +51,15 @@ class AuthorizationValidator implements AuthorizationValidatorInterface
      */
     public function validateAuthorization(ServerRequestInterface $request)
     {
-        return $this->getResourceServer()->validateAuthenticatedRequest($request);
+        $currentErrorReporting = error_reporting(E_ERROR);
+        $result = null;
+        try {
+            $result = $this->getResourceServer()->validateAuthenticatedRequest($request);
+        } finally {
+            error_reporting($currentErrorReporting);
+        }
+
+        return $result;
     }
 
     /**

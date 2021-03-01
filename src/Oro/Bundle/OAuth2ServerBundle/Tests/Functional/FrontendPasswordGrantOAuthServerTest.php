@@ -122,12 +122,13 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
         array $server,
         $assertValid = true
     ) {
+        $server['HTTP_ACCEPT'] = self::JSON_API_MEDIA_TYPE;
         $this->client->request(
             'GET',
             $this->getUrl('oro_frontend_rest_api_item', $routeParameters),
             $parameters,
             [],
-            array_merge(['CONTENT_TYPE' => self::JSON_API_CONTENT_TYPE], $server)
+            $server
         );
 
         $response = $this->client->getResponse();
