@@ -7,6 +7,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Oro\Bundle\OAuth2ServerBundle\Entity\AccessToken;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
+use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
 use Oro\Bundle\OAuth2ServerBundle\League\Entity\AccessTokenEntity;
 use Oro\Bundle\OAuth2ServerBundle\League\Entity\ClientEntity;
 use Oro\Bundle\OAuth2ServerBundle\League\Entity\ScopeEntity;
@@ -17,14 +18,19 @@ class AccessTokenRepositoryTest extends \PHPUnit\Framework\TestCase
     /** @var ManagerRegistry|\PHPUnit\Framework\MockObject\MockObject */
     private $doctrine;
 
+    /** @var ClientManager|\PHPUnit\Framework\MockObject\MockObject */
+    private $clientManager;
+
     /** @var AccessTokenRepository */
     private $repository;
 
     protected function setUp()
     {
         $this->doctrine = $this->createMock(ManagerRegistry::class);
+        $this->clientManager = $this->createMock(ClientManager::class);
 
         $this->repository = new AccessTokenRepository($this->doctrine);
+        $this->repository->setClientManager($this->clientManager);
     }
 
     /**
@@ -107,26 +113,24 @@ class AccessTokenRepositoryTest extends \PHPUnit\Framework\TestCase
 
         $em = $this->expectGetEntityManager();
         $accessTokenRepository = $this->createMock(EntityRepository::class);
-        $clientRepository = $this->createMock(EntityRepository::class);
-        $em->expects(self::exactly(2))
+        $em->expects(self::once())
             ->method('getRepository')
-            ->willReturnMap([
-                [AccessToken::class, $accessTokenRepository],
-                [Client::class, $clientRepository]
-            ]);
+            ->with(AccessToken::class)
+            ->willReturn($accessTokenRepository);
 
         $accessTokenRepository->expects(self::once())
             ->method('findOneBy')
             ->with(['identifier' => 'test_id'])
             ->willReturn(null);
-        $clientRepository->expects(self::once())
-            ->method('findOneBy')
-            ->with(['identifier' => 'client_id'])
+
+        $this->clientManager->expects(self::once())
+            ->method('getClient')
+            ->with('client_id')
             ->willReturn($client);
-        $em->expects(self::at(2))
+        $em->expects(self::at(1))
             ->method('persist')
             ->with($expectedToken);
-        $em->expects(self::at(3))
+        $em->expects(self::at(2))
             ->method('persist')
             ->with($client);
         $em->expects(self::once())
