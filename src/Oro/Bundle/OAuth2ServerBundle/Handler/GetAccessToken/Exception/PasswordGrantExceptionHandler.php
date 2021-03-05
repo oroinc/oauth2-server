@@ -2,10 +2,10 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Exception;
 
-use Doctrine\Persistence\ManagerRegistry;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Oro\Bundle\FrontendBundle\Request\FrontendHelper;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
+use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
 use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\FailedUserOAuth2Token;
 use Oro\Bundle\UserBundle\Exception\BadCredentialsException;
 use Psr\Http\Message\ServerRequestInterface;
@@ -26,24 +26,24 @@ class PasswordGrantExceptionHandler implements ExceptionHandlerInterface
     /** @var EventDispatcherInterface */
     private $eventDispatcher;
 
-    /** @var ManagerRegistry */
-    private $doctrine;
+    /** @var ClientManager */
+    private $clientManager;
 
     /** @var FrontendHelper|null */
     private $frontendHelper;
 
     /**
      * @param EventDispatcherInterface $eventDispatcher
-     * @param ManagerRegistry          $doctrine
+     * @param ClientManager            $clientManager
      * @param FrontendHelper|null      $frontendHelper
      */
     public function __construct(
         EventDispatcherInterface $eventDispatcher,
-        ManagerRegistry $doctrine,
+        ClientManager $clientManager,
         FrontendHelper $frontendHelper = null
     ) {
         $this->eventDispatcher = $eventDispatcher;
-        $this->doctrine = $doctrine;
+        $this->clientManager = $clientManager;
         $this->frontendHelper = $frontendHelper;
     }
 
@@ -108,9 +108,7 @@ class PasswordGrantExceptionHandler implements ExceptionHandlerInterface
     {
         if ($this->frontendHelper) {
             /** @var Client $client */
-            $client = $this->doctrine->getRepository(Client::class)->findOneBy(
-                ['identifier' => $parameters['client_id']]
-            );
+            $client = $this->clientManager->getClient($parameters['client_id']);
 
             if ($client && $client->isFrontend()) {
                 $this->frontendHelper->emulateFrontendRequest();

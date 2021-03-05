@@ -10,7 +10,7 @@ use League\OAuth2\Server\Entities\ScopeEntityInterface;
 use League\OAuth2\Server\Exception\UniqueTokenIdentifierConstraintViolationException;
 use League\OAuth2\Server\Repositories\AccessTokenRepositoryInterface;
 use Oro\Bundle\OAuth2ServerBundle\Entity\AccessToken;
-use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
+use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
 use Oro\Bundle\OAuth2ServerBundle\League\Entity\AccessTokenEntity;
 
 /**
@@ -21,12 +21,17 @@ class AccessTokenRepository implements AccessTokenRepositoryInterface
     /** @var ManagerRegistry */
     private $doctrine;
 
+    /** @var ClientManager */
+    private $clientManager;
+
     /**
      * @param ManagerRegistry $doctrine
+     * @param ClientManager   $clientManager
      */
-    public function __construct(ManagerRegistry $doctrine)
+    public function __construct(ManagerRegistry $doctrine, ClientManager $clientManager)
     {
         $this->doctrine = $doctrine;
+        $this->clientManager = $clientManager;
     }
 
     /**
@@ -57,7 +62,7 @@ class AccessTokenRepository implements AccessTokenRepositoryInterface
             throw UniqueTokenIdentifierConstraintViolationException::create();
         }
 
-        $client = $this->getClientEntity($accessTokenEntity->getClient()->getIdentifier());
+        $client = $this->clientManager->getClient($accessTokenEntity->getClient()->getIdentifier());
         $client->setLastUsedAt(new \DateTime('now', new \DateTimeZone('UTC')));
         $accessToken = new AccessToken(
             $accessTokenEntity->getIdentifier(),
@@ -120,18 +125,6 @@ class AccessTokenRepository implements AccessTokenRepositoryInterface
     {
         return $this->getEntityManager()->getRepository(AccessToken::class)
             ->findOneBy(['identifier' => $tokenId]);
-    }
-
-    /**
-     * @param string $clientId
-     *
-     * @return Client
-     */
-    private function getClientEntity(string $clientId): Client
-    {
-        return $this->getEntityManager()
-            ->getRepository(Client::class)
-            ->findOneBy(['identifier' => $clientId]);
     }
 
     /**

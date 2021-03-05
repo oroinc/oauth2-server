@@ -11,6 +11,7 @@ use League\OAuth2\Server\Exception\UniqueTokenIdentifierConstraintViolationExcep
 use League\OAuth2\Server\Repositories\AuthCodeRepositoryInterface;
 use Oro\Bundle\OAuth2ServerBundle\Entity\AuthCode;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
+use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
 use Oro\Bundle\OAuth2ServerBundle\League\Entity\AuthCodeEntity;
 use Oro\Bundle\OAuth2ServerBundle\Security\OAuthUserChecker;
 use Oro\Bundle\UserBundle\Security\UserLoaderInterface;
@@ -29,19 +30,25 @@ class AuthCodeRepository implements AuthCodeRepositoryInterface
     /** @var OAuthUserChecker */
     private $userChecker;
 
+    /** @var ClientManager */
+    private $clientManager;
+
     /**
      * @param ManagerRegistry     $doctrine
      * @param UserLoaderInterface $userLoader
      * @param OAuthUserChecker    $userChecker
+     * @param ClientManager       $clientManager
      */
     public function __construct(
         ManagerRegistry $doctrine,
         UserLoaderInterface $userLoader,
-        OAuthUserChecker $userChecker
+        OAuthUserChecker $userChecker,
+        ClientManager $clientManager
     ) {
         $this->doctrine = $doctrine;
         $this->userLoader = $userLoader;
         $this->userChecker = $userChecker;
+        $this->clientManager = $clientManager;
     }
 
     /**
@@ -67,7 +74,7 @@ class AuthCodeRepository implements AuthCodeRepositoryInterface
             $authCodeEntity->getIdentifier(),
             \DateTime::createFromImmutable($authCodeEntity->getExpiryDateTime()),
             $this->getScopeIdentifiers($authCodeEntity->getScopes()),
-            $this->getClientEntity($em, $authCodeEntity->getClient()->getIdentifier()),
+            $this->getClientEntity($authCodeEntity->getClient()->getIdentifier()),
             $authCodeEntity->getUserIdentifier()
         );
 
@@ -151,14 +158,13 @@ class AuthCodeRepository implements AuthCodeRepositoryInterface
     }
 
     /**
-     * @param EntityManagerInterface $em
-     * @param string                 $clientId
+     * @param string $clientId
      *
      * @return Client
      */
-    private function getClientEntity(EntityManagerInterface $em, string $clientId): Client
+    private function getClientEntity(string $clientId): Client
     {
-        return $em->getRepository(Client::class)->findOneBy(['identifier' => $clientId]);
+        return $this->clientManager->getClient($clientId);
     }
 
     /**

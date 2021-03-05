@@ -2,10 +2,10 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Success;
 
-use Doctrine\Persistence\ManagerRegistry;
 use Oro\Bundle\CustomerBundle\Security\CustomerUserLoader;
 use Oro\Bundle\FrontendBundle\Request\FrontendHelper;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
+use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
 use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\OAuth2Token;
 use Oro\Bundle\UserBundle\Security\UserLoader;
 use Psr\Http\Message\ServerRequestInterface;
@@ -27,8 +27,8 @@ class PasswordGrantSuccessHandler implements SuccessHandlerInterface
     /** @var RequestStack */
     private $requestStack;
 
-    /** @var ManagerRegistry */
-    private $doctrine;
+    /** @var ClientManager */
+    private $clientManager;
 
     /** @var TokenStorageInterface */
     private $tokenStorage;
@@ -45,7 +45,7 @@ class PasswordGrantSuccessHandler implements SuccessHandlerInterface
     /**
      * @param EventDispatcherInterface $eventDispatcher
      * @param RequestStack             $requestStack
-     * @param ManagerRegistry          $doctrine
+     * @param ClientManager            $clientManager
      * @param TokenStorageInterface    $tokenStorage
      * @param UserLoader               $backendUserLoader
      * @param CustomerUserLoader|null  $frontendUserLoader
@@ -54,7 +54,7 @@ class PasswordGrantSuccessHandler implements SuccessHandlerInterface
     public function __construct(
         EventDispatcherInterface $eventDispatcher,
         RequestStack $requestStack,
-        ManagerRegistry $doctrine,
+        ClientManager $clientManager,
         TokenStorageInterface $tokenStorage,
         UserLoader $backendUserLoader,
         ?CustomerUserLoader $frontendUserLoader,
@@ -62,7 +62,7 @@ class PasswordGrantSuccessHandler implements SuccessHandlerInterface
     ) {
         $this->eventDispatcher = $eventDispatcher;
         $this->requestStack = $requestStack;
-        $this->doctrine = $doctrine;
+        $this->clientManager = $clientManager;
         $this->frontendHelper = $frontendHelper;
         $this->backendUserLoader = $backendUserLoader;
         $this->frontendUserLoader = $frontendUserLoader;
@@ -80,7 +80,7 @@ class PasswordGrantSuccessHandler implements SuccessHandlerInterface
         }
 
         /** @var Client $client */
-        $client = $this->doctrine->getRepository(Client::class)->findOneBy(['identifier' => $parameters['client_id']]);
+        $client = $this->clientManager->getClient($parameters['client_id']);
 
         if ($client->isFrontend()) {
             $user = $this->frontendUserLoader->loadUser($parameters['username']);

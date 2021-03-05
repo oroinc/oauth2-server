@@ -2,9 +2,8 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\League\Repository;
 
-use Doctrine\ORM\EntityRepository;
-use Doctrine\Persistence\ManagerRegistry;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
+use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
 use Oro\Bundle\OAuth2ServerBundle\League\Entity\ClientEntity;
 use Oro\Bundle\OAuth2ServerBundle\League\Repository\ClientRepository;
 use Oro\Bundle\OAuth2ServerBundle\Security\ApiFeatureChecker;
@@ -17,8 +16,8 @@ use Symfony\Component\Security\Core\Encoder\PasswordEncoderInterface;
  */
 class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
 {
-    /** @var ManagerRegistry|\PHPUnit\Framework\MockObject\MockObject */
-    private $doctrine;
+    /** @var ClientManager|\PHPUnit\Framework\MockObject\MockObject */
+    private $clientManager;
 
     /** @var EncoderFactoryInterface|\PHPUnit\Framework\MockObject\MockObject */
     private $encoderFactory;
@@ -31,12 +30,12 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
 
     protected function setUp(): void
     {
-        $this->doctrine = $this->createMock(ManagerRegistry::class);
+        $this->clientManager = $this->createMock(ClientManager::class);
         $this->encoderFactory = $this->createMock(EncoderFactoryInterface::class);
         $this->featureChecker = $this->createMock(ApiFeatureChecker::class);
 
         $this->clientRepository = new ClientRepository(
-            $this->doctrine,
+            $this->clientManager,
             $this->encoderFactory,
             $this->featureChecker
         );
@@ -58,15 +57,10 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
     public function testGetClientEntityWhenClientNotFound()
     {
         $clientIdentifier = 'test_client';
-        $repo = $this->createMock(EntityRepository::class);
 
-        $this->doctrine->expects(self::once())
-            ->method('getRepository')
-            ->with(Client::class)
-            ->willReturn($repo);
-        $repo->expects(self::once())
-            ->method('findOneBy')
-            ->with(['identifier' => $clientIdentifier])
+        $this->clientManager->expects(self::once())
+            ->method('getClient')
+            ->with($clientIdentifier)
             ->willReturn(null);
 
         $clientEntity = $this->clientRepository->getClientEntity($clientIdentifier);
@@ -76,17 +70,12 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
     public function testGetClientEntityWhenNotActiveClient()
     {
         $clientIdentifier = 'test_client';
-        $repo = $this->createMock(EntityRepository::class);
         $client = new Client();
         $client->setActive(false);
 
-        $this->doctrine->expects(self::once())
-            ->method('getRepository')
-            ->with(Client::class)
-            ->willReturn($repo);
-        $repo->expects(self::once())
-            ->method('findOneBy')
-            ->with(['identifier' => $clientIdentifier])
+        $this->clientManager->expects(self::once())
+            ->method('getClient')
+            ->with($clientIdentifier)
             ->willReturn($client);
 
         $clientEntity = $this->clientRepository->getClientEntity($clientIdentifier);
@@ -97,7 +86,6 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
     {
         $clientIdentifier = 'test_client';
         $grantType = 'test_grant';
-        $repo = $this->createMock(EntityRepository::class);
         $clientGrants = ['another_grant', $grantType];
         $client = new Client();
         $client->setIdentifier($clientIdentifier);
@@ -105,13 +93,9 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         $client->setGrants($clientGrants);
         $client->setOrganization($this->getOrganization());
 
-        $this->doctrine->expects(self::once())
-            ->method('getRepository')
-            ->with(Client::class)
-            ->willReturn($repo);
-        $repo->expects(self::once())
-            ->method('findOneBy')
-            ->with(['identifier' => $clientIdentifier])
+        $this->clientManager->expects(self::once())
+            ->method('getClient')
+            ->with($clientIdentifier)
             ->willReturn($client);
         $this->encoderFactory->expects(self::never())
             ->method('getEncoder');
@@ -131,20 +115,15 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
     public function testGetClientEntityWhenGrantNotSupported()
     {
         $clientIdentifier = 'test_client';
-        $repo = $this->createMock(EntityRepository::class);
         $clientGrants = ['another_grant'];
         $client = new Client();
         $client->setIdentifier($clientIdentifier);
         $client->setRedirectUris([]);
         $client->setGrants($clientGrants);
 
-        $this->doctrine->expects(self::once())
-            ->method('getRepository')
-            ->with(Client::class)
-            ->willReturn($repo);
-        $repo->expects(self::once())
-            ->method('findOneBy')
-            ->with(['identifier' => $clientIdentifier])
+        $this->clientManager->expects(self::once())
+            ->method('getClient')
+            ->with($clientIdentifier)
             ->willReturn($client);
         $this->encoderFactory->expects(self::never())
             ->method('getEncoder');
@@ -156,7 +135,6 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
     public function testGetClientEntityWhenPasswordGrantShouldSupportRefreshTokenGrant()
     {
         $clientIdentifier = 'test_client';
-        $repo = $this->createMock(EntityRepository::class);
         $clientGrants = ['password'];
         $clientEncodedSecret = 'client_encoded_secret';
         $clientSecretSalt = 'client_secret_salt';
@@ -167,13 +145,9 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         $client->setSecret($clientEncodedSecret, $clientSecretSalt);
         $client->setOrganization($this->getOrganization());
 
-        $this->doctrine->expects(self::once())
-            ->method('getRepository')
-            ->with(Client::class)
-            ->willReturn($repo);
-        $repo->expects(self::once())
-            ->method('findOneBy')
-            ->with(['identifier' => $clientIdentifier])
+        $this->clientManager->expects(self::once())
+            ->method('getClient')
+            ->with($clientIdentifier)
             ->willReturn($client);
         $this->encoderFactory->expects(self::never())
             ->method('getEncoder');
@@ -193,7 +167,6 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
     public function testGetClientEntityWhenAuthorizationCodeGrantShouldSupportRefreshTokenGrant()
     {
         $clientIdentifier = 'test_client';
-        $repo = $this->createMock(EntityRepository::class);
         $clientGrants = ['authorization_code'];
         $clientEncodedSecret = 'client_encoded_secret';
         $clientSecretSalt = 'client_secret_salt';
@@ -204,13 +177,9 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         $client->setSecret($clientEncodedSecret, $clientSecretSalt);
         $client->setOrganization($this->getOrganization());
 
-        $this->doctrine->expects(self::once())
-            ->method('getRepository')
-            ->with(Client::class)
-            ->willReturn($repo);
-        $repo->expects(self::once())
-            ->method('findOneBy')
-            ->with(['identifier' => $clientIdentifier])
+        $this->clientManager->expects(self::once())
+            ->method('getClient')
+            ->with($clientIdentifier)
             ->willReturn($client);
         $this->encoderFactory->expects(self::never())
             ->method('getEncoder');
@@ -230,20 +199,15 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
     public function testGetClientEntityWhenOrganizationIsDisabled()
     {
         $clientIdentifier = 'test_client';
-        $repo = $this->createMock(EntityRepository::class);
         $clientRedirectUris = ['test_url'];
         $client = new Client();
         $client->setIdentifier($clientIdentifier);
         $client->setRedirectUris($clientRedirectUris);
         $client->setOrganization($this->getOrganization(false));
 
-        $this->doctrine->expects(self::once())
-            ->method('getRepository')
-            ->with(Client::class)
-            ->willReturn($repo);
-        $repo->expects(self::once())
-            ->method('findOneBy')
-            ->with(['identifier' => $clientIdentifier])
+        $this->clientManager->expects(self::once())
+            ->method('getClient')
+            ->with($clientIdentifier)
             ->willReturn($client);
         $this->encoderFactory->expects(self::never())
             ->method('getEncoder');
@@ -258,15 +222,10 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         $clientIdentifier = 'test_client';
         $clientSecret = 'test_secret';
         $grantType = 'test_grant';
-        $repo = $this->createMock(EntityRepository::class);
 
-        $this->doctrine->expects(self::once())
-            ->method('getRepository')
-            ->with(Client::class)
-            ->willReturn($repo);
-        $repo->expects(self::once())
-            ->method('findOneBy')
-            ->with(['identifier' => $clientIdentifier])
+        $this->clientManager->expects(self::once())
+            ->method('getClient')
+            ->with($clientIdentifier)
             ->willReturn(null);
 
         $result = $this->clientRepository->validateClient(
@@ -282,17 +241,12 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         $clientIdentifier = 'test_client';
         $clientSecret = 'test_secret';
         $grantType = 'test_grant';
-        $repo = $this->createMock(EntityRepository::class);
         $client = new Client();
         $client->setActive(false);
 
-        $this->doctrine->expects(self::once())
-            ->method('getRepository')
-            ->with(Client::class)
-            ->willReturn($repo);
-        $repo->expects(self::once())
-            ->method('findOneBy')
-            ->with(['identifier' => $clientIdentifier])
+        $this->clientManager->expects(self::once())
+            ->method('getClient')
+            ->with($clientIdentifier)
             ->willReturn($client);
 
         $result = $this->clientRepository->validateClient(
@@ -308,7 +262,6 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         $clientIdentifier = 'test_client';
         $clientSecret = 'test_secret';
         $grantType = 'test_grant';
-        $repo = $this->createMock(EntityRepository::class);
         $clientGrants = ['another_grant', $grantType];
         $clientEncodedSecret = 'client_encoded_secret';
         $clientSecretSalt = 'client_secret_salt';
@@ -320,13 +273,9 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         $client->setOrganization($this->getOrganization());
         $secretEncoder = $this->createMock(PasswordEncoderInterface::class);
 
-        $this->doctrine->expects(self::once())
-            ->method('getRepository')
-            ->with(Client::class)
-            ->willReturn($repo);
-        $repo->expects(self::once())
-            ->method('findOneBy')
-            ->with(['identifier' => $clientIdentifier])
+        $this->clientManager->expects(self::once())
+            ->method('getClient')
+            ->with($clientIdentifier)
             ->willReturn($client);
         $this->encoderFactory->expects(self::once())
             ->method('getEncoder')
@@ -354,20 +303,15 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         $clientIdentifier = 'test_client';
         $clientSecret = 'test_secret';
         $grantType = 'test_grant';
-        $repo = $this->createMock(EntityRepository::class);
         $clientGrants = ['another_grant'];
         $client = new Client();
         $client->setIdentifier($clientIdentifier);
         $client->setRedirectUris([]);
         $client->setGrants($clientGrants);
 
-        $this->doctrine->expects(self::once())
-            ->method('getRepository')
-            ->with(Client::class)
-            ->willReturn($repo);
-        $repo->expects(self::once())
-            ->method('findOneBy')
-            ->with(['identifier' => $clientIdentifier])
+        $this->clientManager->expects(self::once())
+            ->method('getClient')
+            ->with($clientIdentifier)
             ->willReturn($client);
         $this->encoderFactory->expects(self::never())
             ->method('getEncoder');
@@ -385,7 +329,6 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         $clientIdentifier = 'test_client';
         $clientSecret = 'test_secret';
         $grantType = 'refresh_token';
-        $repo = $this->createMock(EntityRepository::class);
         $clientGrants = ['password'];
         $clientEncodedSecret = 'client_encoded_secret';
         $clientSecretSalt = 'client_secret_salt';
@@ -397,13 +340,9 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         $client->setOrganization($this->getOrganization());
         $secretEncoder = $this->createMock(PasswordEncoderInterface::class);
 
-        $this->doctrine->expects(self::once())
-            ->method('getRepository')
-            ->with(Client::class)
-            ->willReturn($repo);
-        $repo->expects(self::once())
-            ->method('findOneBy')
-            ->with(['identifier' => $clientIdentifier])
+        $this->clientManager->expects(self::once())
+            ->method('getClient')
+            ->with($clientIdentifier)
             ->willReturn($client);
         $this->encoderFactory->expects(self::once())
             ->method('getEncoder')
@@ -431,7 +370,6 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         $clientIdentifier = 'test_client';
         $clientSecret = 'test_secret';
         $grantType = 'refresh_token';
-        $repo = $this->createMock(EntityRepository::class);
         $clientGrants = ['authorization_code'];
         $clientEncodedSecret = 'client_encoded_secret';
         $clientSecretSalt = 'client_secret_salt';
@@ -443,13 +381,9 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         $client->setOrganization($this->getOrganization());
         $secretEncoder = $this->createMock(PasswordEncoderInterface::class);
 
-        $this->doctrine->expects(self::once())
-            ->method('getRepository')
-            ->with(Client::class)
-            ->willReturn($repo);
-        $repo->expects(self::once())
-            ->method('findOneBy')
-            ->with(['identifier' => $clientIdentifier])
+        $this->clientManager->expects(self::once())
+            ->method('getClient')
+            ->with($clientIdentifier)
             ->willReturn($client);
         $this->encoderFactory->expects(self::once())
             ->method('getEncoder')
@@ -477,20 +411,15 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         $clientIdentifier = 'test_client';
         $clientSecret = 'test_secret';
         $grantType = 'test_grant';
-        $repo = $this->createMock(EntityRepository::class);
         $clientRedirectUris = ['test_url'];
         $client = new Client();
         $client->setIdentifier($clientIdentifier);
         $client->setRedirectUris($clientRedirectUris);
         $client->setOrganization($this->getOrganization(false));
 
-        $this->doctrine->expects(self::once())
-            ->method('getRepository')
-            ->with(Client::class)
-            ->willReturn($repo);
-        $repo->expects(self::once())
-            ->method('findOneBy')
-            ->with(['identifier' => $clientIdentifier])
+        $this->clientManager->expects(self::once())
+            ->method('getClient')
+            ->with($clientIdentifier)
             ->willReturn($client);
         $this->encoderFactory->expects(self::never())
             ->method('getEncoder');
@@ -508,7 +437,6 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         $clientIdentifier = 'test_client';
         $clientSecret = 'test_secret';
         $grantType = 'test_grant';
-        $repo = $this->createMock(EntityRepository::class);
         $clientGrants = ['another_grant', $grantType];
         $clientEncodedSecret = 'client_encoded_secret';
         $clientSecretSalt = 'client_secret_salt';
@@ -518,13 +446,9 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         $client->setGrants($clientGrants);
         $secretEncoder = $this->createMock(PasswordEncoderInterface::class);
 
-        $this->doctrine->expects(self::once())
-            ->method('getRepository')
-            ->with(Client::class)
-            ->willReturn($repo);
-        $repo->expects(self::once())
-            ->method('findOneBy')
-            ->with(['identifier' => $clientIdentifier])
+        $this->clientManager->expects(self::once())
+            ->method('getClient')
+            ->with($clientIdentifier)
             ->willReturn($client);
         $this->featureChecker->expects(self::once())
             ->method('isEnabledByClient')
@@ -552,7 +476,6 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         $clientIdentifier = 'test_client';
         $clientSecret = 'test_secret';
         $grantType = 'test_grant';
-        $repo = $this->createMock(EntityRepository::class);
         $clientGrants = ['another_grant', $grantType];
         $clientEncodedSecret = 'client_encoded_secret';
         $clientSecretSalt = 'client_secret_salt';
@@ -565,13 +488,9 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         $client->setOrganization($this->getOrganization());
         $secretEncoder = $this->createMock(PasswordEncoderInterface::class);
 
-        $this->doctrine->expects(self::once())
-            ->method('getRepository')
-            ->with(Client::class)
-            ->willReturn($repo);
-        $repo->expects(self::once())
-            ->method('findOneBy')
-            ->with(['identifier' => $clientIdentifier])
+        $this->clientManager->expects(self::once())
+            ->method('getClient')
+            ->with($clientIdentifier)
             ->willReturn($client);
         $this->featureChecker->expects(self::once())
             ->method('isEnabledByClient')
@@ -603,7 +522,6 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         $clientIdentifier = 'test_client';
         $clientSecret = 'test_secret';
         $grantType = 'test_grant';
-        $repo = $this->createMock(EntityRepository::class);
         $clientGrants = ['another_grant', $grantType];
         $clientEncodedSecret = 'client_encoded_secret';
         $clientSecretSalt = 'client_secret_salt';
@@ -616,13 +534,9 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         $client->setFrontend(true);
         $secretEncoder = $this->createMock(PasswordEncoderInterface::class);
 
-        $this->doctrine->expects(self::once())
-            ->method('getRepository')
-            ->with(Client::class)
-            ->willReturn($repo);
-        $repo->expects(self::once())
-            ->method('findOneBy')
-            ->with(['identifier' => $clientIdentifier])
+        $this->clientManager->expects(self::once())
+            ->method('getClient')
+            ->with($clientIdentifier)
             ->willReturn($client);
         $this->featureChecker->expects(self::once())
             ->method('isEnabledByClient')

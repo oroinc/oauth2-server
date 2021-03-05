@@ -28,6 +28,9 @@ class ClientManager
     /** @var AuthorizationCheckerInterface */
     private $authorizationChecker;
 
+    /** @var Client[] */
+    private $clients = [];
+
     /**
      * @param ManagerRegistry               $doctrine
      * @param EncoderFactoryInterface       $encoderFactory
@@ -44,6 +47,21 @@ class ClientManager
         $this->encoderFactory = $encoderFactory;
         $this->tokenAccessor = $tokenAccessor;
         $this->authorizationChecker = $authorizationChecker;
+    }
+
+    /**
+     * @param string $clientId
+     * @return Client|null
+     */
+    public function getClient(string $clientId): ?Client
+    {
+        if (!\array_key_exists($clientId, $this->clients)) {
+            $this->clients[$clientId] = $this->doctrine
+                ->getRepository(Client::class)
+                ->findOneBy(['identifier' => $clientId]);
+        }
+
+        return $this->clients[$clientId];
     }
 
     /**

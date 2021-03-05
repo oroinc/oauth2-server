@@ -2,6 +2,7 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle;
 
+use Oro\Bundle\OAuth2ServerBundle\DependencyInjection\Compiler\SkipSyncTrackingPass;
 use Oro\Bundle\OAuth2ServerBundle\DependencyInjection\OroOAuth2ServerExtension;
 use Oro\Bundle\OAuth2ServerBundle\DependencyInjection\Security\Factory\OAuth2Factory;
 use Symfony\Bundle\SecurityBundle\DependencyInjection\SecurityExtension;
@@ -35,5 +36,7 @@ class OroOAuth2ServerBundle extends Bundle
         /** @var SecurityExtension $extension */
         $extension = $container->getExtension('security');
         $extension->addSecurityListenerFactory(new OAuth2Factory());
+
+        $container->addCompilerPass(new SkipSyncTrackingPass());
     }
 }

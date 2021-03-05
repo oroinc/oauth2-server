@@ -6,6 +6,7 @@ use Doctrine\Persistence\ManagerRegistry;
 use League\OAuth2\Server\AuthorizationValidators\AuthorizationValidatorInterface;
 use Oro\Bundle\CustomerBundle\Entity\CustomerUserRole;
 use Oro\Bundle\CustomerBundle\Security\Token\AnonymousCustomerUserToken;
+use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Oro\Bundle\UserBundle\Entity\AbstractUser;
 use Oro\Bundle\WebsiteBundle\Manager\WebsiteManager;
@@ -28,6 +29,7 @@ class VisitorOAuth2Provider extends OAuth2Provider
      * @param AuthorizationValidatorInterface $authorizationValidator
      * @param ManagerRegistry                 $doctrine
      * @param UserCheckerInterface            $userChecker
+     * @param ClientManager                   $clientManager
      * @param WebsiteManager                  $websiteManager
      */
     public function __construct(
@@ -36,9 +38,17 @@ class VisitorOAuth2Provider extends OAuth2Provider
         AuthorizationValidatorInterface $authorizationValidator,
         ManagerRegistry $doctrine,
         UserCheckerInterface $userChecker,
+        ClientManager $clientManager,
         WebsiteManager $websiteManager
     ) {
-        parent::__construct($userProvider, $providerKey, $authorizationValidator, $doctrine, $userChecker);
+        parent::__construct(
+            $userProvider,
+            $providerKey,
+            $authorizationValidator,
+            $doctrine,
+            $userChecker,
+            $clientManager
+        );
         $this->websiteManager = $websiteManager;
     }
 

@@ -158,7 +158,7 @@ services:
         class: Oro\Bundle\OAuth2ServerBundle\League\Repository\ClientRepository
         public: false
         arguments:
-            - '@doctrine'
+            - '@oro_oauth2_server.client_manager'
             - '@security.encoder_factory'
             - '@oro_oauth2_server.api_feature_checker'
 
@@ -167,6 +167,7 @@ services:
         public: false
         arguments:
             - '@doctrine'
+            - '@oro_oauth2_server.client_manager'
 
     oro_oauth2_server.league.repository.refresh_token_repository:
         class: Oro\Bundle\OAuth2ServerBundle\League\Repository\RefreshTokenRepository
@@ -183,6 +184,7 @@ services:
             - '@doctrine'
             - '@oro_user.security.user_loader'
             - '@oro_oauth2_server.security.user_checker'
+            - '@oro_oauth2_server.client_manager'
 
     oro_oauth2_server.league.repository.user_repository:
         class: Oro\Bundle\OAuth2ServerBundle\League\Repository\UserRepository
@@ -205,6 +207,9 @@ services:
             - '@oro_oauth2_server.league.repository.scope_repository'
             - ~ # private key; it is set by Oro\Bundle\OAuth2ServerBundle\DependencyInjection\OroOAuth2ServerExtension
             - ~ # encryption key; it is set by Oro\Bundle\OAuth2ServerBundle\DependencyInjection\OroOAuth2ServerExtension
+
+    League\OAuth2\Server\AuthorizationServer:
+        alias: oro_oauth2_server.league.authorization_server
 
     oro_oauth2_server.league.authorization_validator:
         class: Oro\Bundle\OAuth2ServerBundle\League\AuthorizationValidator
@@ -250,6 +255,7 @@ services:
             - '@oro_oauth2_server.league.authorization_validator'
             - '@doctrine'
             - '@security.user_checker'
+            - '@oro_oauth2_server.client_manager'
 
     oro_oauth2_server.emailtemplate.client_entity_variables_provider:
         class: Oro\Bundle\OAuth2ServerBundle\Provider\ClientEntityVariablesProvider
@@ -322,7 +328,7 @@ services:
         public: false
         arguments:
             - '@event_dispatcher'
-            - '@doctrine'
+            - '@oro_oauth2_server.client_manager'
             - '@?oro_frontend.request.frontend_helper'
         tags:
             - { name: oro_oauth2_server.get_access_token_exception_handler }
@@ -339,7 +345,7 @@ services:
         arguments:
             - '@event_dispatcher'
             - '@request_stack'
-            - '@doctrine'
+            - '@oro_oauth2_server.client_manager'
             - '@security.token_storage'
             - '@oro_user.security.user_loader'
             - '@?oro_customer.security.user_loader'
@@ -352,6 +358,9 @@ services:
         public: true
         arguments:
             - !tagged oro_oauth2_server.authorize_client_handler
+
+    Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\AuthorizeClientHandler:
+        alias: oro_oauth2_server.handler.authorize_client.handler
 
     oro_oauth2_server.handler.authorize_client.log_handler:
         class: Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\LogAuthorizeClientHandler

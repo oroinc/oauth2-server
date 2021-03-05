@@ -4,6 +4,7 @@ namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Entity\Manager;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\Persistence\ObjectRepository;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
@@ -315,5 +316,27 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
             ->method('flush');
 
         $this->clientManager->deleteClient($client);
+    }
+
+    public function testGetClient()
+    {
+        $clientId = 'test_client';
+        $client = $this->getClient(12);
+        $client->setIdentifier($clientId);
+
+        $repo = $this->createMock(ObjectRepository::class);
+
+        $this->doctrine->expects(self::once())
+            ->method('getRepository')
+            ->with(Client::class)
+            ->willReturn($repo);
+        $repo->expects(self::once())
+            ->method('findOneBy')
+            ->with(['identifier' => $clientId])
+            ->willReturn($client);
+
+        self::assertSame($client, $this->clientManager->getClient($clientId));
+        //the second itteration with same client id should not init additional db queries
+        self::assertSame($client, $this->clientManager->getClient($clientId));
     }
 }

@@ -6,10 +6,13 @@ use GuzzleHttp\Psr7\Response;
 use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
+use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
+use Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\AuthorizeClientHandler;
 use Oro\Bundle\OAuth2ServerBundle\League\Entity\UserEntity;
 use Oro\Bundle\OAuth2ServerBundle\League\Exception\CryptKeyNotFoundException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
@@ -20,6 +23,19 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  */
 class AuthorizeClientController extends AbstractController
 {
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedServices(): array
+    {
+        return array_merge(parent::getSubscribedServices(), [
+            LoggerInterface::class,
+            ClientManager::class,
+            AuthorizationServer::class,
+            AuthorizeClientHandler::class
+        ]);
+    }
+
     /**
      * Processes the authorize client form page.
      *
@@ -63,8 +79,7 @@ class AuthorizeClientController extends AbstractController
                 $isAuthorized = $request->request->get('grantAccess') === 'true';
                 $authRequest->setAuthorizationApproved($isAuthorized);
 
-                $this->get('oro_oauth2_server.handler.authorize_client.handler')
-                    ->handle($client, $loggedUser, $isAuthorized);
+                $this->get(AuthorizeClientHandler::class)->handle($client, $loggedUser, $isAuthorized);
 
                 return $authServer->completeAuthorizationRequest($authRequest, new Response());
             }
@@ -88,7 +103,7 @@ class AuthorizeClientController extends AbstractController
     private function getAuthorizationServer(): AuthorizationServer
     {
         try {
-            return $this->get('oro_oauth2_server.league.authorization_server');
+            return $this->get(AuthorizationServer::class);
         } catch (\LogicException $e) {
             $this->get('logger')->warning($e->getMessage(), ['exception' => $e]);
 
@@ -103,8 +118,6 @@ class AuthorizeClientController extends AbstractController
      */
     private function getClient(string $clientId): ?Client
     {
-        return $this->get('doctrine')
-            ->getRepository(Client::class)
-            ->findOneBy(['identifier' => $clientId]);
+        return $this->get(ClientManager::class)->getClient($clientId);
     }
 }

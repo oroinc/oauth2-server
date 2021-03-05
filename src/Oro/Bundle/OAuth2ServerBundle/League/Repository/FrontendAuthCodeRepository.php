@@ -6,6 +6,7 @@ use Doctrine\Persistence\ManagerRegistry;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Oro\Bundle\CustomerBundle\Entity\CustomerVisitorManager;
 use Oro\Bundle\OAuth2ServerBundle\Entity\AuthCode;
+use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
 use Oro\Bundle\OAuth2ServerBundle\Security\OAuthUserChecker;
 use Oro\Bundle\OAuth2ServerBundle\Security\VisitorIdentifierUtil;
 use Oro\Bundle\UserBundle\Security\UserLoaderInterface;
@@ -22,20 +23,22 @@ class FrontendAuthCodeRepository extends AuthCodeRepository
     private $customerVisitorManager;
 
     /**
-     * @param ManagerRegistry     $doctrine
-     * @param UserLoaderInterface $userLoader
-     * @param OAuthUserChecker    $userChecker
-     * @param UserLoaderInterface $frontendUserLoader
-     * @param CustomerVisitorManager  $customerVisitorManager
+     * @param ManagerRegistry        $doctrine
+     * @param UserLoaderInterface    $userLoader
+     * @param OAuthUserChecker       $userChecker
+     * @param ClientManager          $clientManager
+     * @param UserLoaderInterface    $frontendUserLoader
+     * @param CustomerVisitorManager $customerVisitorManager
      */
     public function __construct(
         ManagerRegistry $doctrine,
         UserLoaderInterface $userLoader,
         OAuthUserChecker $userChecker,
+        ClientManager $clientManager,
         UserLoaderInterface $frontendUserLoader,
         CustomerVisitorManager $customerVisitorManager
     ) {
-        parent::__construct($doctrine, $userLoader, $userChecker);
+        parent::__construct($doctrine, $userLoader, $userChecker, $clientManager);
         $this->frontendUserLoader = $frontendUserLoader;
         $this->customerVisitorManager = $customerVisitorManager;
     }

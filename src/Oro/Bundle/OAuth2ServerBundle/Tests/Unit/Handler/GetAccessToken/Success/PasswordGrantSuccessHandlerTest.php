@@ -2,13 +2,12 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Handler\GetAccessToken\Success;
 
-use Doctrine\ORM\EntityRepository;
-use Doctrine\Persistence\ManagerRegistry;
 use Exception;
 use GuzzleHttp\Psr7\ServerRequest;
 use Oro\Bundle\CustomerBundle\Security\CustomerUserLoader;
 use Oro\Bundle\FrontendBundle\Request\FrontendHelper;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
+use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
 use Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Success\PasswordGrantSuccessHandler;
 use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\OAuth2Token;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
@@ -31,8 +30,8 @@ class PasswordGrantSuccessHandlerTest extends TestCase
     /** @var RequestStack|\PHPUnit\Framework\MockObject\MockObject */
     private $requestStack;
 
-    /** @var ManagerRegistry|\PHPUnit\Framework\MockObject\MockObject */
-    private $doctrine;
+    /** @var ClientManager|\PHPUnit\Framework\MockObject\MockObject */
+    private $clientManager;
 
     /** @var TokenStorageInterface|\PHPUnit\Framework\MockObject\MockObject */
     private $tokenStorage;
@@ -43,7 +42,7 @@ class PasswordGrantSuccessHandlerTest extends TestCase
     protected function setUp(): void
     {
         $this->eventDispatcher = $this->createMock(EventDispatcherInterface::class);
-        $this->doctrine = $this->createMock(ManagerRegistry::class);
+        $this->clientManager = $this->createMock(ClientManager::class);
         $this->requestStack = $this->createMock(RequestStack::class);
         $this->tokenStorage = $this->createMock(TokenStorageInterface::class);
         $this->backendUserLoader = $this->createMock(UserLoader::class);
@@ -62,7 +61,7 @@ class PasswordGrantSuccessHandlerTest extends TestCase
         return new PasswordGrantSuccessHandler(
             $this->eventDispatcher,
             $this->requestStack,
-            $this->doctrine,
+            $this->clientManager,
             $this->tokenStorage,
             $this->backendUserLoader,
             $frontendUserLoader,
@@ -128,16 +127,10 @@ class PasswordGrantSuccessHandlerTest extends TestCase
         $client->setFrontend($isFrontend);
         $client->setOrganization($organization);
 
-        $repository = $this->createMock(EntityRepository::class);
-        $repository->expects(self::once())
-            ->method('findOneBy')
-            ->with(['identifier' => $identifier])
+        $this->clientManager->expects(self::once())
+            ->method('getClient')
+            ->with($identifier)
             ->willReturn($client);
-
-        $this->doctrine->expects(self::once())
-            ->method('getRepository')
-            ->with(Client::class)
-            ->willReturn($repository);
     }
 
     public function testHandleOnFrontendRequest()
