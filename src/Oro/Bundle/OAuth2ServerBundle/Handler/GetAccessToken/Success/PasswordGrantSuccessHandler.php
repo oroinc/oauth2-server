@@ -6,6 +6,7 @@ use Doctrine\Persistence\ManagerRegistry;
 use Oro\Bundle\CustomerBundle\Security\CustomerUserLoader;
 use Oro\Bundle\FrontendBundle\Request\FrontendHelper;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
+use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
 use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\OAuth2Token;
 use Oro\Bundle\UserBundle\Security\UserLoader;
 use Psr\Http\Message\ServerRequestInterface;
@@ -27,8 +28,14 @@ class PasswordGrantSuccessHandler implements SuccessHandlerInterface
     /** @var RequestStack */
     private $requestStack;
 
-    /** @var ManagerRegistry */
+    /**
+     * @var ManagerRegistry
+     * @deprecated
+     */
     private $doctrine;
+
+    /** @var ClientManager */
+    private $clientManager;
 
     /** @var TokenStorageInterface */
     private $tokenStorage;
@@ -70,6 +77,15 @@ class PasswordGrantSuccessHandler implements SuccessHandlerInterface
     }
 
     /**
+     * @deprecated
+     * @param ClientManager $clientManager
+     */
+    public function setClientManager(ClientManager $clientManager): void
+    {
+        $this->clientManager = $clientManager;
+    }
+
+    /**
      * {@inheritDoc}
      */
     public function handle(ServerRequestInterface $request): void
@@ -80,7 +96,7 @@ class PasswordGrantSuccessHandler implements SuccessHandlerInterface
         }
 
         /** @var Client $client */
-        $client = $this->doctrine->getRepository(Client::class)->findOneBy(['identifier' => $parameters['client_id']]);
+        $client = $this->clientManager->getClient($parameters['client_id']);
 
         if ($client->isFrontend()) {
             $user = $this->frontendUserLoader->loadUser($parameters['username']);

@@ -2,12 +2,12 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Handler\GetAccessToken\Exception;
 
-use Doctrine\ORM\EntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use GuzzleHttp\Psr7\ServerRequest;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Oro\Bundle\FrontendBundle\Request\FrontendHelper;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
+use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
 use Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Exception\PasswordGrantExceptionHandler;
 use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\FailedUserOAuth2Token;
 use Oro\Bundle\UserBundle\Exception\BadCredentialsException;
@@ -21,31 +21,43 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
     /** @var EventDispatcherInterface|\PHPUnit\Framework\MockObject\MockObject */
     private $eventDispatcher;
 
-    /** @var ManagerRegistry|\PHPUnit\Framework\MockObject\MockObject */
+    /**
+     * @deprecated
+     * @var ManagerRegistry|\PHPUnit\Framework\MockObject\MockObject
+     */
     private $doctrine;
+
+    /** @var ClientManager|\PHPUnit\Framework\MockObject\MockObject */
+    private $clientManager;
 
     protected function setUp(): void
     {
         $this->eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $this->doctrine = $this->createMock(ManagerRegistry::class);
+        $this->clientManager = $this->createMock(ClientManager::class);
+    }
+
+    /**
+     * @deprecated
+     * @param string $identifier
+     * @param Client $client
+     */
+    private function mockDoctrine(string $identifier, Client $client): void
+    {
+        $this->doctrine->expects(self::never())
+            ->method('getRepository');
     }
 
     /**
      * @param string $identifier
      * @param Client $client
      */
-    private function mockDoctrine(string $identifier, Client $client): void
+    private function mockClientManager(string $identifier, Client $client): void
     {
-        $repository = $this->createMock(EntityRepository::class);
-        $repository->expects(self::once())
-            ->method('findOneBy')
-            ->with(['identifier' => $identifier])
+        $this->clientManager->expects(self::once())
+            ->method('getClient')
+            ->with($identifier)
             ->willReturn($client);
-
-        $this->doctrine->expects(self::once())
-            ->method('getRepository')
-            ->with(Client::class)
-            ->willReturn($repository);
     }
 
     public function testHandleOnNonPasswordGrant()
@@ -55,6 +67,7 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
             ->method('dispatch');
 
         $handler = new PasswordGrantExceptionHandler($this->eventDispatcher, $this->doctrine, null);
+        $handler->setClientManager($this->clientManager);
         $handler->handle($request, OAuthServerException::accessDenied());
     }
 
@@ -87,6 +100,7 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
             );
 
         $handler = new PasswordGrantExceptionHandler($this->eventDispatcher, $this->doctrine, null);
+        $handler->setClientManager($this->clientManager);
         $handler->handle($request, $exception);
     }
 
@@ -110,6 +124,7 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
             );
 
         $handler = new PasswordGrantExceptionHandler($this->eventDispatcher, $this->doctrine, null);
+        $handler->setClientManager($this->clientManager);
         $handler->handle($request, $exception);
     }
 
@@ -137,6 +152,7 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
             );
 
         $handler = new PasswordGrantExceptionHandler($this->eventDispatcher, $this->doctrine, null);
+        $handler->setClientManager($this->clientManager);
         $handler->handle($request, $exception);
     }
 
@@ -167,6 +183,7 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
             );
 
         $this->mockDoctrine('test_client', $client);
+        $this->mockClientManager('test_client', $client);
 
         $frontendHelper = $this->createMock(FrontendHelper::class);
         $frontendHelper->expects(self::once())
@@ -175,6 +192,7 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
             ->method('resetRequestEmulation');
 
         $handler = new PasswordGrantExceptionHandler($this->eventDispatcher, $this->doctrine, $frontendHelper);
+        $handler->setClientManager($this->clientManager);
         $handler->handle($request, $exception);
     }
 
@@ -205,6 +223,7 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
             );
 
         $this->mockDoctrine('test_client', $client);
+        $this->mockClientManager('test_client', $client);
 
         $frontendHelper = $this->createMock(FrontendHelper::class);
         $frontendHelper->expects(self::once())
@@ -213,6 +232,7 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
             ->method('resetRequestEmulation');
 
         $handler = new PasswordGrantExceptionHandler($this->eventDispatcher, $this->doctrine, $frontendHelper);
+        $handler->setClientManager($this->clientManager);
         $handler->handle($request, $exception);
     }
 
@@ -241,6 +261,7 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
             ->willThrowException($exception);
 
         $this->mockDoctrine('test_client', $client);
+        $this->mockClientManager('test_client', $client);
 
         $frontendHelper = $this->createMock(FrontendHelper::class);
         $frontendHelper->expects(self::once())
@@ -250,6 +271,7 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
             ->method('resetRequestEmulation');
 
         $handler = new PasswordGrantExceptionHandler($this->eventDispatcher, $this->doctrine, $frontendHelper);
+        $handler->setClientManager($this->clientManager);
         $handler->handle($request, $exception);
     }
 
@@ -276,16 +298,10 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
                 AuthenticationEvents::AUTHENTICATION_FAILURE
             );
 
-        $repository = $this->createMock(EntityRepository::class);
-        $repository->expects(self::once())
-            ->method('findOneBy')
-            ->with(['identifier' => 'test_client'])
+        $this->clientManager->expects(self::once())
+            ->method('getClient')
+            ->with('test_client')
             ->willReturn(null);
-
-        $this->doctrine->expects(self::once())
-            ->method('getRepository')
-            ->with(Client::class)
-            ->willReturn($repository);
 
         $frontendHelper = $this->createMock(FrontendHelper::class);
         $frontendHelper->expects(self::once())
@@ -294,6 +310,7 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
             ->method('resetRequestEmulation');
 
         $handler = new PasswordGrantExceptionHandler($this->eventDispatcher, $this->doctrine, $frontendHelper);
+        $handler->setClientManager($this->clientManager);
         $handler->handle($request, $exception);
     }
 }

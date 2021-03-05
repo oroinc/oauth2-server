@@ -38,7 +38,13 @@ class VisitorOAuth2Provider extends OAuth2Provider
         UserCheckerInterface $userChecker,
         WebsiteManager $websiteManager
     ) {
-        parent::__construct($userProvider, $providerKey, $authorizationValidator, $doctrine, $userChecker);
+        parent::__construct(
+            $userProvider,
+            $providerKey,
+            $authorizationValidator,
+            $doctrine,
+            $userChecker
+        );
         $this->websiteManager = $websiteManager;
     }
 

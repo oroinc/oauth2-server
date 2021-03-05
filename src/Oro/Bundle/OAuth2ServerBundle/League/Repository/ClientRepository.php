@@ -2,11 +2,11 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\League\Repository;
 
-use Doctrine\ORM\EntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Repositories\ClientRepositoryInterface;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
+use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
 use Oro\Bundle\OAuth2ServerBundle\League\Entity\ClientEntity;
 use Oro\Bundle\OAuth2ServerBundle\Security\ApiFeatureChecker;
 use Symfony\Component\Security\Core\Encoder\EncoderFactoryInterface;
@@ -16,14 +16,20 @@ use Symfony\Component\Security\Core\Encoder\EncoderFactoryInterface;
  */
 class ClientRepository implements ClientRepositoryInterface
 {
-    /** @var ManagerRegistry */
-    private $doctrine;
-
     /** @var EncoderFactoryInterface */
     private $encoderFactory;
 
     /** @var ApiFeatureChecker */
     private $featureChecker;
+
+    /**
+     * @var ManagerRegistry
+     * @deprecated
+     */
+    private $doctrine;
+
+    /** @var ClientManager */
+    private $clientManager;
 
     /**
      * @param ManagerRegistry         $doctrine
@@ -38,6 +44,15 @@ class ClientRepository implements ClientRepositoryInterface
         $this->doctrine = $doctrine;
         $this->encoderFactory = $encoderFactory;
         $this->featureChecker = $featureChecker;
+    }
+
+    /**
+     * @deprecated
+     * @param ClientManager $clientManager
+     */
+    public function setClientManager(ClientManager $clientManager): void
+    {
+        $this->clientManager = $clientManager;
     }
 
     /**
@@ -97,7 +112,7 @@ class ClientRepository implements ClientRepositoryInterface
      */
     private function getClient(string $clientId): ?Client
     {
-        return $this->getRepository()->findOneBy(['identifier' => $clientId]);
+        return $this->clientManager->getClient($clientId);
     }
 
     /**
@@ -155,13 +170,5 @@ class ClientRepository implements ClientRepositoryInterface
         return $this->encoderFactory
             ->getEncoder($client)
             ->isPasswordValid($client->getSecret(), (string)$clientSecret, $client->getSalt());
-    }
-
-    /**
-     * @return EntityRepository
-     */
-    private function getRepository(): EntityRepository
-    {
-        return $this->doctrine->getRepository(Client::class);
     }
 }
