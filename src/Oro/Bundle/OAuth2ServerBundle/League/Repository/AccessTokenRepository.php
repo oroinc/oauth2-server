@@ -11,6 +11,7 @@ use League\OAuth2\Server\Exception\UniqueTokenIdentifierConstraintViolationExcep
 use League\OAuth2\Server\Repositories\AccessTokenRepositoryInterface;
 use Oro\Bundle\OAuth2ServerBundle\Entity\AccessToken;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
+use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
 use Oro\Bundle\OAuth2ServerBundle\League\Entity\AccessTokenEntity;
 
 /**
@@ -21,12 +22,24 @@ class AccessTokenRepository implements AccessTokenRepositoryInterface
     /** @var ManagerRegistry */
     private $doctrine;
 
+    /** @var ClientManager */
+    private $clientManager;
+
     /**
      * @param ManagerRegistry $doctrine
      */
     public function __construct(ManagerRegistry $doctrine)
     {
         $this->doctrine = $doctrine;
+    }
+
+    /**
+     * @deprecated
+     * @param ClientManager $clientManager
+     */
+    public function setClientManager(ClientManager $clientManager): void
+    {
+        $this->clientManager = $clientManager;
     }
 
     /**
@@ -122,9 +135,7 @@ class AccessTokenRepository implements AccessTokenRepositoryInterface
      */
     private function getClientEntity(string $clientId): Client
     {
-        return $this->getEntityManager()
-            ->getRepository(Client::class)
-            ->findOneBy(['identifier' => $clientId]);
+        return $this->clientManager->getClient($clientId);
     }
 
     /**

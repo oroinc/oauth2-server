@@ -7,6 +7,7 @@ use League\OAuth2\Server\AuthorizationValidators\AuthorizationValidatorInterface
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Oro\Bundle\CustomerBundle\Entity\CustomerUser;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
+use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
 use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\OAuth2Token;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Oro\Bundle\UserBundle\Entity\User;
@@ -37,6 +38,9 @@ class OAuth2Provider implements AuthenticationProviderInterface
     /** @var UserCheckerInterface */
     private $userChecker;
 
+    /** @var ClientManager */
+    private $clientManager;
+
     /**
      * @param UserProviderInterface           $userProvider
      * @param string                          $providerKey
@@ -56,6 +60,15 @@ class OAuth2Provider implements AuthenticationProviderInterface
         $this->authorizationValidator = $authorizationValidator;
         $this->doctrine = $doctrine;
         $this->userChecker = $userChecker;
+    }
+
+    /**
+     * @deprecated
+     * @param ClientManager $clientManager
+     */
+    public function setClientManager(ClientManager $clientManager): void
+    {
+        $this->clientManager = $clientManager;
     }
 
     /**
@@ -99,8 +112,7 @@ class OAuth2Provider implements AuthenticationProviderInterface
             throw new AuthenticationException('The OAuth client ID is not specified.');
         }
 
-        $client = $this->doctrine->getRepository(Client::class)
-            ->findOneBy(['identifier' => $clientId]);
+        $client = $this->clientManager->getClient($clientId);
 
         if (null === $client) {
             throw new AuthenticationException('The OAuth client does not exist.');

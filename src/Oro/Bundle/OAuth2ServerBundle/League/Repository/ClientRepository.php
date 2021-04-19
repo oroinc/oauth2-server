@@ -8,6 +8,7 @@ use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use League\OAuth2\Server\Repositories\ClientRepositoryInterface;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
+use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
 use Oro\Bundle\OAuth2ServerBundle\League\Entity\ClientEntity;
 use Oro\Bundle\OAuth2ServerBundle\Security\ApiFeatureChecker;
 use Symfony\Component\Security\Core\Encoder\EncoderFactoryInterface;
@@ -17,14 +18,20 @@ use Symfony\Component\Security\Core\Encoder\EncoderFactoryInterface;
  */
 class ClientRepository implements ClientRepositoryInterface
 {
-    /** @var ManagerRegistry */
-    private $doctrine;
-
     /** @var EncoderFactoryInterface */
     private $encoderFactory;
 
     /** @var ApiFeatureChecker */
     private $featureChecker;
+
+    /**
+     * @var ManagerRegistry
+     * @deprecated
+     */
+    private $doctrine;
+
+    /** @var ClientManager */
+    private $clientManager;
 
     /**
      * @param ManagerRegistry         $doctrine
@@ -42,6 +49,15 @@ class ClientRepository implements ClientRepositoryInterface
     }
 
     /**
+     * @deprecated
+     * @param ClientManager $clientManager
+     */
+    public function setClientManager(ClientManager $clientManager): void
+    {
+        $this->clientManager = $clientManager;
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function getClientEntity(
@@ -51,7 +67,7 @@ class ClientRepository implements ClientRepositoryInterface
         $mustValidateSecret = true
     ): ?ClientEntityInterface {
         /** @var Client $client */
-        $client = $this->getRepository()->findOneBy(['identifier' => $clientIdentifier]);
+        $client = $this->getClient($clientIdentifier);
         if (null === $client) {
             return null;
         }
@@ -82,6 +98,16 @@ class ClientRepository implements ClientRepositoryInterface
         $clientEntity->setFrontend($client->isFrontend());
 
         return $clientEntity;
+    }
+
+    /**
+     * @param string $clientId
+     *
+     * @return Client|null
+     */
+    private function getClient(string $clientId): ?Client
+    {
+        return $this->clientManager->getClient($clientId);
     }
 
     /**

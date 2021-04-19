@@ -94,8 +94,6 @@ class AuthorizeClientController extends Controller
      */
     private function getClient(string $clientId): ?Client
     {
-        return $this->get('doctrine')
-            ->getRepository(Client::class)
-            ->findOneBy(['identifier' => $clientId]);
+        return $this->get('oro_oauth2_server.client_manager')->getClient($clientId);
     }
 }
