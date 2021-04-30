@@ -17,7 +17,7 @@ Feature: Manage OAuth Applications
     When I click "Add OAuth Application"
     And type "First App" in "Application Name"
     And click "Save"
-    Then I should see "Saved successfully" flash message
+    Then I should see "Saved successfully" in the "UiDialog" element
     And should see "OAuth application has been created."
     And should see "Please copy Client Secret and save it somewhere safe. For security reasons, we cannot show it to you again."
     And should see "Client ID"
@@ -105,5 +105,5 @@ Feature: Manage OAuth Applications
       | Application Name | The application with the given name already exists. |
     When I type "Another One App" in "Application Name"
     And click "Save"
-    Then I should see "Saved successfully" flash message
+    Then I should see "Saved successfully" in the "UiDialog" element
     And should see "OAuth application has been created."
