@@ -16,6 +16,7 @@ use Oro\Bundle\OAuth2ServerBundle\Provider\ClientOwnerOrganizationsProvider;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Oro\Bundle\TranslationBundle\Form\Extension\TranslatableChoiceTypeExtension;
 use Oro\Bundle\TranslationBundle\Translation\Translator;
+use Oro\Component\Testing\ReflectionUtil;
 use Oro\Component\Testing\Unit\PreloadedExtension;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -254,10 +255,8 @@ class ClientTypeTest extends TypeTestCase
     public function testSubmitForExistingClient()
     {
         $client = new Client();
+        ReflectionUtil::setId($client, 1);
         $client->setGrants(['grant1']);
-        $idProp = (new \ReflectionClass($client))->getProperty('id');
-        $idProp->setAccessible(true);
-        $idProp->setValue($client, 1);
         $client->setOwnerEntity('Test\OwnerEntity', 123);
         $submittedData = [
             'name'   => 'test name',

@@ -4,6 +4,7 @@ namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Entity;
 
 use Oro\Bundle\OAuth2ServerBundle\Entity\AccessToken;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
+use Oro\Component\Testing\ReflectionUtil;
 
 class AccessTokenTest extends \PHPUnit\Framework\TestCase
 {
@@ -61,8 +62,6 @@ class AccessTokenTest extends \PHPUnit\Framework\TestCase
 
     public function testGetId()
     {
-        $id = 123;
-
         $entity = new AccessToken(
             'test_id',
             new \DateTime(),
@@ -72,10 +71,8 @@ class AccessTokenTest extends \PHPUnit\Framework\TestCase
         );
         self::assertNull($entity->getId());
 
-        $idProp = (new \ReflectionClass($entity))->getProperty('id');
-        $idProp->setAccessible(true);
-        $idProp->setValue($entity, $id);
-
+        $id = 123;
+        ReflectionUtil::setId($entity, $id);
         self::assertSame($id, $entity->getId());
     }
 }

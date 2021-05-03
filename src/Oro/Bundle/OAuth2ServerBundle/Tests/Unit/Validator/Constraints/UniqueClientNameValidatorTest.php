@@ -10,6 +10,7 @@ use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Validator\Constraints\UniqueClientName;
 use Oro\Bundle\OAuth2ServerBundle\Validator\Constraints\UniqueClientNameValidator;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
+use Oro\Component\Testing\ReflectionUtil;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Exception\RuntimeException;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
@@ -286,9 +287,7 @@ class UniqueClientNameValidatorTest extends ConstraintValidatorTestCase
     public function testNameIsUniqueForExistingClient()
     {
         $client = new Client();
-        $idProp = (new \ReflectionClass($client))->getProperty('id');
-        $idProp->setAccessible(true);
-        $idProp->setValue($client, 1);
+        ReflectionUtil::setId($client, 1);
         $client->setName('test');
         $client->setOwnerEntity('Test\OwnerEntity', 123);
         $client->setOrganization($this->createMock(Organization::class));

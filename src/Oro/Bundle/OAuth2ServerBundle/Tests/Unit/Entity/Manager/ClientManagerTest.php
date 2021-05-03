@@ -9,6 +9,7 @@ use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Oro\Bundle\SecurityBundle\Authentication\TokenAccessorInterface;
+use Oro\Component\Testing\ReflectionUtil;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\Encoder\EncoderFactoryInterface;
 use Symfony\Component\Security\Core\Encoder\PasswordEncoderInterface;
@@ -57,9 +58,7 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
     {
         $client = new Client();
         if (null !== $id) {
-            $idProp = (new \ReflectionClass($client))->getProperty('id');
-            $idProp->setAccessible(true);
-            $idProp->setValue($client, $id);
+            ReflectionUtil::setId($client, $id);
         }
 
         return $client;
