@@ -154,12 +154,12 @@ class AccessTokenRepositoryTest extends \PHPUnit\Framework\TestCase
             ->method('getClient')
             ->with('client_id')
             ->willReturn($client);
-        $em->expects(self::at(1))
+        $em->expects(self::exactly(2))
             ->method('persist')
-            ->with($expectedToken);
-        $em->expects(self::at(2))
-            ->method('persist')
-            ->with($client);
+            ->withConsecutive(
+                [$expectedToken],
+                [self::identicalTo($client)]
+            );
         $em->expects(self::once())
             ->method('flush');
 
