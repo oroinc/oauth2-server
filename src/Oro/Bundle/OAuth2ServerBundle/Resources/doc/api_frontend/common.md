@@ -1,1 +1,1 @@
-To get the OAuth access token for a customer visitor, use the **guest** value as *username* and *password* in <a href="https://doc.oroinc.com/api/authentication/oauth-password/" target="_blank">a request to the authorization server</a>.
+To get the OAuth access token for a visitor, use the **guest** value as *username* and *password* in <a href="https://doc.oroinc.com/api/authentication/oauth-password/" target="_blank">a request to the authorization server</a>. A new customer visitor is created for each authorization request.
