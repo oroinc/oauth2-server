@@ -44,9 +44,9 @@ class LoginController extends AbstractController
             $sessionParameterName = '_security.oauth2_authorization_authenticate.target_path';
             $template = '@OroOAuth2Server/Security/login.html.twig';
         }
-        $session = $request->getSession();
+        $session = $request->hasSession() ? $request->getSession() : null;
 
-        if (null === $session || !$session->has($sessionParameterName)) {
+        if (!$session || !$session->has($sessionParameterName)) {
             throw $this->createNotFoundException();
         }
 
