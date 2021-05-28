@@ -4,34 +4,23 @@ namespace Oro\Bundle\OAuth2ServerBundle\Security\Firewall;
 
 use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\OAuth2Token;
 use Symfony\Bridge\PsrHttpMessage\HttpMessageFactoryInterface;
-use Symfony\Component\HttpKernel\Event\GetResponseEvent;
+use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\Security\Core\Authentication\AuthenticationManagerInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Symfony\Component\Security\Http\Firewall\ListenerInterface;
 
 /**
  * The security firewall listener that detects request with OAuth 2.0 authorization header.
  */
-class OAuth2Listener implements ListenerInterface
+class OAuth2Listener
 {
-    /** @var TokenStorageInterface */
-    private $tokenStorage;
+    private TokenStorageInterface $tokenStorage;
 
-    /** @var AuthenticationManagerInterface */
-    private $authenticationManager;
+    private AuthenticationManagerInterface $authenticationManager;
 
-    /** @var HttpMessageFactoryInterface */
-    private $httpMessageFactory;
+    private HttpMessageFactoryInterface $httpMessageFactory;
 
-    /** @var string */
-    private $providerKey;
+    private string $providerKey;
 
-    /**
-     * @param TokenStorageInterface          $tokenStorage
-     * @param AuthenticationManagerInterface $authenticationManager
-     * @param HttpMessageFactoryInterface    $httpMessageFactory
-     * @param string                         $providerKey
-     */
     public function __construct(
         TokenStorageInterface $tokenStorage,
         AuthenticationManagerInterface $authenticationManager,
@@ -44,10 +33,7 @@ class OAuth2Listener implements ListenerInterface
         $this->providerKey = $providerKey;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function handle(GetResponseEvent $event): void
+    public function __invoke(RequestEvent $event): void
     {
         $request = $event->getRequest();
         if (!$request->headers->has('Authorization')
