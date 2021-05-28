@@ -2,7 +2,7 @@ oro_oauth2_server_auth_token:
     path: '/oauth2-token'
     methods: [POST]
     defaults:
-        _controller: OroOAuth2ServerBundle:AuthorizationToken:token
+        _controller: Oro\Bundle\OAuth2ServerBundle\Controller\AuthorizationTokenController::tokenAction
     options:
         frontend: true
 
@@ -10,7 +10,7 @@ oro_oauth2_server_auth_token_options:
     path: '/oauth2-token'
     methods: [OPTIONS]
     defaults:
-        _controller: OroOAuth2ServerBundle:AuthorizationToken:options
+        _controller: Oro\Bundle\OAuth2ServerBundle\Controller\AuthorizationTokenController::optionsAction
     options:
         frontend: true
 
@@ -22,16 +22,16 @@ oro_oauth2_server_client:
 oro_oauth2_server_login_check:
     path: '/oauth2-token/login-check'
     defaults:
-        _controller: OroOAuth2ServerBundle:Login:check
+        _controller: Oro\Bundle\OAuth2ServerBundle\Controller\LoginController::checkAction
 
 oro_oauth2_server_login_form:
     path: '/oauth2-token/login'
     defaults:
         type: backoffice
-        _controller: OroOAuth2ServerBundle:Login:login
+        _controller: Oro\Bundle\OAuth2ServerBundle\Controller\LoginController::loginAction
 
 oro_oauth2_server_authenticate:
     path: '/oauth2-token/authorize'
     defaults:
         type: backoffice
-        _controller: OroOAuth2ServerBundle:AuthorizeClient:authorize
+        _controller: Oro\Bundle\OAuth2ServerBundle\Controller\AuthorizeClientController::authorizeAction
