@@ -2,6 +2,7 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Tests\Functional;
 
+use Oro\Bundle\ConfigBundle\Tests\Functional\Traits\ConfigManagerAwareTestTrait;
 use Oro\Bundle\OAuth2ServerBundle\Tests\Functional\DataFixtures\LoadFrontendPasswordGrantClient;
 use Oro\Bundle\OAuth2ServerBundle\Tests\Functional\DataFixtures\LoadPasswordGrantClient;
 use Oro\Bundle\TestFrameworkBundle\Tests\Functional\DataFixtures\LoadUser;
@@ -9,6 +10,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 class FrontendPasswordGrantVisitorOAuthServerTest extends OAuthServerTestCase
 {
+    use ConfigManagerAwareTestTrait;
+
     /**
      * {@inheritdoc}
      */
@@ -117,7 +120,7 @@ class FrontendPasswordGrantVisitorOAuthServerTest extends OAuthServerTestCase
 
         $accessToken = $this->sendFrontendPasswordAccessTokenRequest();
 
-        $configManager = self::getClientInstance()->getContainer()->get('oro_config.manager');
+        $configManager = self::getConfigManager('global');
         $configManager->set('oro_shopping_list.availability_for_guests', true);
         $configManager->flush();
 
