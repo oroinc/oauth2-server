@@ -1,5 +1,5 @@
-{% extends 'OroUIBundle:actions:update.html.twig' %}
-{% import 'OroUIBundle::macros.html.twig' as UI %}
+{% extends '@OroUI/actions/update.html.twig' %}
+{% import '@OroUI/macros.html.twig' as UI %}
 
 {% oro_title_set({ params : {"%application.name%": form.vars.data.name} }) %}
 
@@ -25,7 +25,7 @@
             : 'oro.oauth2server.client.entity_label'
         )|trans
     }) %}
-    {% include 'OroUIBundle::page_title_block.html.twig' with { title: title } %}
+    {% include '@OroUI/page_title_block.html.twig' with { title: title } %}
 {% endblock pageHeader %}
 
 {% block content_data %}

@@ -1,5 +1,5 @@
 {%- if record.getValue('owner') -%}
-    {%- import 'OroUIBundle::macros.html.twig' as UI -%}
+    {%- import '@OroUI/macros.html.twig' as UI -%}
     {%- set owner = record.getValue('owner') -%}
     {%- set isFrontend = record.getValue('frontend') -%}
     {%- set ownerRoute = isFrontend ? 'oro_customer_customer_user_view' : 'oro_user_view' -%}
