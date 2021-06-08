@@ -124,7 +124,7 @@ class AddClientsToViewPageListenerTest extends \PHPUnit\Framework\TestCase
         $environment->expects(self::once())
             ->method('render')
             ->with(
-                'OroOAuth2ServerBundle:Client:clients.html.twig',
+                '@OroOAuth2Server/Client/clients.html.twig',
                 [
                     'encryptionKeysExist' => true,
                     'creationGranted'     => $creationGranted,
@@ -184,7 +184,7 @@ class AddClientsToViewPageListenerTest extends \PHPUnit\Framework\TestCase
         $environment->expects(self::once())
             ->method('render')
             ->with(
-                'OroOAuth2ServerBundle:Client:clients.html.twig',
+                '@OroOAuth2Server/Client/clients.html.twig',
                 [
                     'encryptionKeysExist' => false,
                     'creationGranted'     => $creationGranted,
@@ -243,7 +243,7 @@ class AddClientsToViewPageListenerTest extends \PHPUnit\Framework\TestCase
         $environment->expects(self::once())
             ->method('render')
             ->with(
-                'OroOAuth2ServerBundle:Client:clients.html.twig',
+                '@OroOAuth2Server/Client/clients.html.twig',
                 [
                     'encryptionKeysExist' => false,
                     'creationGranted'     => $creationGranted,

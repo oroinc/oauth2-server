@@ -43,7 +43,7 @@ class OwnerClientDatagridListener
                             : 'oro.user.entity_label',
                         'type'          => 'twig',
                         'frontend_type' => 'html',
-                        'template'      => 'OroOAuth2ServerBundle:Client/Datagrid:owners.html.twig',
+                        'template'      => '@OroOAuth2Server/Client/Datagrid/owners.html.twig',
                         'translatable'  => true,
                         'editable'      => false,
                         'renderable'    => true
