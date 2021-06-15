@@ -309,6 +309,9 @@ services:
         arguments:
             - '@oro_featuretoggle.checker.feature_checker'
 
+    Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Exception\ExceptionHandler:
+        alias: oro_oauth2_server.handler.get_access_token.exception_handler
+
     oro_oauth2_server.handler.get_access_token.exception_handler:
         class: Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Exception\ExceptionHandler
         public: true
@@ -332,6 +335,9 @@ services:
             - '@?oro_frontend.request.frontend_helper'
         tags:
             - { name: oro_oauth2_server.get_access_token_exception_handler }
+
+    Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Success\SuccessHandler:
+        alias: oro_oauth2_server.handler.get_access_token.success_handler
 
     oro_oauth2_server.handler.get_access_token.success_handler:
         class: Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Success\SuccessHandler
