@@ -5,6 +5,8 @@ namespace Oro\Bundle\OAuth2ServerBundle\Controller;
 use GuzzleHttp\Psr7\Response;
 use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\Exception\OAuthServerException;
+use Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Exception\ExceptionHandler;
+use Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Success\SuccessHandler;
 use Oro\Bundle\OAuth2ServerBundle\League\Exception\CryptKeyNotFoundException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -32,9 +34,9 @@ class AuthorizationTokenController extends AbstractController
         try {
             $response = $this->getAuthorizationServer()
                 ->respondToAccessTokenRequest($serverRequest, $serverResponse);
-            $this->get('oro_oauth2_server.handler.get_access_token.success_handler')->handle($serverRequest);
+            $this->get(SuccessHandler::class)->handle($serverRequest);
         } catch (OAuthServerException $e) {
-            $this->get('oro_oauth2_server.handler.get_access_token.exception_handler')->handle($serverRequest, $e);
+            $this->get(ExceptionHandler::class)->handle($serverRequest, $e);
             $response = $e->generateHttpResponse($serverResponse);
         }
 
@@ -69,7 +71,7 @@ class AuthorizationTokenController extends AbstractController
                 $response->headers->set('Access-Control-Allow-Methods', $response->headers->get('Allow'));
                 $response->headers->remove('Allow');
                 $response->headers->set('Access-Control-Allow-Headers', 'Content-Type');
-                $preflightMaxAge = $this->container->getParameter('oro_oauth2_server.cors.preflight_max_age');
+                $preflightMaxAge = $this->getParameter('oro_oauth2_server.cors.preflight_max_age');
                 if ($preflightMaxAge > 0) {
                     $response->headers->set('Access-Control-Max-Age', $preflightMaxAge);
                     // although OPTIONS requests are not cacheable, add "Cache-Control" header
@@ -145,7 +147,7 @@ class AuthorizationTokenController extends AbstractController
      */
     private function isAllowedOrigin(string $origin): bool
     {
-        return \in_array($origin, $this->container->getParameter('oro_oauth2_server.cors.allow_origins'), true);
+        return \in_array($origin, $this->getParameter('oro_oauth2_server.cors.allow_origins'), true);
     }
 
     /**
@@ -154,7 +156,7 @@ class AuthorizationTokenController extends AbstractController
     private function getAuthorizationServer(): AuthorizationServer
     {
         try {
-            return $this->get('oro_oauth2_server.league.authorization_server');
+            return $this->get(AuthorizationServer::class);
         } catch (\LogicException $e) {
             $this->getLogger()->warning($e->getMessage(), ['exception' => $e]);
 
@@ -167,6 +169,22 @@ class AuthorizationTokenController extends AbstractController
      */
     private function getLogger(): LoggerInterface
     {
-        return $this->get('logger');
+        return $this->get(LoggerInterface::class);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedServices()
+    {
+        return array_merge(
+            parent::getSubscribedServices(),
+            [
+                SuccessHandler::class,
+                ExceptionHandler::class,
+                AuthorizationServer::class,
+                LoggerInterface::class,
+            ]
+        );
     }
 }
