@@ -34,13 +34,7 @@ class OrganizationClientDatagridListenerTest extends \PHPUnit\Framework\TestCase
         );
     }
 
-    /**
-     * @param int    $id
-     * @param string $name
-     *
-     * @return Organization|\PHPUnit\Framework\MockObject\MockObject
-     */
-    private function getOrganization($id, $name)
+    private function getOrganization(int $id, string $name): Organization
     {
         $organization = $this->createMock(Organization::class);
         $organization->expects(self::any())
@@ -53,20 +47,6 @@ class OrganizationClientDatagridListenerTest extends \PHPUnit\Framework\TestCase
         return $organization;
     }
 
-    /**
-     * @return ArrayCollection|\PHPUnit\Framework\MockObject\MockObject
-     */
-    private function getQueryParameters()
-    {
-        return $this->getMockBuilder(ArrayCollection::class)
-            ->setMethods(['clear', 'add'])
-            ->getMock();
-    }
-
-    /**
-     * @param Datagrid        $datagrid
-     * @param ArrayCollection $queryParameters
-     */
     private function setDatasource(Datagrid $datagrid, ArrayCollection $queryParameters)
     {
         $datasource = $this->createMock(OrmDatasource::class);
@@ -215,7 +195,9 @@ class OrganizationClientDatagridListenerTest extends \PHPUnit\Framework\TestCase
         $parameters->set('ownerEntityId', 123);
 
         $datagrid = new Datagrid('test', $config, $parameters);
-        $queryParameters = $this->getQueryParameters();
+        $queryParameters = $this->getMockBuilder(ArrayCollection::class)
+            ->onlyMethods(['clear', 'add'])
+            ->getMock();
         $this->setDatasource($datagrid, $queryParameters);
 
         $organization1 = $this->getOrganization(10, 'org1');
@@ -280,7 +262,9 @@ class OrganizationClientDatagridListenerTest extends \PHPUnit\Framework\TestCase
         $parameters->set('ownerEntityId', 123);
 
         $datagrid = new Datagrid('test', $config, $parameters);
-        $queryParameters = $this->getQueryParameters();
+        $queryParameters = $this->getMockBuilder(ArrayCollection::class)
+            ->onlyMethods(['clear', 'add'])
+            ->getMock();
         $this->setDatasource($datagrid, $queryParameters);
 
         $organization1 = $this->getOrganization(10, 'org1');
