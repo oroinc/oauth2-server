@@ -3,36 +3,37 @@
 namespace Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token;
 
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
-use Oro\Bundle\SecurityBundle\Authentication\Token\AuthenticatedTokenTrait;
 use Oro\Bundle\SecurityBundle\Authentication\Token\OrganizationAwareTokenInterface;
-use Oro\Bundle\SecurityBundle\Authentication\Token\OrganizationAwareTokenTrait;
+use Oro\Bundle\SecurityBundle\Authentication\Token\RolesAndOrganizationAwareTokenTrait;
+use Oro\Bundle\SecurityBundle\Authentication\Token\RolesAwareTokenInterface;
+use Oro\Bundle\UserBundle\Entity\Role;
+use Oro\Bundle\UserBundle\Entity\UserInterface;
 use Symfony\Component\Security\Core\Authentication\Token\AbstractToken;
-use Symfony\Component\Security\Core\Role\Role;
-use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * The token that represents OAuth 2.0 authentication data.
  */
-class OAuth2Token extends AbstractToken implements OrganizationAwareTokenInterface
+class OAuth2Token extends AbstractToken implements OrganizationAwareTokenInterface, RolesAwareTokenInterface
 {
-    use AuthenticatedTokenTrait;
-    use OrganizationAwareTokenTrait;
+    use RolesAndOrganizationAwareTokenTrait {
+        getRoles as traitGetRoles;
+    }
 
     public const REQUEST_ATTRIBUTE      = 'request';
     public const PROVIDER_KEY_ATTRIBUTE = 'provider_key';
 
     /**
-     * @param UserInterface $user
-     * @param Organization  $organization
+     * @param UserInterface|null $user
+     * @param Organization|null $organization
      */
     public function __construct(UserInterface $user = null, Organization $organization = null)
     {
         $this->setAuthenticated(false);
 
         if (null !== $user && null !== $organization) {
-            $roles = $user->getRoles();
+            $roles = $user->getUserRoles();
 
-            parent::__construct($roles);
+            parent::__construct($this->initRoles($roles));
 
             $this->setUser($user);
             $this->setOrganization($organization);
@@ -44,13 +45,13 @@ class OAuth2Token extends AbstractToken implements OrganizationAwareTokenInterfa
     /**
      * {@inheritdoc}
      */
-    public function getRoles()
+    public function getRoles(): array
     {
         if (!$this->hasIsGlobalMethod($this->organization)) {
-            return parent::getRoles();
+            return $this->traitGetRoles();
         }
 
-        return $this->filterRolesByOrganization($this->organization, parent::getRoles());
+        return $this->filterRolesByOrganization($this->organization, $this->traitGetRoles());
     }
 
     /**
