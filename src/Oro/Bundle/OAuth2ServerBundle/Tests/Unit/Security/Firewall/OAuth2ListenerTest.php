@@ -1,6 +1,6 @@
 <?php
 
-namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Security\Authentication\Firewall;
+namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Security\Firewall;
 
 use GuzzleHttp\Psr7\ServerRequest;
 use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\OAuth2Token;
