@@ -148,7 +148,7 @@ class PasswordGrantSuccessHandlerTest extends TestCase
 
         $organization = new Organization();
         $user = $this->createMock(UserInterface::class);
-        $user->method('getRoles')->willReturn([]);
+        $user->method('getUserRoles')->willReturn([]);
         $symfonyRequest = $this->createMock(Request::class);
 
         $expectedToken = new OAuth2Token($user, $organization);
