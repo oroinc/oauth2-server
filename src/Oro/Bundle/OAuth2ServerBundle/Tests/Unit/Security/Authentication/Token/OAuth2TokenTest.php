@@ -40,7 +40,7 @@ class OAuth2TokenTest extends \PHPUnit\Framework\TestCase
         $user = new User();
         $role = new Role();
         $organization = new Organization();
-        $user->addRole($role);
+        $user->addUserRole($role);
 
         $token = new OAuth2Token($user, $organization);
 
@@ -64,9 +64,9 @@ class OAuth2TokenTest extends \PHPUnit\Framework\TestCase
         $organization2Role->setOrganization($organization2);
 
         $user = new User();
-        $user->addRole($globalRole);
-        $user->addRole($organization1Role);
-        $user->addRole($organization2Role);
+        $user->addUserRole($globalRole);
+        $user->addUserRole($organization1Role);
+        $user->addUserRole($organization2Role);
 
         $token = new OAuth2Token($user, $organization1);
 

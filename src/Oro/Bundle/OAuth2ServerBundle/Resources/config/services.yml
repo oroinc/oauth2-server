@@ -232,7 +232,6 @@ services:
 
     oro_oauth2_server.security.user_checker:
         class: Oro\Bundle\OAuth2ServerBundle\Security\OAuthUserChecker
-        public: false
         arguments:
             - '@security.user_checker'
             - '@translator'
@@ -248,13 +247,12 @@ services:
 
     oro_oauth2_server.security.authentication_provider:
         class: Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Provider\OAuth2Provider
-        public: false
         arguments:
             - ~ # user provider; it is set by Oro\Bundle\OAuth2ServerBundle\DependencyInjection\Security\Factory\OAuth2Factory
             - ~ # firewall ID; it is set by Oro\Bundle\OAuth2ServerBundle\DependencyInjection\Security\Factory\OAuth2Factory
             - '@oro_oauth2_server.league.authorization_validator'
             - '@doctrine'
-            - '@security.user_checker'
+            - ~ # UserCheckerInterface $userChecker; it is set by Oro\Bundle\OAuth2ServerBundle\DependencyInjection\Security\Factory\OAuth2Factory
             - '@oro_oauth2_server.client_manager'
 
     oro_oauth2_server.emailtemplate.client_entity_variables_provider:

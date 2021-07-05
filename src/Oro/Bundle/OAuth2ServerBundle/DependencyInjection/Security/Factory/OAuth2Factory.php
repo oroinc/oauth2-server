@@ -36,7 +36,8 @@ class OAuth2Factory implements SecurityFactoryInterface
         $container
             ->setDefinition($providerId, $definition)
             ->replaceArgument(0, new Reference($this->getUserProvider($container, $id, $config, $userProvider)))
-            ->replaceArgument(1, $id);
+            ->replaceArgument(1, $id)
+            ->replaceArgument(4, new Reference('security.user_checker.' . $id));
 
         $listenerId = self::FIREWALL_LISTENER_SERVICE . '.' . $id;
         $container

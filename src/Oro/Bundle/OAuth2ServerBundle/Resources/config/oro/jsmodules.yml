@@ -1,3 +1,3 @@
 dynamic-imports:
-    orooauth2server:
+    orointegration:
         - orooauth2server/js/views/client-grant-view
