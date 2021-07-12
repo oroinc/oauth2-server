@@ -74,7 +74,7 @@ class AddClientsToViewPageListener
 
         $entityId = $this->entityIdAccessor->getIdentifier($entity);
         $clientsData = $event->getTwigEnvironment()->render(
-            'OroOAuth2ServerBundle:Client:clients.html.twig',
+            '@OroOAuth2Server/Client/clients.html.twig',
             [
                 'encryptionKeysExist' =>
                     $this->encryptionKeysExistenceChecker->isPrivateKeyExist()

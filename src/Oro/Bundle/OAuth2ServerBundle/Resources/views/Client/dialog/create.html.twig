@@ -1,5 +1,5 @@
-{% extends 'OroUIBundle:actions:update.html.twig' %}
-{% import 'OroUIBundle::macros.html.twig' as UI %}
+{% extends '@OroUI/actions/update.html.twig' %}
+{% import '@OroUI/macros.html.twig' as UI %}
 
 {% block content_data %}
     {% if not form.vars.valid and form.vars.errors|length %}
@@ -31,7 +31,7 @@
 {% endblock content_data %}
 
 {% block widget_context %}
-    {% import 'OroUIBundle::macros.html.twig' as UI %}
+    {% import '@OroUI/macros.html.twig' as UI %}
 
     <div class="widget-content">
         <div class="row-fluid form-horizontal">

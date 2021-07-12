@@ -99,7 +99,7 @@ class GrantClientDatagridListenerTest extends \PHPUnit\Framework\TestCase
             'label'         => 'oro.oauth2server.client.grants.label',
             'type'          => 'twig',
             'frontend_type' => 'html',
-            'template'      => 'OroOAuth2ServerBundle:Client:Datagrid/grants.html.twig',
+            'template'      => '@OroOAuth2Server/Client/Datagrid/grants.html.twig',
             'translatable'  => true,
             'editable'      => false
         ];

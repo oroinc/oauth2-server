@@ -76,7 +76,7 @@ class ClientController extends AbstractController
      *     name="oro_oauth2_frontend_index",
      *     defaults={"type": "frontend"}
      * )
-     * @Template("OroOAuth2ServerBundle:Client:index.html.twig")
+     * @Template("@OroOAuth2Server/Client/index.html.twig")
      *
      * @param string $type
      *
@@ -110,7 +110,7 @@ class ClientController extends AbstractController
      *     defaults={"type": "frontend"}
      * )
      *
-     * @Template("OroOAuth2ServerBundle:Client:view.html.twig")
+     * @Template("@OroOAuth2Server/Client/view.html.twig")
      *
      * @param Client $entity
      * @param string $type
@@ -150,7 +150,7 @@ class ClientController extends AbstractController
      *     methods={"GET", "POST"}
      * )
      *
-     * @Template("OroOAuth2ServerBundle:Client:create.html.twig")
+     * @Template("@OroOAuth2Server/Client/create.html.twig")
      *
      * @param Request $request
      * @param string  $type
@@ -178,7 +178,7 @@ class ClientController extends AbstractController
         // change the Redirect response to custom template render to be able to show client secret information.
         if ($response instanceof RedirectResponse) {
             $response = $this->render(
-                'OroOAuth2ServerBundle:Client:createResult.html.twig',
+                '@OroOAuth2Server/Client/createResult.html.twig',
                 [
                     'entity' => $entity,
                     'type'   => $type
@@ -205,7 +205,7 @@ class ClientController extends AbstractController
      *     requirements={"id"="\d+"}
      * )
      *
-     * @Template("OroOAuth2ServerBundle:Client:update.html.twig")
+     * @Template("@OroOAuth2Server/Client/update.html.twig")
      *
      * @param Request $request
      * @param Client  $entity
@@ -234,7 +234,7 @@ class ClientController extends AbstractController
      *     name="oro_oauth2_server_client_create",
      *     methods={"GET", "POST"}
      * )
-     * @Template("OroOAuth2ServerBundle:Client:create.html.twig")
+     * @Template("@OroOAuth2Server/Client/create.html.twig")
      *
      * @param Request $request
      *
@@ -275,7 +275,7 @@ class ClientController extends AbstractController
      *     methods={"GET", "POST"},
      *     requirements={"id"="\d+"}
      * )
-     * @Template("OroOAuth2ServerBundle:Client:update.html.twig")
+     * @Template("@OroOAuth2Server/Client/update.html.twig")
      *
      * @param Request $request
      * @param Client  $entity
