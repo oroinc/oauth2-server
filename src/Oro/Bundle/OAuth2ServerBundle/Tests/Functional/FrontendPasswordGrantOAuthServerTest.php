@@ -32,9 +32,6 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
         ]);
     }
 
-    /**
-     * @return string
-     */
     private function getBackendBearerAuthHeaderValue(): string
     {
         /** @var User $user */
@@ -45,13 +42,6 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
         return sprintf('Bearer %s', $responseData['access_token']);
     }
 
-    /**
-     * @param string $userName
-     * @param string $password
-     * @param int    $expectedStatusCode
-     *
-     * @return array
-     */
     private function sendFrontendPasswordAccessTokenRequest(
         string $userName,
         string $password,
@@ -69,13 +59,6 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
         );
     }
 
-    /**
-     * @param string $userName
-     * @param string $password
-     * @param int    $expectedStatusCode
-     *
-     * @return array
-     */
     private function sendBackendPasswordAccessTokenRequest(
         string $userName,
         string $password,
@@ -93,9 +76,6 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
         );
     }
 
-    /**
-     * @return string
-     */
     private function getFrontendBearerAuthHeaderValue(): string
     {
         $responseData = $this->sendFrontendPasswordAccessTokenRequest(

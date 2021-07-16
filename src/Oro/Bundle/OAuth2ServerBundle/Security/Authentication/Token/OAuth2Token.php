@@ -22,10 +22,6 @@ class OAuth2Token extends AbstractToken implements OrganizationAwareTokenInterfa
     public const REQUEST_ATTRIBUTE      = 'request';
     public const PROVIDER_KEY_ATTRIBUTE = 'provider_key';
 
-    /**
-     * @param UserInterface|null $user
-     * @param Organization|null $organization
-     */
     public function __construct(UserInterface $user = null, Organization $organization = null)
     {
         $this->setAuthenticated(false);
@@ -62,11 +58,6 @@ class OAuth2Token extends AbstractToken implements OrganizationAwareTokenInterfa
         return '';
     }
 
-    /**
-     * @param Organization $organization
-     *
-     * @return bool
-     */
     private function hasIsGlobalMethod(Organization $organization): bool
     {
         return method_exists($organization, 'getIsGlobal');

@@ -97,9 +97,6 @@ class AuthorizeClientController extends AbstractController
         );
     }
 
-    /**
-     * @return AuthorizationServer
-     */
     private function getAuthorizationServer(): AuthorizationServer
     {
         try {
@@ -111,11 +108,6 @@ class AuthorizeClientController extends AbstractController
         }
     }
 
-    /**
-     * @param string $clientId
-     *
-     * @return Client|null
-     */
     private function getClient(string $clientId): ?Client
     {
         return $this->get(ClientManager::class)->getClient($clientId);

@@ -25,11 +25,6 @@ class RemoveClientOwnerFromEmailTmplates implements Migration
         $this->removeFieldFromEmailTemplateVariables($table, 'owner_entity_id', 'ownerEntityId');
     }
 
-    /**
-     * @param Table  $table
-     * @param string $columnName
-     * @param string $fieldName
-     */
     private function removeFieldFromEmailTemplateVariables(Table $table, string $columnName, string $fieldName): void
     {
         $table->getColumn($columnName)->setOptions([

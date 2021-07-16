@@ -77,13 +77,6 @@ class OAuth2Factory implements SecurityFactoryInterface
     /**
      * If the firewall should support visitors, decorates the given user provider and returns it's name.
      * Otherwise, returns the given user provider.
-     *
-     * @param ContainerBuilder $container
-     * @param string           $id
-     * @param array            $config
-     * @param string           $userProvider
-     *
-     * @return string
      */
     private function getUserProvider(
         ContainerBuilder $container,
@@ -107,11 +100,6 @@ class OAuth2Factory implements SecurityFactoryInterface
         return $userProviderId;
     }
 
-    /**
-     * @param array $config
-     *
-     * @return bool
-     */
     private function isVisitorFirewall(array $config): bool
     {
         return

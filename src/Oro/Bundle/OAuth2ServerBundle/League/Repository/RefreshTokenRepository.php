@@ -28,11 +28,6 @@ class RefreshTokenRepository implements RefreshTokenRepositoryInterface
     /** @var OAuthUserChecker */
     private $userChecker;
 
-    /**
-     * @param ManagerRegistry     $doctrine
-     * @param UserLoaderInterface $userLoader
-     * @param OAuthUserChecker    $userChecker
-     */
     public function __construct(
         ManagerRegistry $doctrine,
         UserLoaderInterface $userLoader,
@@ -104,31 +99,16 @@ class RefreshTokenRepository implements RefreshTokenRepositoryInterface
             || $refreshToken->isRevoked();
     }
 
-    /**
-     * @param RefreshToken $token
-     *
-     * @return UserLoaderInterface
-     */
     protected function getUserLoader(RefreshToken $token): UserLoaderInterface
     {
         return $this->userLoader;
     }
 
-    /**
-     * @param UserLoaderInterface $userLoader
-     * @param string              $userIdentifier
-     */
     protected function checkUser(UserLoaderInterface $userLoader, string $userIdentifier): void
     {
         $this->userChecker->checkUser($userLoader->loadUser($userIdentifier));
     }
 
-    /**
-     * @param EntityManagerInterface $em
-     * @param string                 $tokenId
-     *
-     * @return RefreshToken|null
-     */
     private function findRefreshTokenEntity(EntityManagerInterface $em, string $tokenId): ?RefreshToken
     {
         $token = $em->getRepository(RefreshToken::class)->findOneBy(['identifier' => $tokenId]);
@@ -143,9 +123,6 @@ class RefreshTokenRepository implements RefreshTokenRepositoryInterface
         return $token;
     }
 
-    /**
-     * @return EntityManagerInterface
-     */
     private function getEntityManager(): EntityManagerInterface
     {
         return $this->doctrine->getManagerForClass(RefreshToken::class);

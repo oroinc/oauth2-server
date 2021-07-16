@@ -16,17 +16,11 @@ class OwnerClientDatagridListener
     /** @var ManagerRegistry */
     private $doctrine;
 
-    /**
-     * @param ManagerRegistry $doctrine
-     */
     public function __construct(ManagerRegistry $doctrine)
     {
         $this->doctrine = $doctrine;
     }
 
-    /**
-     * @param BuildAfter $event
-     */
     public function addOwnerColumn(BuildAfter $event): void
     {
         $datagrid = $event->getDatagrid();
@@ -53,9 +47,6 @@ class OwnerClientDatagridListener
         );
     }
 
-    /**
-     * @param OrmResultAfter $event
-     */
     public function addOwnerData(OrmResultAfter $event): void
     {
         $ownerIds = [];
@@ -85,12 +76,6 @@ class OwnerClientDatagridListener
         }
     }
 
-    /**
-     * @param string $ownerClass
-     * @param array  $ownerIds
-     *
-     * @return array
-     */
     private function getOwners(string $ownerClass, array $ownerIds): array
     {
         $qb = $this->doctrine->getManagerForClass($ownerClass)->createQueryBuilder()

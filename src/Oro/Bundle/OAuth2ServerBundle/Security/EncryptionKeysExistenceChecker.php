@@ -16,10 +16,6 @@ class EncryptionKeysExistenceChecker
     /** @var CryptKeyFile */
     private $publicKey;
 
-    /**
-     * @param CryptKeyFile $privateKey
-     * @param CryptKeyFile $publicKey
-     */
     public function __construct(CryptKeyFile $privateKey, CryptKeyFile $publicKey)
     {
         $this->privateKey = $privateKey;
@@ -28,8 +24,6 @@ class EncryptionKeysExistenceChecker
 
     /**
      * Checks whether the private key that is used to sign JWT tokens exists and readable.
-     *
-     * @return bool
      */
     public function isPrivateKeyExist(): bool
     {
@@ -38,19 +32,12 @@ class EncryptionKeysExistenceChecker
 
     /**
      * Checks whether the public key that is used to verify JWT tokens exists and readable.
-     *
-     * @return bool
      */
     public function isPublicKeyExist(): bool
     {
         return $this->isFileExistAndReadable($this->publicKey->getKeyPath());
     }
 
-    /**
-     * @param string $file
-     *
-     * @return bool
-     */
     private function isFileExistAndReadable(string $file): bool
     {
         return file_exists($file) && is_readable($file);

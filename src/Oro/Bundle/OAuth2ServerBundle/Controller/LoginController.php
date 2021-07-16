@@ -29,12 +29,6 @@ class LoginController extends AbstractController
         ]);
     }
 
-    /**
-     * @param string  $type
-     * @param Request $request
-     *
-     * @return Response
-     */
     public function loginAction(string $type, Request $request): Response
     {
         if ('frontend' === $type) {
@@ -80,11 +74,6 @@ class LoginController extends AbstractController
         );
     }
 
-    /**
-     * @param string $clientId
-     *
-     * @return Client|null
-     */
     private function getClient(string $clientId): ?Client
     {
         return $this->get(ClientManager::class)->getClient($clientId);

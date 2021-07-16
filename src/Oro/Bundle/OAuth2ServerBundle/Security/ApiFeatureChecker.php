@@ -17,19 +17,11 @@ class ApiFeatureChecker
     /** @var FeatureChecker */
     private $featureChecker;
 
-    /**
-     * @param FeatureChecker $featureChecker
-     */
     public function __construct(FeatureChecker $featureChecker)
     {
         $this->featureChecker = $featureChecker;
     }
 
-    /**
-     * @param string $ownerClass
-     *
-     * @return bool
-     */
     public function isEnabledByClientOwnerClass(string $ownerClass): bool
     {
         if (is_a($ownerClass, User::class, true)) {
@@ -39,11 +31,6 @@ class ApiFeatureChecker
         return $this->isFrontendApiEnabled();
     }
 
-    /**
-     * @param Client $client
-     *
-     * @return bool
-     */
     public function isEnabledByClient(Client $client): bool
     {
         if ($client->isFrontend()) {
@@ -53,17 +40,11 @@ class ApiFeatureChecker
         return $this->isBackendApiEnabled();
     }
 
-    /**
-     * @return bool
-     */
     public function isBackendApiEnabled(): bool
     {
         return $this->featureChecker->isFeatureEnabled(self::API_FEATURE);
     }
 
-    /**
-     * @return bool
-     */
     public function isFrontendApiEnabled(): bool
     {
         return $this->featureChecker->isFeatureEnabled(self::FRONTEND_API_FEATURE);

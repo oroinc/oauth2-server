@@ -18,10 +18,6 @@ class ClientOwnerOrganizationsProvider
     /** @var TokenAccessorInterface */
     private $tokenAccessor;
 
-    /**
-     * @param ManagerRegistry        $doctrine
-     * @param TokenAccessorInterface $tokenAccessor
-     */
     public function __construct(ManagerRegistry $doctrine, TokenAccessorInterface $tokenAccessor)
     {
         $this->doctrine = $doctrine;
@@ -30,8 +26,6 @@ class ClientOwnerOrganizationsProvider
 
     /**
      * Checks whether an application supports multi organizations.
-     *
-     * @return bool
      */
     public function isMultiOrganizationSupported(): bool
     {
@@ -117,9 +111,6 @@ class ClientOwnerOrganizationsProvider
         return $result;
     }
 
-    /**
-     * @return Organization
-     */
     private function getCurrentOrganization(): Organization
     {
         $organization = $this->tokenAccessor->getOrganization();
@@ -130,11 +121,6 @@ class ClientOwnerOrganizationsProvider
         return $organization;
     }
 
-    /**
-     * @param Organization $organization
-     *
-     * @return bool
-     */
     private function hasIsGlobalMethod(Organization $organization): bool
     {
         return method_exists($organization, 'getIsGlobal');

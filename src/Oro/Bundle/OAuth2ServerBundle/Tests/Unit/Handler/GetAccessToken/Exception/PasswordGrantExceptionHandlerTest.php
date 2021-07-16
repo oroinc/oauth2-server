@@ -29,10 +29,6 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
         $this->clientManager = $this->createMock(ClientManager::class);
     }
 
-    /**
-     * @param string $identifier
-     * @param Client $client
-     */
     private function mockClientManager(string $identifier, Client $client): void
     {
         $this->clientManager->expects(self::once())

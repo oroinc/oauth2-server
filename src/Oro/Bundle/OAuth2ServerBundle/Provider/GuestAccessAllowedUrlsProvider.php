@@ -14,8 +14,6 @@ class GuestAccessAllowedUrlsProvider implements GuestAccessAllowedUrlsProviderIn
 
     /**
      * Adds a pattern to the list of allowed URL patterns.
-     *
-     * @param string $pattern
      */
     public function addAllowedUrlPattern(string $pattern): void
     {

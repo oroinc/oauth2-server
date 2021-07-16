@@ -22,14 +22,6 @@ class FrontendAuthCodeRepository extends AuthCodeRepository
     /** @var CustomerVisitorManager */
     private $customerVisitorManager;
 
-    /**
-     * @param ManagerRegistry        $doctrine
-     * @param UserLoaderInterface    $userLoader
-     * @param OAuthUserChecker       $userChecker
-     * @param ClientManager          $clientManager
-     * @param UserLoaderInterface    $frontendUserLoader
-     * @param CustomerVisitorManager $customerVisitorManager
-     */
     public function __construct(
         ManagerRegistry $doctrine,
         UserLoaderInterface $userLoader,

@@ -31,11 +31,6 @@ class AuthorizationValidator implements AuthorizationValidatorInterface
     /** @var ResourceServer|null */
     private $resourceServer;
 
-    /**
-     * @param CryptKeyFile                         $publicKey
-     * @param AccessTokenRepositoryInterface       $accessTokenRepository
-     * @param AuthorizationValidatorInterface|null $authorizationValidator
-     */
     public function __construct(
         CryptKeyFile $publicKey,
         AccessTokenRepositoryInterface $accessTokenRepository,
@@ -54,9 +49,6 @@ class AuthorizationValidator implements AuthorizationValidatorInterface
         return $this->getResourceServer()->validateAuthenticatedRequest($request);
     }
 
-    /**
-     * @return ResourceServer
-     */
     private function getResourceServer(): ResourceServer
     {
         if (null === $this->resourceServer) {
