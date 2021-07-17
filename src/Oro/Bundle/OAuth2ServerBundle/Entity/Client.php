@@ -476,25 +476,17 @@ class Client
 
     /**
      * Sets the flag that indicates whether the client is intended to be used on storefront or management console.
-     *
-     * @param bool $frontend
      */
     public function setFrontend(bool $frontend)
     {
         $this->frontend = $frontend;
     }
 
-    /**
-     * @return \DateTime|null
-     */
     public function getLastUsedAt(): ?\DateTime
     {
         return $this->lastUsedAt;
     }
 
-    /**
-     * @param \DateTime $lastUsedAt
-     */
     public function setLastUsedAt(\DateTime $lastUsedAt): void
     {
         $this->lastUsedAt = $lastUsedAt;
@@ -514,8 +506,6 @@ class Client
     /**
      * Sets the flag that indicates whether the client is a confidential or a public.
      * @link https://tools.ietf.org/html/rfc6749#section-2.1
-     *
-     * @param bool $confidential
      */
     public function setConfidential(bool $confidential)
     {
@@ -536,8 +526,6 @@ class Client
     /**
      * Sets the flag that indicates whether the PKCE code challenge can be send as a plain text.
      * @link https://tools.ietf.org/html/rfc7636#section-4.3
-     *
-     * @param bool $plainTextPkceAllowed
      */
     public function setPlainTextPkceAllowed(bool $plainTextPkceAllowed)
     {

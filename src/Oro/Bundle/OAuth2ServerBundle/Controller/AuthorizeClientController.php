@@ -82,9 +82,6 @@ class AuthorizeClientController extends AbstractController
         );
     }
 
-    /**
-     * @return AuthorizationServer
-     */
     private function getAuthorizationServer(): AuthorizationServer
     {
         try {
@@ -96,11 +93,6 @@ class AuthorizeClientController extends AbstractController
         }
     }
 
-    /**
-     * @param string $clientId
-     *
-     * @return Client|null
-     */
     private function getClient(string $clientId): ?Client
     {
         return $this->get('oro_oauth2_server.client_manager')->getClient($clientId);

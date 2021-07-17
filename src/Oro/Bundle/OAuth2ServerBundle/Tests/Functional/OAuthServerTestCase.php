@@ -52,14 +52,6 @@ class OAuthServerTestCase extends RestJsonApiTestCase
         return self::jsonToArray($response->getContent());
     }
 
-    /**
-     * @param string $method
-     * @param string $uri
-     * @param array  $parameters
-     * @param array  $server
-     *
-     * @return Response
-     */
     protected function sendRequest(string $method, string $uri, array $parameters = [], array $server = []): Response
     {
         $this->client->request($method, $uri, $parameters, [], $server);
@@ -70,9 +62,6 @@ class OAuthServerTestCase extends RestJsonApiTestCase
 
     /**
      * Asserts that lastUsedAt field have correct date.
-     *
-     * @param \DateTime $beginDatetime
-     * @param Client    $client
      */
     public static function assertClientLastUsedValueIsCorrect(\DateTime $beginDatetime, Client $client): void
     {

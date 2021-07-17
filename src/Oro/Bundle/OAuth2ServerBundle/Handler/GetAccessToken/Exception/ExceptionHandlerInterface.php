@@ -12,9 +12,6 @@ interface ExceptionHandlerInterface
 {
     /**
      * Handles exceptions occurred when getting of OAuth access token.
-     *
-     * @param ServerRequestInterface $request
-     * @param OAuthServerException   $exception
      */
     public function handle(ServerRequestInterface $request, OAuthServerException $exception): void;
 }

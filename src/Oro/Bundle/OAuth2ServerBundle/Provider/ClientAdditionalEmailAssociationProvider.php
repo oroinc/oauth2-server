@@ -25,12 +25,6 @@ class ClientAdditionalEmailAssociationProvider implements AdditionalEmailAssocia
     /** @var ManagerRegistry */
     private $doctrine;
 
-    /**
-     * @param array               $ownerEntityClasses
-     * @param TranslatorInterface $translator
-     * @param ConfigProvider      $entityConfigProvider
-     * @param ManagerRegistry     $doctrine
-     */
     public function __construct(
         array $ownerEntityClasses,
         TranslatorInterface $translator,
@@ -88,11 +82,6 @@ class ClientAdditionalEmailAssociationProvider implements AdditionalEmailAssocia
             ->find($entity->getOwnerEntityId());
     }
 
-    /**
-     * @param string $ownerEntityClass
-     *
-     * @return string
-     */
     private function getAssociationLabel(string $ownerEntityClass): string
     {
         return $this->entityConfigProvider->getConfig($ownerEntityClass)->get('label');

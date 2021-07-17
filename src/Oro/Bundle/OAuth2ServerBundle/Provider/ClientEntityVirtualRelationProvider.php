@@ -115,11 +115,6 @@ class ClientEntityVirtualRelationProvider implements VirtualRelationProviderInte
         return $fieldName;
     }
 
-    /**
-     * @param string $ownerEntityClass
-     *
-     * @return string
-     */
     private function getAssociationLabel(string $ownerEntityClass): string
     {
         return $this->entityConfigProvider->getConfig($ownerEntityClass)->get('label');

@@ -29,9 +29,6 @@ abstract class AbstractClientType extends AbstractType
     /** @var ClientOwnerOrganizationsProvider */
     private $organizationsProvider;
 
-    /**
-     * @param ClientOwnerOrganizationsProvider $organizationsProvider
-     */
     public function __construct(ClientOwnerOrganizationsProvider $organizationsProvider)
     {
         $this->organizationsProvider = $organizationsProvider;
@@ -117,8 +114,6 @@ abstract class AbstractClientType extends AbstractType
 
     /**
      * Adds organization field to a new client creation form if multi organization is supported.
-     *
-     * @param FormEvent $event
      */
     private function addOrganizationField(FormEvent $event): void
     {
@@ -150,8 +145,6 @@ abstract class AbstractClientType extends AbstractType
 
     /**
      * Adds read-only identifier field to an existing client edit form.
-     *
-     * @param FormEvent $event
      */
     private function addIdentifierField(FormEvent $event): void
     {
@@ -171,8 +164,6 @@ abstract class AbstractClientType extends AbstractType
 
     /**
      * Replaces grants field to read-only field for an existing client edit form.
-     *
-     * @param FormEvent $event
      */
     private function modifyGrantField(FormEvent $event): void
     {
@@ -241,8 +232,6 @@ abstract class AbstractClientType extends AbstractType
 
     /**
      * Adds the redirectUris field to form.
-     *
-     * @param FormEvent $event
      */
     private function addRedirectUrisField(FormEvent $event): void
     {

@@ -26,12 +26,6 @@ class OAuth2Listener implements ListenerInterface
     /** @var string */
     private $providerKey;
 
-    /**
-     * @param TokenStorageInterface          $tokenStorage
-     * @param AuthenticationManagerInterface $authenticationManager
-     * @param HttpMessageFactoryInterface    $httpMessageFactory
-     * @param string                         $providerKey
-     */
     public function __construct(
         TokenStorageInterface $tokenStorage,
         AuthenticationManagerInterface $authenticationManager,

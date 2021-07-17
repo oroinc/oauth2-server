@@ -85,7 +85,6 @@ class OAuth2ListenerTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider bearerAuthorizationHeaderDataProvider
-     * @param string $bearerAuthorizationHeader
      */
     public function testHandleWithCorrectAuthorizationHeader(string $bearerAuthorizationHeader)
     {

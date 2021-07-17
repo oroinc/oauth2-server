@@ -41,13 +41,6 @@ class OAuth2Provider implements AuthenticationProviderInterface
     /** @var ClientManager */
     private $clientManager;
 
-    /**
-     * @param UserProviderInterface           $userProvider
-     * @param string                          $providerKey
-     * @param AuthorizationValidatorInterface $authorizationValidator
-     * @param ManagerRegistry                 $doctrine
-     * @param UserCheckerInterface            $userChecker
-     */
     public function __construct(
         UserProviderInterface $userProvider,
         string $providerKey,
@@ -64,7 +57,6 @@ class OAuth2Provider implements AuthenticationProviderInterface
 
     /**
      * @deprecated
-     * @param ClientManager $clientManager
      */
     public function setClientManager(ClientManager $clientManager): void
     {

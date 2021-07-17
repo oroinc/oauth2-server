@@ -9,17 +9,11 @@ class ExtendedOrganization extends Organization
     /** @var bool */
     private $isGlobal;
 
-    /**
-     * @return bool
-     */
     public function getIsGlobal(): bool
     {
         return $this->isGlobal;
     }
 
-    /**
-     * @param bool $isGlobal
-     */
     public function setIsGlobal(bool $isGlobal): void
     {
         $this->isGlobal = $isGlobal;

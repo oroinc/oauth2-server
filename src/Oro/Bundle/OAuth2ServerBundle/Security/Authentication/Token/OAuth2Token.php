@@ -61,11 +61,6 @@ class OAuth2Token extends AbstractToken implements OrganizationAwareTokenInterfa
         return '';
     }
 
-    /**
-     * @param Organization $organization
-     *
-     * @return bool
-     */
     private function hasIsGlobalMethod(Organization $organization): bool
     {
         return method_exists($organization, 'getIsGlobal');

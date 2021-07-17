@@ -50,11 +50,6 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         $this->clientRepository->setClientManager($this->clientManager);
     }
 
-    /**
-     * @param bool $enabled
-     *
-     * @return Organization
-     */
     private function getOrganization(bool $enabled = true): Organization
     {
         $organization = new Organization();

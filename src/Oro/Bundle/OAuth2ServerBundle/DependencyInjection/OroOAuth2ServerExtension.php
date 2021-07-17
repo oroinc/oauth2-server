@@ -94,9 +94,6 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
         return self::ALIAS;
     }
 
-    /**
-     * @param ContainerBuilder $container
-     */
     private function configureSupportedClientOwners(ContainerBuilder $container): void
     {
         // add CustomerUser here to avoid creation of a bridge for the customer-portal package
@@ -111,9 +108,6 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
         }
     }
 
-    /**
-     * @param ContainerBuilder $container
-     */
     private function configureUserRepository(ContainerBuilder $container): void
     {
         // replace user and refresh token repositories with the repositories that can handle customer users here
@@ -134,10 +128,6 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
         }
     }
 
-    /**
-     * @param ContainerBuilder $container
-     * @param array            $config
-     */
     private function configureAuthorizationServer(ContainerBuilder $container, array $config): void
     {
         $container->getDefinition(self::PRIVATE_KEY_SERVICE)
@@ -205,21 +195,12 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
         $container->setParameter(self::CORS_ALLOW_ORIGINS_PARAM, $config['cors']['allow_origins']);
     }
 
-    /**
-     * @param ContainerBuilder $container
-     * @param array            $config
-     */
     private function configureResourceServer(ContainerBuilder $container, array $config): void
     {
         $container->getDefinition(self::PUBLIC_KEY_SERVICE)
             ->setArgument(0, $config['public_key']);
     }
 
-    /**
-     * @param int $lifetimeInSeconds
-     *
-     * @return string
-     */
     private function getTokenLifetime(int $lifetimeInSeconds): string
     {
         return sprintf('PT%dS', $lifetimeInSeconds);
@@ -262,17 +243,11 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
         }
     }
 
-    /**
-     * @return Definition
-     */
     private function getClientCredentialsGrant(): Definition
     {
         return new Definition(ClientCredentialsGrant::class);
     }
 
-    /**
-     * @return Definition
-     */
     private function getPasswordGrant(): Definition
     {
         return new Definition(PasswordGrant::class, [
@@ -281,9 +256,6 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
         ]);
     }
 
-    /**
-     * @return Definition
-     */
     private function getRefreshTokenGrant(): Definition
     {
         return new Definition(RefreshTokenGrant::class, [
@@ -291,11 +263,6 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
         ]);
     }
 
-    /**
-     * @param string $authCodeLifetime
-     *
-     * @return Definition
-     */
     private function getAuthCodeGrant(string $authCodeLifetime): Definition
     {
         return new Definition(AuthCodeGrant::class, [
@@ -305,9 +272,6 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
         ]);
     }
 
-    /**
-     * @param ExtendedContainerBuilder $container
-     */
     private function configureSecurityFirewalls(ExtendedContainerBuilder $container): void
     {
         $oauthFirewalls = [];
@@ -335,9 +299,6 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
         $container->setExtensionConfig('security', $securityConfigs);
     }
 
-    /**
-     * @param ExtendedContainerBuilder $container
-     */
     private function reconfigureLoginFirewalls(ExtendedContainerBuilder $container): void
     {
         $securityConfigs = $container->getExtensionConfig('security');

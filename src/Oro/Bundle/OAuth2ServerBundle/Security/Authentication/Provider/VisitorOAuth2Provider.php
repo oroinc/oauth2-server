@@ -22,14 +22,6 @@ class VisitorOAuth2Provider extends OAuth2Provider
     /** @var WebsiteManager */
     private $websiteManager;
 
-    /**
-     * @param UserProviderInterface           $userProvider
-     * @param string                          $providerKey
-     * @param AuthorizationValidatorInterface $authorizationValidator
-     * @param ManagerRegistry                 $doctrine
-     * @param UserCheckerInterface            $userChecker
-     * @param WebsiteManager                  $websiteManager
-     */
     public function __construct(
         UserProviderInterface $userProvider,
         string $providerKey,
@@ -65,9 +57,6 @@ class VisitorOAuth2Provider extends OAuth2Provider
         );
     }
 
-    /**
-     * @return array
-     */
     private function getVisitorRoles(): array
     {
         $currentWebsite = $this->websiteManager->getCurrentWebsite();

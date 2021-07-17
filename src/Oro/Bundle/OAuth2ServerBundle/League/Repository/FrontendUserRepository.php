@@ -26,13 +26,6 @@ class FrontendUserRepository extends UserRepository
     /** @var CustomerVisitorManager */
     private $customerVisitorManager;
 
-    /**
-     * @param UserLoaderInterface     $userLoader
-     * @param EncoderFactoryInterface $encoderFactory
-     * @param OAuthUserChecker        $userChecker
-     * @param UserLoaderInterface     $frontendUserLoader
-     * @param CustomerVisitorManager  $customerVisitorManager
-     */
     public function __construct(
         UserLoaderInterface $userLoader,
         EncoderFactoryInterface $encoderFactory,
@@ -74,11 +67,6 @@ class FrontendUserRepository extends UserRepository
         return parent::getUserEntityByUserCredentials($username, $password, $grantType, $clientEntity);
     }
 
-    /**
-     * @param ClientEntityInterface $clientEntity
-     *
-     * @return UserLoaderInterface
-     */
     protected function getUserLoader(ClientEntityInterface $clientEntity): UserLoaderInterface
     {
         if ($this->isFrontendClient($clientEntity)) {
@@ -88,11 +76,6 @@ class FrontendUserRepository extends UserRepository
         return parent::getUserLoader($clientEntity);
     }
 
-    /**
-     * @param ClientEntityInterface $clientEntity
-     *
-     * @return bool
-     */
     private function isFrontendClient(ClientEntityInterface $clientEntity): bool
     {
         return $clientEntity instanceof ClientEntity && $clientEntity->isFrontend();

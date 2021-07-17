@@ -10,9 +10,6 @@ use Symfony\Component\Security\Core\Authentication\Token\AbstractToken;
  */
 class FailedUserOAuth2Token extends AbstractToken
 {
-    /**
-     * @param string|null $user
-     */
     public function __construct(string $user = null)
     {
         $this->setUser($user);

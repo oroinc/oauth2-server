@@ -12,9 +12,6 @@ class SuccessHandler implements SuccessHandlerInterface
     /** @var SuccessHandlerInterface[] */
     private $handlers;
 
-    /**
-     * @param iterable $handlers
-     */
     public function __construct(iterable $handlers)
     {
         $this->handlers = $handlers;

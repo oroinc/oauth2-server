@@ -19,8 +19,6 @@ class AddRefreshTokenTable implements Migration
 
     /**
      * Create oro_oauth2_refresh_token table
-     *
-     * @param Schema $schema
      */
     protected function createRefreshTokenTable(Schema $schema)
     {
@@ -37,8 +35,6 @@ class AddRefreshTokenTable implements Migration
 
     /**
      * Add oro_oauth2_refresh_token foreign keys.
-     *
-     * @param Schema $schema
      */
     protected function addRefreshTokenForeignKeys(Schema $schema)
     {

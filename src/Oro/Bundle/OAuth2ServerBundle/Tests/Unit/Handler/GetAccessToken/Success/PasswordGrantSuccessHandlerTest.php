@@ -56,12 +56,6 @@ class PasswordGrantSuccessHandlerTest extends TestCase
         $this->backendUserLoader = $this->createMock(UserLoader::class);
     }
 
-    /**
-     * @param CustomerUserLoader|null $frontendUserLoader
-     * @param FrontendHelper|null $frontendHelper
-     *
-     * @return PasswordGrantSuccessHandler
-     */
     private function getHandler(
         CustomerUserLoader $frontendUserLoader = null,
         FrontendHelper $frontendHelper = null

@@ -13,9 +13,6 @@ class AuthorizeClientHandler implements AuthorizeClientHandlerInterface
     /** @var AuthorizeClientHandlerInterface[] */
     private $handlers;
 
-    /**
-     * @param iterable $handlers
-     */
     public function __construct(iterable $handlers)
     {
         $this->handlers = $handlers;

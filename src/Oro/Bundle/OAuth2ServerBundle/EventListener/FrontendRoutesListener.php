@@ -11,9 +11,6 @@ use Symfony\Component\Routing\Loader\YamlFileLoader;
  */
 class FrontendRoutesListener
 {
-    /**
-     * @param RouteCollectionEvent $event
-     */
     public function onCollectionAutoload(RouteCollectionEvent $event): void
     {
         $loader = new YamlFileLoader(new FileLocator(__DIR__ . '/../Resources/config'));

@@ -33,11 +33,6 @@ class AuthCodeRepository implements AuthCodeRepositoryInterface
     /** @var ClientManager */
     private $clientManager;
 
-    /**
-     * @param ManagerRegistry     $doctrine
-     * @param UserLoaderInterface $userLoader
-     * @param OAuthUserChecker    $userChecker
-     */
     public function __construct(
         ManagerRegistry $doctrine,
         UserLoaderInterface $userLoader,
@@ -50,7 +45,6 @@ class AuthCodeRepository implements AuthCodeRepositoryInterface
 
     /**
      * @deprecated
-     * @param ClientManager $clientManager
      */
     public function setClientManager(ClientManager $clientManager): void
     {
@@ -116,31 +110,16 @@ class AuthCodeRepository implements AuthCodeRepositoryInterface
         return $authCode->isRevoked();
     }
 
-    /**
-     * @param AuthCode $authCode
-     *
-     * @return UserLoaderInterface
-     */
     protected function getUserLoader(AuthCode $authCode): UserLoaderInterface
     {
         return $this->userLoader;
     }
 
-    /**
-     * @param UserLoaderInterface $userLoader
-     * @param string              $userIdentifier
-     */
     protected function checkUser(UserLoaderInterface $userLoader, string $userIdentifier): void
     {
         $this->userChecker->checkUser($userLoader->loadUser($userIdentifier));
     }
 
-    /**
-     * @param EntityManagerInterface $em
-     * @param string                 $codeId
-     *
-     * @return AuthCode|null
-     */
     private function findAuthCodeEntity(EntityManagerInterface $em, string $codeId): ?AuthCode
     {
         $authCode = $em->getRepository(AuthCode::class)->findOneBy(['identifier' => $codeId]);
@@ -155,20 +134,11 @@ class AuthCodeRepository implements AuthCodeRepositoryInterface
         return $authCode;
     }
 
-    /**
-     * @return EntityManagerInterface
-     */
     private function getEntityManager(): EntityManagerInterface
     {
         return $this->doctrine->getManagerForClass(AuthCode::class);
     }
 
-    /**
-     * @param EntityManagerInterface $em
-     * @param string $clientId
-     *
-     * @return Client
-     */
     private function getClientEntity(EntityManagerInterface $em, string $clientId): Client
     {
         return $this->clientManager->getClient($clientId);
