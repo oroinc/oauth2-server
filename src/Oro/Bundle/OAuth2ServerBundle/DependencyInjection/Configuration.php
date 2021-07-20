@@ -23,9 +23,6 @@ class Configuration implements ConfigurationInterface
         return $treeBuilder;
     }
 
-    /**
-     * @param NodeBuilder $builder
-     */
     private function appendAuthorizationServer(NodeBuilder $builder): void
     {
         $children = $builder
@@ -94,9 +91,6 @@ class Configuration implements ConfigurationInterface
             ->end();
     }
 
-    /**
-     * @param NodeBuilder $builder
-     */
     private function appendResourceServer(NodeBuilder $builder): void
     {
         $children = $builder

@@ -12,10 +12,6 @@ class VisitorIdentifierUtil
 
     /**
      * Checks whether the given string represents a visitor identifier.
-     *
-     * @param string $identifier
-     *
-     * @return bool
      */
     public static function isVisitorIdentifier(string $identifier): bool
     {
@@ -24,11 +20,6 @@ class VisitorIdentifierUtil
 
     /**
      * Gets a string that represents an encoded identifier of the given visitor.
-     *
-     * @param int    $visitorId
-     * @param string $visitorSessionId
-     *
-     * @return string
      */
     public static function encodeIdentifier(int $visitorId, string $visitorSessionId): string
     {

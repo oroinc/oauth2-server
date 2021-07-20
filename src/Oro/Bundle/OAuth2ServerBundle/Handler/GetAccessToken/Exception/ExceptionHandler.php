@@ -13,9 +13,6 @@ class ExceptionHandler implements ExceptionHandlerInterface
     /** @var ExceptionHandlerInterface[] */
     private $handlers;
 
-    /**
-     * @param iterable $handlers
-     */
     public function __construct(iterable $handlers)
     {
         $this->handlers = $handlers;

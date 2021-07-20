@@ -21,10 +21,6 @@ class LogAuthorizeClientHandler implements AuthorizeClientHandlerInterface
     /** @var UserLoggingInfoProvider */
     private $infoProvider;
 
-    /**
-     * @param LoggerInterface         $logger
-     * @param UserLoggingInfoProvider $infoProvider
-     */
     public function __construct(LoggerInterface $logger, UserLoggingInfoProvider $infoProvider)
     {
         $this->logger = $logger;

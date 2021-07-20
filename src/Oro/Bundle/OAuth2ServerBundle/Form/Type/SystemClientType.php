@@ -22,10 +22,6 @@ class SystemClientType extends AbstractClientType
     /** @var ManagerRegistry */
     private $doctrine;
 
-    /**
-     * @param ClientOwnerOrganizationsProvider $organizationsProvider
-     * @param ManagerRegistry                  $doctrine
-     */
     public function __construct(ClientOwnerOrganizationsProvider $organizationsProvider, ManagerRegistry $doctrine)
     {
         parent::__construct($organizationsProvider);
@@ -54,8 +50,6 @@ class SystemClientType extends AbstractClientType
 
     /**
      * Adds owner field to form.
-     *
-     * @param FormEvent $event
      */
     private function addOwnerEntityField(FormEvent $event): void
     {
@@ -88,8 +82,6 @@ class SystemClientType extends AbstractClientType
 
     /**
      * Sets the owner information to the client entity.
-     *
-     * @param FormEvent $event
      */
     private function setOwnerValue(FormEvent $event): void
     {

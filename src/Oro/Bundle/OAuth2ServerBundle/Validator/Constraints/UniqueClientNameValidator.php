@@ -20,9 +20,6 @@ class UniqueClientNameValidator extends ConstraintValidator
     /** @var ManagerRegistry */
     private $doctrine;
 
-    /**
-     * @param ManagerRegistry $doctrine
-     */
     public function __construct(ManagerRegistry $doctrine)
     {
         $this->doctrine = $doctrine;
@@ -68,16 +65,6 @@ class UniqueClientNameValidator extends ConstraintValidator
         }
     }
 
-    /**
-     * @param Organization $organization
-     * @param string       $name
-     * @param bool         $isFrontend
-     * @param string|null  $ownerEntityClass
-     * @param int|null     $ownerEntityId
-     * @param int|null     $id
-     *
-     * @return bool
-     */
     private function isClientExist(
         Organization $organization,
         string $name,
@@ -111,9 +98,6 @@ class UniqueClientNameValidator extends ConstraintValidator
         return !empty($rows);
     }
 
-    /**
-     * @return EntityManagerInterface
-     */
     private function getEntityManager(): EntityManagerInterface
     {
         return $this->doctrine->getManagerForClass(Client::class);

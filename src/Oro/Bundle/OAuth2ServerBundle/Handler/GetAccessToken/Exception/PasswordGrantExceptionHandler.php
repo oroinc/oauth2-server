@@ -39,11 +39,6 @@ class PasswordGrantExceptionHandler implements ExceptionHandlerInterface
     /** @var FrontendHelper|null */
     private $frontendHelper;
 
-    /**
-     * @param EventDispatcherInterface $eventDispatcher
-     * @param ManagerRegistry          $doctrine
-     * @param FrontendHelper|null      $frontendHelper
-     */
     public function __construct(
         EventDispatcherInterface $eventDispatcher,
         ManagerRegistry $doctrine,
@@ -56,7 +51,6 @@ class PasswordGrantExceptionHandler implements ExceptionHandlerInterface
 
     /**
      * @deprecated
-     * @param ClientManager $clientManager
      */
     public function setClientManager(ClientManager $clientManager): void
     {
@@ -90,11 +84,6 @@ class PasswordGrantExceptionHandler implements ExceptionHandlerInterface
         }
     }
 
-    /**
-     * @param \Exception $exception
-     *
-     * @return AuthenticationException
-     */
     private function getEventException(\Exception $exception): AuthenticationException
     {
         $exceptionCode = $exception->getCode();
@@ -117,9 +106,6 @@ class PasswordGrantExceptionHandler implements ExceptionHandlerInterface
         return $authenticationException;
     }
 
-    /**
-     * @param array $parameters
-     */
     private function emulateRequestInFrontendHelper(array $parameters): void
     {
         if ($this->frontendHelper) {

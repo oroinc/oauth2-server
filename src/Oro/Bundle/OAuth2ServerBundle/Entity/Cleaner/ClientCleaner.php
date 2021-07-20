@@ -52,9 +52,6 @@ class ClientCleaner
         }
     }
 
-    /**
-     * @return EntityManagerInterface
-     */
     private function getEntityManager(): EntityManagerInterface
     {
         return $this->doctrine->getManagerForClass(Client::class);

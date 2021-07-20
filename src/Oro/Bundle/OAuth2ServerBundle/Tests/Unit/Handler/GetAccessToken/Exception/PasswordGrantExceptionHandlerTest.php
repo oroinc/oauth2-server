@@ -39,8 +39,6 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @deprecated
-     * @param string $identifier
-     * @param Client $client
      */
     private function mockDoctrine(string $identifier, Client $client): void
     {
@@ -48,10 +46,6 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
             ->method('getRepository');
     }
 
-    /**
-     * @param string $identifier
-     * @param Client $client
-     */
     private function mockClientManager(string $identifier, Client $client): void
     {
         $this->clientManager->expects(self::once())

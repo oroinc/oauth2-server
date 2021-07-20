@@ -14,17 +14,11 @@ class InitializeClientEntityListener
     /** @var ClientManager */
     private $clientManager;
 
-    /**
-     * @param ClientManager $clientManager
-     */
     public function __construct(ClientManager $clientManager)
     {
         $this->clientManager = $clientManager;
     }
 
-    /**
-     * @param FormProcessEvent $event
-     */
     public function updateClient(FormProcessEvent $event): void
     {
         $this->clientManager->updateClient($event->getData(), false);

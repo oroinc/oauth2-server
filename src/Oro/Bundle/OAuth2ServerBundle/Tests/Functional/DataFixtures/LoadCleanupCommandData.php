@@ -138,11 +138,6 @@ class LoadCleanupCommandData extends AbstractFixture implements ContainerAwareIn
         $manager->flush();
     }
 
-    /**
-     * @param string $key
-     *
-     * @return User
-     */
     private function createUser(string $key): User
     {
         $user = new User();
@@ -158,13 +153,6 @@ class LoadCleanupCommandData extends AbstractFixture implements ContainerAwareIn
         return $user;
     }
 
-    /**
-     * @param string $identifier
-     * @param string $ownerEntityClass
-     * @param int    $ownerEntityId
-     *
-     * @return Client
-     */
     private function createClient(string $identifier, string $ownerEntityClass, int $ownerEntityId): Client
     {
         $client = new Client();
@@ -179,25 +167,11 @@ class LoadCleanupCommandData extends AbstractFixture implements ContainerAwareIn
         return $client;
     }
 
-    /**
-     * @param Client    $client
-     * @param string    $identifier
-     * @param \DateTime $expiresAt
-     *
-     * @return AccessToken
-     */
     private function createAccessToken(Client $client, string $identifier, \DateTime $expiresAt): AccessToken
     {
         return new AccessToken($identifier, $expiresAt, ['all'], $client);
     }
 
-    /**
-     * @param string      $identifier
-     * @param \DateTime   $expiresAt
-     * @param AccessToken $accessToken
-     *
-     * @return RefreshToken
-     */
     private function createRefreshToken(
         string $identifier,
         \DateTime $expiresAt,
@@ -206,13 +180,6 @@ class LoadCleanupCommandData extends AbstractFixture implements ContainerAwareIn
         return new RefreshToken($identifier, $expiresAt, $accessToken);
     }
 
-    /**
-     * @param Client    $client
-     * @param string    $identifier
-     * @param \DateTime $expiresAt
-     *
-     * @return AuthCode
-     */
     private function createAuthCode(Client $client, string $identifier, \DateTime $expiresAt): AuthCode
     {
         return new AuthCode($identifier, $expiresAt, ['all'], $client, 'test');

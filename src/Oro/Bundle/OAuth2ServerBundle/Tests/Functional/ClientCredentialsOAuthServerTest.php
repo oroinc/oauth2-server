@@ -21,12 +21,6 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
         $this->loadFixtures([LoadClientCredentialsClient::class]);
     }
 
-    /**
-     * @param int   $expectedStatusCode
-     * @param array $server
-     *
-     * @return Response
-     */
     private function sendAccessTokenRequest(int $expectedStatusCode = Response::HTTP_OK, array $server = []): Response
     {
         $response = $this->sendRequest(
@@ -50,9 +44,6 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
         return $response;
     }
 
-    /**
-     * @return string
-     */
     private function getBearerAuthHeaderValue(): string
     {
         $response = $this->sendAccessTokenRequest();

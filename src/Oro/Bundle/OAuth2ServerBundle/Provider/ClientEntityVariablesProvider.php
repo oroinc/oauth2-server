@@ -69,9 +69,6 @@ class ClientEntityVariablesProvider implements EntityVariablesProviderInterface
         return [];
     }
 
-    /**
-     * @return array
-     */
     private function getClientEntityVariableDefinitions(): array
     {
         $result = [];
@@ -86,9 +83,6 @@ class ClientEntityVariablesProvider implements EntityVariablesProviderInterface
         return $result;
     }
 
-    /**
-     * @return array
-     */
     private function getClientEntityVariableProcessors(): array
     {
         $result = [];
@@ -102,9 +96,6 @@ class ClientEntityVariablesProvider implements EntityVariablesProviderInterface
         return $result;
     }
 
-    /**
-     * @return array
-     */
     private function getClientEntityVariableGetters(): array
     {
         return [
@@ -120,11 +111,6 @@ class ClientEntityVariablesProvider implements EntityVariablesProviderInterface
         ];
     }
 
-    /**
-     * @param string $ownerEntityClass
-     *
-     * @return string
-     */
     private function getVariableLabel(string $ownerEntityClass): string
     {
         return $this->entityConfigProvider->getConfig($ownerEntityClass)->get('label');

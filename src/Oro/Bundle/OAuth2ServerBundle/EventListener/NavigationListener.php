@@ -22,11 +22,6 @@ class NavigationListener
     /** @var ApiFeatureChecker */
     private $featureChecker;
 
-    /**
-     * @param AuthorizationCheckerInterface $authorizationChecker
-     * @param TokenAccessorInterface        $tokenAccessor
-     * @param ApiFeatureChecker             $featureChecker
-     */
     public function __construct(
         AuthorizationCheckerInterface $authorizationChecker,
         TokenAccessorInterface $tokenAccessor,
@@ -37,9 +32,6 @@ class NavigationListener
         $this->featureChecker = $featureChecker;
     }
 
-    /**
-     * @param ConfigureMenuEvent $event
-     */
     public function onNavigationConfigure(ConfigureMenuEvent $event)
     {
         if (!class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')

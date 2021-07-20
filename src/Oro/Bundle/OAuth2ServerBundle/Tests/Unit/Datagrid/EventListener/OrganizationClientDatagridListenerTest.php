@@ -63,10 +63,6 @@ class OrganizationClientDatagridListenerTest extends \PHPUnit\Framework\TestCase
             ->getMock();
     }
 
-    /**
-     * @param Datagrid        $datagrid
-     * @param ArrayCollection $queryParameters
-     */
     private function setDatasource(Datagrid $datagrid, ArrayCollection $queryParameters)
     {
         $datasource = $this->createMock(OrmDatasource::class);

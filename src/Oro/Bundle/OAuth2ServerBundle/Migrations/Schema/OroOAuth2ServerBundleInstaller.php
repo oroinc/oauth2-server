@@ -36,8 +36,6 @@ class OroOAuth2ServerBundleInstaller implements Installation
 
     /**
      * Create oro_oauth2_client table
-     *
-     * @param Schema $schema
      */
     protected function createClientTable(Schema $schema)
     {
@@ -66,8 +64,6 @@ class OroOAuth2ServerBundleInstaller implements Installation
 
     /**
      * Create oro_oauth2_access_token table
-     *
-     * @param Schema $schema
      */
     protected function createAccessTokenTable(Schema $schema)
     {
@@ -86,8 +82,6 @@ class OroOAuth2ServerBundleInstaller implements Installation
 
     /**
      * Create oro_oauth2_refresh_token table
-     *
-     * @param Schema $schema
      */
     protected function createRefreshTokenTable(Schema $schema)
     {
@@ -104,8 +98,6 @@ class OroOAuth2ServerBundleInstaller implements Installation
 
     /**
      * Create oro_oauth2_auth_code table
-     *
-     * @param Schema $schema
      */
     protected function createAuthCodeTable(Schema $schema)
     {
@@ -124,8 +116,6 @@ class OroOAuth2ServerBundleInstaller implements Installation
 
     /**
      * Add oro_oauth2_client foreign keys.
-     *
-     * @param Schema $schema
      */
     protected function addClientForeignKeys(Schema $schema)
     {
@@ -140,8 +130,6 @@ class OroOAuth2ServerBundleInstaller implements Installation
 
     /**
      * Add oro_oauth2_access_token foreign keys.
-     *
-     * @param Schema $schema
      */
     protected function addAccessTokenForeignKeys(Schema $schema)
     {
@@ -156,8 +144,6 @@ class OroOAuth2ServerBundleInstaller implements Installation
 
     /**
      * Add oro_oauth2_refresh_token foreign keys.
-     *
-     * @param Schema $schema
      */
     protected function addRefreshTokenForeignKeys(Schema $schema)
     {
@@ -172,8 +158,6 @@ class OroOAuth2ServerBundleInstaller implements Installation
 
     /**
      * Add oro_oauth2_auth_code foreign keys.
-     *
-     * @param Schema $schema
      */
     protected function addAuthCodeForeignKeys(Schema $schema)
     {

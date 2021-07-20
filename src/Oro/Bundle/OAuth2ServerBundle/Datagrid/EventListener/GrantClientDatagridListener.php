@@ -12,9 +12,6 @@ use Oro\Bundle\DataGridBundle\Event\BuildBefore;
  */
 class GrantClientDatagridListener
 {
-    /**
-     * @param BuildBefore $event
-     */
     public function onBuildBefore(BuildBefore $event): void
     {
         $parameters = $event->getDatagrid()->getParameters();
@@ -24,9 +21,6 @@ class GrantClientDatagridListener
         }
     }
 
-    /**
-     * @param BuildAfter $event
-     */
     public function onBuildAfter(BuildAfter $event): void
     {
         $datagrid = $event->getDatagrid();
@@ -36,9 +30,6 @@ class GrantClientDatagridListener
         }
     }
 
-    /**
-     * @param DatagridConfiguration $config
-     */
     private function addGrantColumn(DatagridConfiguration $config): void
     {
         $config->offsetSetByPath(

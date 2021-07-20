@@ -55,11 +55,6 @@ class RefreshToken
      */
     private $revoked = false;
 
-    /**
-     * @param string      $identifier
-     * @param \DateTime   $expiresAt
-     * @param AccessToken $accessToken
-     */
     public function __construct(
         string $identifier,
         \DateTime $expiresAt,
@@ -72,8 +67,6 @@ class RefreshToken
 
     /**
      * Gets the entity identifier.
-     *
-     * @return int
      */
     public function getId(): int
     {
@@ -82,8 +75,6 @@ class RefreshToken
 
     /**
      * Gets a string that unique identifies the token.
-     *
-     * @return string
      */
     public function getIdentifier(): string
     {
@@ -92,8 +83,6 @@ class RefreshToken
 
     /**
      * Gets the date when the token expires.
-     *
-     * @return \DateTime
      */
     public function getExpiresAt(): \DateTime
     {
@@ -102,8 +91,6 @@ class RefreshToken
 
     /**
      * Gets the access token this refresh token belongs to.
-     *
-     * @return AccessToken
      */
     public function getAccessToken(): AccessToken
     {
@@ -112,8 +99,6 @@ class RefreshToken
 
     /**
      * Indicates whether the token has been revoked or not.
-     *
-     * @return bool
      */
     public function isRevoked(): bool
     {

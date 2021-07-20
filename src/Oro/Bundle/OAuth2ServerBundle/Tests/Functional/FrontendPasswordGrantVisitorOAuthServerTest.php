@@ -30,13 +30,6 @@ class FrontendPasswordGrantVisitorOAuthServerTest extends OAuthServerTestCase
         ]);
     }
 
-    /**
-     * @param string $userName
-     * @param string $password
-     * @param int    $expectedStatusCode
-     *
-     * @return array
-     */
     private function sendFrontendPasswordAccessTokenRequest(
         string $userName = 'guest',
         string $password = 'guest',

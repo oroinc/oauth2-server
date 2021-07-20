@@ -31,11 +31,6 @@ class ClientRepository implements ClientRepositoryInterface
     /** @var ClientManager */
     private $clientManager;
 
-    /**
-     * @param ManagerRegistry         $doctrine
-     * @param EncoderFactoryInterface $encoderFactory
-     * @param ApiFeatureChecker       $featureChecker
-     */
     public function __construct(
         ManagerRegistry $doctrine,
         EncoderFactoryInterface $encoderFactory,
@@ -48,7 +43,6 @@ class ClientRepository implements ClientRepositoryInterface
 
     /**
      * @deprecated
-     * @param ClientManager $clientManager
      */
     public function setClientManager(ClientManager $clientManager): void
     {
@@ -105,21 +99,11 @@ class ClientRepository implements ClientRepositoryInterface
         return true;
     }
 
-    /**
-     * @param string $clientId
-     *
-     * @return Client|null
-     */
     private function getClient(string $clientId): ?Client
     {
         return $this->clientManager->getClient($clientId);
     }
 
-    /**
-     * @param Client $client
-     *
-     * @return bool
-     */
     private function isClientEnabled(Client $client): bool
     {
         return
@@ -128,12 +112,6 @@ class ClientRepository implements ClientRepositoryInterface
             && $client->getOrganization()->isEnabled();
     }
 
-    /**
-     * @param Client      $client
-     * @param string|null $grant
-     *
-     * @return bool
-     */
     private function isGrantSupported(Client $client, ?string $grant): bool
     {
         if (null === $grant) {
@@ -159,12 +137,6 @@ class ClientRepository implements ClientRepositoryInterface
         return \in_array($grant, $grants, true);
     }
 
-    /**
-     * @param Client      $client
-     * @param string|null $clientSecret
-     *
-     * @return bool
-     */
     private function isPasswordValid(Client $client, ?string $clientSecret): bool
     {
         return $this->encoderFactory

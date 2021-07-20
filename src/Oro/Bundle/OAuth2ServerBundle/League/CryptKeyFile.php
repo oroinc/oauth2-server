@@ -10,9 +10,6 @@ class CryptKeyFile
     /** @var string */
     private $keyPath;
 
-    /**
-     * @param string $keyPath
-     */
     public function __construct(string $keyPath)
     {
         $this->keyPath = $keyPath;
@@ -20,8 +17,6 @@ class CryptKeyFile
 
     /**
      * Gets the path to the crypt key file.
-     *
-     * @return string
      */
     public function getKeyPath(): string
     {

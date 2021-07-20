@@ -57,9 +57,6 @@ class AddClientsToViewPageListener
         $this->featureChecker = $featureChecker;
     }
 
-    /**
-     * @param BeforeViewRenderEvent $event
-     */
     public function addOAuth2Clients(BeforeViewRenderEvent $event): void
     {
         if (!$this->clientManager->isViewGranted()) {

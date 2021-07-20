@@ -19,10 +19,6 @@ class OAuthUserChecker
     /** @var TranslatorInterface */
     private $translator;
 
-    /**
-     * @param UserCheckerInterface $userChecker
-     * @param TranslatorInterface  $translator
-     */
     public function __construct(UserCheckerInterface $userChecker, TranslatorInterface $translator)
     {
         $this->userChecker = $userChecker;
@@ -31,8 +27,6 @@ class OAuthUserChecker
 
     /**
      * Checks whether the given user can log in to the system.
-     *
-     * @param UserInterface $user
      *
      * @throws OAuthServerException if the given user cannot log in to the system
      */

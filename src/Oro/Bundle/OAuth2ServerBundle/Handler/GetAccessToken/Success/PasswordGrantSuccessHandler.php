@@ -49,15 +49,6 @@ class PasswordGrantSuccessHandler implements SuccessHandlerInterface
     /** @var FrontendHelper */
     private $frontendHelper;
 
-    /**
-     * @param EventDispatcherInterface $eventDispatcher
-     * @param RequestStack             $requestStack
-     * @param ManagerRegistry          $doctrine
-     * @param TokenStorageInterface    $tokenStorage
-     * @param UserLoader               $backendUserLoader
-     * @param CustomerUserLoader|null  $frontendUserLoader
-     * @param FrontendHelper|null      $frontendHelper
-     */
     public function __construct(
         EventDispatcherInterface $eventDispatcher,
         RequestStack $requestStack,
@@ -78,7 +69,6 @@ class PasswordGrantSuccessHandler implements SuccessHandlerInterface
 
     /**
      * @deprecated
-     * @param ClientManager $clientManager
      */
     public function setClientManager(ClientManager $clientManager): void
     {
