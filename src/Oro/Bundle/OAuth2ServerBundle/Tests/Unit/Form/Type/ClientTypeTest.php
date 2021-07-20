@@ -92,12 +92,6 @@ class ClientTypeTest extends TypeTestCase
         ];
     }
 
-    /**
-     * @param Client $client
-     * @param array  $options
-     *
-     * @return FormInterface
-     */
     private function createClientType(Client $client, array $options = []): FormInterface
     {
         return $this->factory->create(ClientType::class, $client, $options);

@@ -11,8 +11,6 @@ interface SuccessHandlerInterface
 {
     /**
      * Handles successfully processed getting of OAuth access token.
-     *
-     * @param ServerRequestInterface $request
      */
     public function handle(ServerRequestInterface $request): void;
 }

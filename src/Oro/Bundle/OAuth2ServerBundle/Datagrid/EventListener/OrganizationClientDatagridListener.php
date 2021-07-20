@@ -17,17 +17,11 @@ class OrganizationClientDatagridListener
     /** @var ClientOwnerOrganizationsProvider */
     private $organizationsProvider;
 
-    /**
-     * @param ClientOwnerOrganizationsProvider $organizationsProvider
-     */
     public function __construct(ClientOwnerOrganizationsProvider $organizationsProvider)
     {
         $this->organizationsProvider = $organizationsProvider;
     }
 
-    /**
-     * @param BuildBefore $event
-     */
     public function onBuildBefore(BuildBefore $event): void
     {
         if (!$this->organizationsProvider->isMultiOrganizationSupported()) {
@@ -40,9 +34,6 @@ class OrganizationClientDatagridListener
             ->addAndWhere('org.id IN (:organizationIds)');
     }
 
-    /**
-     * @param BuildAfter $event
-     */
     public function onBuildAfter(BuildAfter $event): void
     {
         if (!$this->organizationsProvider->isMultiOrganizationSupported()) {

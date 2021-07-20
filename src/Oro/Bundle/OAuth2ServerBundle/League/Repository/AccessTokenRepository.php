@@ -24,10 +24,6 @@ class AccessTokenRepository implements AccessTokenRepositoryInterface
     /** @var ClientManager */
     private $clientManager;
 
-    /**
-     * @param ManagerRegistry $doctrine
-     * @param ClientManager   $clientManager
-     */
     public function __construct(ManagerRegistry $doctrine, ClientManager $clientManager)
     {
         $this->doctrine = $doctrine;
@@ -108,9 +104,6 @@ class AccessTokenRepository implements AccessTokenRepositoryInterface
         return $accessToken->isRevoked();
     }
 
-    /**
-     * @return EntityManagerInterface
-     */
     private function getEntityManager(): EntityManagerInterface
     {
         return $this->doctrine->getManagerForClass(AccessToken::class);

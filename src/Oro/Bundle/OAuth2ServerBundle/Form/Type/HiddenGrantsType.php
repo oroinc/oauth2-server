@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Oro\Bundle\OAuth2ServerBundle\Form\Type;
 
 use Oro\Bundle\OAuth2ServerBundle\Form\Transformer\GrantTypeTransformer;

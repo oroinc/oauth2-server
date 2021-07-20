@@ -16,9 +16,6 @@ class AccessTokenCleaner
     /** @var ManagerRegistry */
     private $doctrine;
 
-    /**
-     * @param ManagerRegistry $doctrine
-     */
     public function __construct(ManagerRegistry $doctrine)
     {
         $this->doctrine = $doctrine;
@@ -43,9 +40,6 @@ class AccessTokenCleaner
         $qb->getQuery()->execute();
     }
 
-    /**
-     * @return EntityManagerInterface
-     */
     private function getEntityManager(): EntityManagerInterface
     {
         return $this->doctrine->getManagerForClass(AccessToken::class);

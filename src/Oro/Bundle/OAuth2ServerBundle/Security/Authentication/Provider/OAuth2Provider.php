@@ -41,14 +41,6 @@ class OAuth2Provider implements AuthenticationProviderInterface
     /** @var ClientManager */
     private $clientManager;
 
-    /**
-     * @param UserProviderInterface           $userProvider
-     * @param string                          $providerKey
-     * @param AuthorizationValidatorInterface $authorizationValidator
-     * @param ManagerRegistry                 $doctrine
-     * @param UserCheckerInterface            $userChecker
-     * @param ClientManager                   $clientManager
-     */
     public function __construct(
         UserProviderInterface $userProvider,
         string $providerKey,

@@ -23,9 +23,6 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
         $this->loadFixtures([LoadPasswordGrantClient::class, LoadUser::class]);
     }
 
-    /**
-     * @return string
-     */
     private function getBearerAuthHeaderValue(): string
     {
         /** @var User $user */
@@ -452,13 +449,6 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
         );
     }
 
-    /**
-     * @param string $userName
-     * @param string $password
-     * @param int    $expectedStatusCode
-     *
-     * @return array
-     */
     private function sendPasswordAccessTokenRequest(
         string $userName,
         string $password,
@@ -476,12 +466,6 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
         );
     }
 
-    /**
-     * @param string $token
-     * @param int    $expectedStatusCode
-     *
-     * @return array
-     */
     private function sendRefreshAccessTokenRequest(string $token, int $expectedStatusCode = Response::HTTP_OK): array
     {
         return $this->sendTokenRequest(

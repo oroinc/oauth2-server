@@ -22,10 +22,6 @@ class AuthorizationTokenController extends AbstractController
 {
     /**
      * Gets OAuth 2.0 access token.
-     *
-     * @param ServerRequestInterface $serverRequest
-     *
-     * @return ResponseInterface
      */
     public function tokenAction(ServerRequestInterface $serverRequest): ResponseInterface
     {
@@ -52,10 +48,6 @@ class AuthorizationTokenController extends AbstractController
 
     /**
      * Handles OPTIONS HTTP method for OAuth 2.0 access token endpoint.
-     *
-     * @param SymfonyRequest $request
-     *
-     * @return SymfonyResponse
      */
     public function optionsAction(SymfonyRequest $request): SymfonyResponse
     {
@@ -87,11 +79,6 @@ class AuthorizationTokenController extends AbstractController
         return $response;
     }
 
-    /**
-     * @param SymfonyRequest $request
-     *
-     * @return bool
-     */
     private function isCorsRequest(SymfonyRequest $request): bool
     {
         return
@@ -99,11 +86,6 @@ class AuthorizationTokenController extends AbstractController
             && $request->headers->get('Origin') !== $request->getSchemeAndHttpHost();
     }
 
-    /**
-     * @param ServerRequestInterface $request
-     *
-     * @return bool
-     */
     private function isCorsTokenRequest(ServerRequestInterface $request): bool
     {
         return
@@ -111,11 +93,6 @@ class AuthorizationTokenController extends AbstractController
             && $this->getTokenRequestOrigin($request) !== $this->getTokenRequestSchemeAndHttpHost($request);
     }
 
-    /**
-     * @param ServerRequestInterface $request
-     *
-     * @return string
-     */
     private function getTokenRequestOrigin(ServerRequestInterface $request): string
     {
         $value = $request->getHeader('Origin');
@@ -123,11 +100,6 @@ class AuthorizationTokenController extends AbstractController
         return reset($value);
     }
 
-    /**
-     * @param ServerRequestInterface $request
-     *
-     * @return string
-     */
     private function getTokenRequestSchemeAndHttpHost(ServerRequestInterface $request): string
     {
         $uri = $request->getUri();
@@ -140,19 +112,11 @@ class AuthorizationTokenController extends AbstractController
         return $result;
     }
 
-    /**
-     * @param string $origin
-     *
-     * @return bool
-     */
     private function isAllowedOrigin(string $origin): bool
     {
         return \in_array($origin, $this->getParameter('oro_oauth2_server.cors.allow_origins'), true);
     }
 
-    /**
-     * @return AuthorizationServer
-     */
     private function getAuthorizationServer(): AuthorizationServer
     {
         try {
@@ -164,9 +128,6 @@ class AuthorizationTokenController extends AbstractController
         }
     }
 
-    /**
-     * @return LoggerInterface
-     */
     private function getLogger(): LoggerInterface
     {
         return $this->get(LoggerInterface::class);

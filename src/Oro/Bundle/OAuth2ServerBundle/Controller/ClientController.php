@@ -77,10 +77,6 @@ class ClientController extends AbstractController
      *     defaults={"type": "frontend"}
      * )
      * @Template("@OroOAuth2Server/Client/index.html.twig")
-     *
-     * @param string $type
-     *
-     * @return array
      */
     public function indexAction(string $type): array
     {
@@ -303,10 +299,6 @@ class ClientController extends AbstractController
      *     requirements={"id"="\d+"}
      * )
      * @CsrfProtection()
-     *
-     * @param Client $entity
-     *
-     * @return Response
      */
     public function deleteAction(Client $entity): Response
     {
@@ -328,10 +320,6 @@ class ClientController extends AbstractController
      *     requirements={"id"="\d+"}
      * )
      * @CsrfProtection()
-     *
-     * @param Client $entity
-     *
-     * @return Response
      */
     public function activateAction(Client $entity): Response
     {
@@ -351,10 +339,6 @@ class ClientController extends AbstractController
      *     requirements={"id"="\d+"}
      * )
      * @CsrfProtection()
-     *
-     * @param Client $entity
-     *
-     * @return Response
      */
     public function deactivateAction(Client $entity): Response
     {
@@ -463,25 +447,16 @@ class ClientController extends AbstractController
         };
     }
 
-    /**
-     * @return ClientManager
-     */
     private function getClientManager(): ClientManager
     {
         return $this->get(ClientManager::class);
     }
 
-    /**
-     * @return TranslatorInterface
-     */
     private function getTranslator(): TranslatorInterface
     {
         return $this->container->get(TranslatorInterface::class);
     }
 
-    /**
-     * @param Client $entity
-     */
     private function checkClientEnabled(Client $entity): void
     {
         if (!$this->featureChecker->isEnabledByClient($entity)) {
@@ -489,9 +464,6 @@ class ClientController extends AbstractController
         }
     }
 
-    /**
-     * @param Client $entity
-     */
     private function checkModificationAccess(Client $entity): void
     {
         if (!$this->getClientManager()->isModificationGranted($entity)) {
@@ -499,9 +471,6 @@ class ClientController extends AbstractController
         }
     }
 
-    /**
-     * @param string $type
-     */
     private function checkTypeEnabled(string $type): void
     {
         if ($type === 'frontend') {
@@ -515,10 +484,6 @@ class ClientController extends AbstractController
         }
     }
 
-    /**
-     * @param Client $client
-     * @param string $type
-     */
     private function checkClientApplicableForType(Client $client, string $type): void
     {
         $isFrontend = $type === 'frontend';
@@ -527,9 +492,6 @@ class ClientController extends AbstractController
         }
     }
 
-    /**
-     * @return bool
-     */
     private function isEncryptionKeysExist(): bool
     {
         $encryptionKeysExistenceChecker = $this->get(EncryptionKeysExistenceChecker::class);

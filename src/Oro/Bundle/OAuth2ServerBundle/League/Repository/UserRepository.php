@@ -24,11 +24,6 @@ class UserRepository implements UserRepositoryInterface
     /** @var OAuthUserChecker */
     private $userChecker;
 
-    /**
-     * @param UserLoaderInterface     $userLoader
-     * @param EncoderFactoryInterface $encoderFactory
-     * @param OAuthUserChecker        $userChecker
-     */
     public function __construct(
         UserLoaderInterface $userLoader,
         EncoderFactoryInterface $encoderFactory,
@@ -65,11 +60,6 @@ class UserRepository implements UserRepositoryInterface
         return $userEntity;
     }
 
-    /**
-     * @param ClientEntityInterface $clientEntity
-     *
-     * @return UserLoaderInterface
-     */
     protected function getUserLoader(ClientEntityInterface $clientEntity): UserLoaderInterface
     {
         return $this->userLoader;

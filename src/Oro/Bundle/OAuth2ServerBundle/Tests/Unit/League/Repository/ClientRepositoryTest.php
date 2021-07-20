@@ -41,11 +41,6 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         );
     }
 
-    /**
-     * @param bool $enabled
-     *
-     * @return Organization
-     */
     private function getOrganization(bool $enabled = true): Organization
     {
         $organization = new Organization();

@@ -18,10 +18,6 @@ class VisitorUserProvider implements UserProviderInterface
     /** @var CustomerVisitorManager */
     private $customerVisitorManager;
 
-    /**
-     * @param UserProviderInterface  $innerUserProvider
-     * @param CustomerVisitorManager $customerVisitorManager
-     */
     public function __construct(
         UserProviderInterface $innerUserProvider,
         CustomerVisitorManager $customerVisitorManager

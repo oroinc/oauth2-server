@@ -41,14 +41,6 @@ class LoadEmailNotifications extends AbstractFixture implements DependentFixture
         $manager->flush();
     }
 
-    /**
-     * @param ObjectManager $manager
-     * @param string        $eventName
-     * @param string        $templateName
-     * @param string        $recipientAssociation
-     *
-     * @return EmailNotification
-     */
     private function createEmailNotification(
         ObjectManager $manager,
         string $eventName,
@@ -70,21 +62,11 @@ class LoadEmailNotifications extends AbstractFixture implements DependentFixture
         return $emailNotification;
     }
 
-    /**
-     * @param string        $name
-     *
-     * @return string
-     */
     private function getNotificationEvent(string $name): string
     {
         return 'oro.notification.event.entity_post_' . $name;
     }
 
-    /**
-     * @param string $name
-     *
-     * @return EmailTemplate
-     */
     private function getEmailTemplate(ObjectManager $manager, string $name): EmailTemplate
     {
         return $manager->getRepository(EmailTemplate::class)
