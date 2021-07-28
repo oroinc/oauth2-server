@@ -21,7 +21,7 @@ class OAuthServerTestCase extends RestJsonApiTestCase
      */
     protected function isStatelessRequest(array $server): bool
     {
-        if (isset($server['HTTP_AUTHORIZATION']) && strpos($server['HTTP_AUTHORIZATION'], 'Bearer ') === 0) {
+        if (isset($server['HTTP_AUTHORIZATION']) && str_starts_with($server['HTTP_AUTHORIZATION'], 'Bearer ')) {
             return true;
         }
 
