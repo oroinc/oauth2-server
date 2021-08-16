@@ -16,10 +16,8 @@ use Symfony\Component\DependencyInjection\Reference;
  */
 class OAuth2Factory implements SecurityFactoryInterface
 {
-    private const FIREWALL_LISTENER_SERVICE        = 'oro_oauth2_server.security.firewall_listener';
+    private const FIREWALL_LISTENER_SERVICE = 'oro_oauth2_server.security.firewall_listener';
     private const AUTHENTICATION_PROVIDER_SERVICE  = 'oro_oauth2_server.security.authentication_provider';
-    private const CUSTOMER_VISITOR_MANAGER_SERVICE = 'oro_customer.customer_visitor_manager';
-    private const WEBSITE_MANAGER_SERVICE          = 'oro_website.manager';
 
     /**
      * {@inheritdoc}
@@ -29,7 +27,7 @@ class OAuth2Factory implements SecurityFactoryInterface
         $definition = new ChildDefinition(self::AUTHENTICATION_PROVIDER_SERVICE);
         if ($this->isVisitorFirewall($config)) {
             $definition->setClass(VisitorOAuth2Provider::class)
-                ->addArgument(new Reference(self::WEBSITE_MANAGER_SERVICE));
+                ->addArgument(new Reference('oro_customer.authentication.anonymous_customer_user_roles_provider'));
         }
 
         $providerId = self::AUTHENTICATION_PROVIDER_SERVICE . '.' . $id;
@@ -90,7 +88,7 @@ class OAuth2Factory implements SecurityFactoryInterface
 
         $definition = new Definition(
             VisitorUserProvider::class,
-            [new Reference($userProvider), new Reference(self::CUSTOMER_VISITOR_MANAGER_SERVICE)]
+            [new Reference($userProvider), new Reference('oro_customer.customer_visitor_manager')]
         );
         $definition->setPrivate(true);
 

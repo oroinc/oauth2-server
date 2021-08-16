@@ -3,6 +3,7 @@
 namespace Oro\Bundle\OAuth2ServerBundle\Tests\Functional;
 
 use Oro\Bundle\ConfigBundle\Tests\Functional\Traits\ConfigManagerAwareTestTrait;
+use Oro\Bundle\CustomerBundle\Security\Token\AnonymousCustomerUserToken;
 use Oro\Bundle\OAuth2ServerBundle\Tests\Functional\DataFixtures\LoadFrontendPasswordGrantClient;
 use Oro\Bundle\OAuth2ServerBundle\Tests\Functional\DataFixtures\LoadPasswordGrantClient;
 use Oro\Bundle\TestFrameworkBundle\Tests\Functional\DataFixtures\LoadUser;
@@ -113,7 +114,7 @@ class FrontendPasswordGrantVisitorOAuthServerTest extends OAuthServerTestCase
 
         $accessToken = $this->sendFrontendPasswordAccessTokenRequest();
 
-        $configManager = self::getConfigManager('global');
+        $configManager = self::getConfigManager();
         $configManager->set('oro_shopping_list.availability_for_guests', true);
         $configManager->flush();
 
@@ -124,6 +125,14 @@ class FrontendPasswordGrantVisitorOAuthServerTest extends OAuthServerTestCase
             ['HTTP_AUTHORIZATION' => sprintf('Bearer %s', $accessToken['access_token'])]
         );
         $this->assertResponseContains(['data' => []], $response);
+
+        // assert the visitor security token has correct roles
+        $token = self::$container->get('security.token_storage')->getToken();
+        self::assertInstanceOf(AnonymousCustomerUserToken::class, $token);
+        self::assertEquals(
+            [self::$container->get('oro_website.manager')->getCurrentWebsite()->getGuestRole()->getRole()],
+            $token->getRoleNames()
+        );
 
         // create one list
         $response = $this->post(

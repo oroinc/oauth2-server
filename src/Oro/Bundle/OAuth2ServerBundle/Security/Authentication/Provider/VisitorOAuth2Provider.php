@@ -4,12 +4,11 @@ namespace Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Provider;
 
 use Doctrine\Persistence\ManagerRegistry;
 use League\OAuth2\Server\AuthorizationValidators\AuthorizationValidatorInterface;
-use Oro\Bundle\CustomerBundle\Entity\CustomerUserRole;
+use Oro\Bundle\CustomerBundle\Security\AnonymousCustomerUserRolesProvider;
 use Oro\Bundle\CustomerBundle\Security\Token\AnonymousCustomerUserToken;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Oro\Bundle\UserBundle\Entity\AbstractUser;
-use Oro\Bundle\WebsiteBundle\Manager\WebsiteManager;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\User\UserCheckerInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
@@ -20,8 +19,7 @@ use Symfony\Component\Security\Core\User\UserProviderInterface;
  */
 class VisitorOAuth2Provider extends OAuth2Provider
 {
-    /** @var WebsiteManager */
-    private $websiteManager;
+    private AnonymousCustomerUserRolesProvider $rolesProvider;
 
     public function __construct(
         UserProviderInterface $userProvider,
@@ -30,7 +28,7 @@ class VisitorOAuth2Provider extends OAuth2Provider
         ManagerRegistry $doctrine,
         UserCheckerInterface $userChecker,
         ClientManager $clientManager,
-        WebsiteManager $websiteManager
+        AnonymousCustomerUserRolesProvider $rolesProvider
     ) {
         parent::__construct(
             $userProvider,
@@ -40,7 +38,7 @@ class VisitorOAuth2Provider extends OAuth2Provider
             $userChecker,
             $clientManager
         );
-        $this->websiteManager = $websiteManager;
+        $this->rolesProvider = $rolesProvider;
     }
 
     /**
@@ -54,22 +52,9 @@ class VisitorOAuth2Provider extends OAuth2Provider
 
         return new AnonymousCustomerUserToken(
             'Anonymous Customer User',
-            $this->getVisitorRoles(),
+            $this->rolesProvider->getRoles(),
             $user,
             $organization
         );
-    }
-
-    private function getVisitorRoles(): array
-    {
-        $currentWebsite = $this->websiteManager->getCurrentWebsite();
-        if (null === $currentWebsite) {
-            return [];
-        }
-
-        /** @var CustomerUserRole $guestRole */
-        $guestRole = $currentWebsite->getGuestRole();
-
-        return [$guestRole->getRole()];
     }
 }
