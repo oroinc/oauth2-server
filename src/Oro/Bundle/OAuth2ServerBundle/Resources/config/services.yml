@@ -300,7 +300,7 @@ services:
             - '@translator'
             - '@oro_entity_config.provider.entity'
         tags:
-            - { name: oro_entity.virtual_relation_provider, priority: 150 }
+            - { name: oro_entity.virtual_relation_provider, priority: -150 }
 
     oro_oauth2_server.api_feature_checker:
         class: Oro\Bundle\OAuth2ServerBundle\Security\ApiFeatureChecker
@@ -314,7 +314,7 @@ services:
         class: Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Exception\ExceptionHandler
         public: true
         arguments:
-            - !tagged oro_oauth2_server.get_access_token_exception_handler
+            - !tagged_iterator oro_oauth2_server.get_access_token_exception_handler
 
     oro_oauth2_server.handler.get_access_token.log_exception_handler:
         class: Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Exception\LogExceptionHandler
@@ -341,7 +341,7 @@ services:
         class: Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Success\SuccessHandler
         public: true
         arguments:
-            - !tagged oro_oauth2_server.get_access_token_success_handler
+            - !tagged_iterator oro_oauth2_server.get_access_token_success_handler
 
     oro_oauth2_server.handler.get_access_token.password_grant_success_handler:
         class: Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Success\PasswordGrantSuccessHandler
@@ -361,7 +361,7 @@ services:
         class: Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\AuthorizeClientHandler
         public: true
         arguments:
-            - !tagged oro_oauth2_server.authorize_client_handler
+            - !tagged_iterator oro_oauth2_server.authorize_client_handler
 
     Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\AuthorizeClientHandler:
         alias: oro_oauth2_server.handler.authorize_client.handler
