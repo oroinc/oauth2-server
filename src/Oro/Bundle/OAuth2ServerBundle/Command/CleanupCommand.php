@@ -90,5 +90,7 @@ HELP
         $this->authCodeCleaner->cleanUp();
 
         $io->success('Completed');
+
+        return 0;
     }
 }
