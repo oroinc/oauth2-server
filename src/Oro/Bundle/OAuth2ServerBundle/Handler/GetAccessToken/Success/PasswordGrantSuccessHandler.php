@@ -80,7 +80,7 @@ class PasswordGrantSuccessHandler implements SuccessHandlerInterface
         }
 
         $token = new OAuth2Token($user, $client->getOrganization());
-        $symfonyRequest = $this->requestStack->getMasterRequest();
+        $symfonyRequest = $this->requestStack->getMainRequest();
 
         if ($this->frontendHelper) {
             if ($client->isFrontend()) {

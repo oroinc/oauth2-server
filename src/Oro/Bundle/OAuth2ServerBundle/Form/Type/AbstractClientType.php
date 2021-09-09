@@ -207,7 +207,7 @@ abstract class AbstractClientType extends AbstractType
         bool $disabled = false
     ): void {
         if ($showGrants) {
-            $defaultGrantType = null;
+            $defaultGrantType = $multipleGrantTypes ? [] : null;
             if (count($grantTypes) === 1) {
                 $defaultGrantType = reset($grantTypes);
             }

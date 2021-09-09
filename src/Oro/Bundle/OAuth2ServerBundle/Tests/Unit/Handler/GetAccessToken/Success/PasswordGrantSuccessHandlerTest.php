@@ -63,7 +63,7 @@ class PasswordGrantSuccessHandlerTest extends TestCase
         );
     }
 
-    public function testHandleOnNonPasswordGrant()
+    public function testHandleOnNonPasswordGrant(): void
     {
         $request = (new ServerRequest('GET', ''))->withParsedBody(['grant_type' => 'client']);
 
@@ -74,7 +74,7 @@ class PasswordGrantSuccessHandlerTest extends TestCase
         $handler->handle($request);
     }
 
-    public function testHandle()
+    public function testHandle(): void
     {
         $requestParameters = [
             'grant_type' => 'password',
@@ -96,7 +96,7 @@ class PasswordGrantSuccessHandlerTest extends TestCase
             ->with('testUser')
             ->willReturn($user);
         $this->requestStack->expects(self::once())
-            ->method('getMasterRequest')
+            ->method('getMainRequest')
             ->willReturn($symfonyRequest);
         $this->tokenStorage->expects(self::once())
             ->method('getToken')
@@ -127,7 +127,7 @@ class PasswordGrantSuccessHandlerTest extends TestCase
             ->willReturn($client);
     }
 
-    public function testHandleOnFrontendRequest()
+    public function testHandleOnFrontendRequest(): void
     {
         if (!class_exists('Oro\Bundle\FrontendBundle\Request\FrontendHelper')) {
             self::markTestSkipped('Could be tested only with FrontendBundle');
@@ -155,7 +155,7 @@ class PasswordGrantSuccessHandlerTest extends TestCase
             ->with('testUser')
             ->willReturn($user);
         $this->requestStack->expects(self::once())
-            ->method('getMasterRequest')
+            ->method('getMainRequest')
             ->willReturn($symfonyRequest);
         $this->tokenStorage->expects(self::once())
             ->method('getToken')
@@ -180,7 +180,7 @@ class PasswordGrantSuccessHandlerTest extends TestCase
         $handler->handle($request);
     }
 
-    public function testHandleOnBackendRequest()
+    public function testHandleOnBackendRequest(): void
     {
         if (!class_exists('Oro\Bundle\FrontendBundle\Request\FrontendHelper')) {
             self::markTestSkipped('Could be tested only with FrontendBundle');
@@ -207,7 +207,7 @@ class PasswordGrantSuccessHandlerTest extends TestCase
             ->with('testUser')
             ->willReturn($user);
         $this->requestStack->expects(self::once())
-            ->method('getMasterRequest')
+            ->method('getMainRequest')
             ->willReturn($symfonyRequest);
         $this->tokenStorage->expects(self::once())
             ->method('getToken')
@@ -232,7 +232,7 @@ class PasswordGrantSuccessHandlerTest extends TestCase
         $handler->handle($request);
     }
 
-    public function testHandleOldTokenAndFrontendHelperShouldBeRestoredOnExceptionDuringDispatch()
+    public function testHandleOldTokenAndFrontendHelperShouldBeRestoredOnExceptionDuringDispatch(): void
     {
         if (!class_exists('Oro\Bundle\FrontendBundle\Request\FrontendHelper')) {
             self::markTestSkipped('Could be tested only with FrontendBundle');
@@ -261,7 +261,7 @@ class PasswordGrantSuccessHandlerTest extends TestCase
             ->with('testUser')
             ->willReturn($user);
         $this->requestStack->expects(self::once())
-            ->method('getMasterRequest')
+            ->method('getMainRequest')
             ->willReturn($symfonyRequest);
         $this->tokenStorage->expects(self::once())
             ->method('getToken')
