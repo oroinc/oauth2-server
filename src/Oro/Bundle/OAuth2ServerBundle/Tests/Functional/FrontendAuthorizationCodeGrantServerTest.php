@@ -56,10 +56,7 @@ class FrontendAuthorizationCodeGrantServerTest extends OAuthServerTestCase
             ),
             [
                 'grantAccess' => $grant ? 'true' : 'false',
-                '_csrf_token' => self::getContainer()
-                    ->get('security.csrf.token_manager')
-                    ->getToken('authorize_client')
-                    ->getValue()
+                '_csrf_token' => $this->getCsrfToken('authorize_client')->getValue()
             ]
         );
 

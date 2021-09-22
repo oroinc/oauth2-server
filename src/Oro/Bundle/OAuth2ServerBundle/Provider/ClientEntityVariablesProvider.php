@@ -113,6 +113,6 @@ class ClientEntityVariablesProvider implements EntityVariablesProviderInterface
 
     private function getVariableLabel(string $ownerEntityClass): string
     {
-        return $this->entityConfigProvider->getConfig($ownerEntityClass)->get('label');
+        return (string) $this->entityConfigProvider->getConfig($ownerEntityClass)->get('label');
     }
 }
