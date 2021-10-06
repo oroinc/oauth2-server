@@ -102,7 +102,7 @@ class AuthorizeClientController extends AbstractController
         try {
             return $this->get(AuthorizationServer::class);
         } catch (\LogicException $e) {
-            $this->get('logger')->warning($e->getMessage(), ['exception' => $e]);
+            $this->get(LoggerInterface::class)->warning($e->getMessage(), ['exception' => $e]);
 
             throw CryptKeyNotFoundException::create($e);
         }

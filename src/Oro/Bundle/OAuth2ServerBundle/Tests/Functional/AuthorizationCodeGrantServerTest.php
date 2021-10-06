@@ -93,6 +93,35 @@ class AuthorizationCodeGrantServerTest extends OAuthServerTestCase
         );
     }
 
+    public function testTryToAuthorizeWithEmptyRequest(): void
+    {
+        $this->initClient([], self::generateBasicAuthHeader());
+        $this->client->request(
+            'POST',
+            $this->getUrl(
+                'oro_oauth2_server_authenticate',
+                []
+            ),
+            [
+                'true',
+                '_csrf_token' => $this->getCsrfToken('authorize_client')->getValue(),
+            ]
+        );
+
+        $response = $this->client->getResponse();
+
+        self::assertEquals(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
+        self::assertEquals(
+            [
+                'error' => 'unsupported_grant_type',
+                'error_description' => 'The authorization grant type is not supported by the authorization server.',
+                'hint' => 'Check that all required parameters have been provided',
+                'message' => 'The authorization grant type is not supported by the authorization server.'
+            ],
+            self::jsonToArray($response->getContent())
+        );
+    }
+
     public function testGetAuthCode()
     {
         $code = $this->getAuthCode(LoadAuthorizationCodeGrantClient::OAUTH_CLIENT_ID, 'http://test.com');
