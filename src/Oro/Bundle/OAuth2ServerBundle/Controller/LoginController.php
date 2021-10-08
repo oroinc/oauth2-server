@@ -4,6 +4,7 @@ namespace Oro\Bundle\OAuth2ServerBundle\Controller;
 
 use Doctrine\Persistence\ManagerRegistry;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
+use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,7 +24,8 @@ class LoginController extends AbstractController
         return array_merge(parent::getSubscribedServices(), [
             CsrfTokenManagerInterface::class,
             AuthenticationUtils::class,
-            'doctrine' => ManagerRegistry::class
+            'doctrine' => ManagerRegistry::class,
+            ClientManager::class
         ]);
     }
 
@@ -74,6 +76,6 @@ class LoginController extends AbstractController
 
     private function getClient(string $clientId): ?Client
     {
-        return $this->get('oro_oauth2_server.client_manager')->getClient($clientId);
+        return $this->get(ClientManager::class)->getClient($clientId);
     }
 }

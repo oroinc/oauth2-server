@@ -7,6 +7,7 @@ use Oro\Bundle\TestFrameworkBundle\Tests\Functional\DataFixtures\LoadUser;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
+ * @dbIsolationPerTest
  * @SuppressWarnings(PHPMD.TooManyPublicMethods)
  */
 class AuthorizationCodeGrantServerTest extends OAuthServerTestCase
@@ -96,7 +97,7 @@ class AuthorizationCodeGrantServerTest extends OAuthServerTestCase
         );
     }
 
-    public function testGetAuthCode()
+    public function testGetAuthCode(): void
     {
         $code = $this->getAuthCode(LoadAuthorizationCodeGrantClient::OAUTH_CLIENT_ID, 'http://test.com');
 
@@ -104,7 +105,7 @@ class AuthorizationCodeGrantServerTest extends OAuthServerTestCase
         self::assertNotNull($code);
     }
 
-    public function testGetAuthCodeForNonConfidentialPlainClient()
+    public function testGetAuthCodeForNonConfidentialPlainClient(): void
     {
         $code = $this->getAuthCode(
             LoadAuthorizationCodeGrantClient::PLAIN_CLIENT_CLIENT_ID,
@@ -119,7 +120,7 @@ class AuthorizationCodeGrantServerTest extends OAuthServerTestCase
         self::assertNotNull($code);
     }
 
-    public function testGetAuthCodeForNonConfidentialPlainClientWithNonPlainChallenge()
+    public function testGetAuthCodeForNonConfidentialPlainClientWithNonPlainChallenge(): void
     {
         $code = $this->getAuthCode(
             LoadAuthorizationCodeGrantClient::PLAIN_CLIENT_CLIENT_ID,
@@ -134,7 +135,7 @@ class AuthorizationCodeGrantServerTest extends OAuthServerTestCase
         self::assertNotNull($code);
     }
 
-    public function testGetAuthCodeForNonConfidentialNonPlainClient()
+    public function testGetAuthCodeForNonConfidentialNonPlainClient(): void
     {
         $code = $this->getAuthCode(
             LoadAuthorizationCodeGrantClient::NON_PLAIN_CLIENT_CLIENT_ID,
@@ -149,7 +150,7 @@ class AuthorizationCodeGrantServerTest extends OAuthServerTestCase
         self::assertNotNull($code);
     }
 
-    public function testTryToGetAuthCodeForNonConfidentialNonPlainClientWithPlainChallenge()
+    public function testTryToGetAuthCodeForNonConfidentialNonPlainClientWithPlainChallenge(): void
     {
         $this->initClient([], self::generateBasicAuthHeader());
 
@@ -168,7 +169,7 @@ class AuthorizationCodeGrantServerTest extends OAuthServerTestCase
         self::assertEquals('Plain code challenge method is not allowed for this client', $content['hint']);
     }
 
-    public function testGetAuthCodeWithoutRedirectURI()
+    public function testGetAuthCodeWithoutRedirectURI(): void
     {
         $this->initClient([], self::generateBasicAuthHeader());
         $response = $this->sendAuthCodeRequest(
@@ -186,7 +187,7 @@ class AuthorizationCodeGrantServerTest extends OAuthServerTestCase
         self::assertNotNull($code);
     }
 
-    public function testTryToGetAuthCodeWithNotGrantedRequest()
+    public function testTryToGetAuthCodeWithNotGrantedRequest(): void
     {
         $this->initClient([], self::generateBasicAuthHeader());
         $response = $this->sendAuthCodeRequest(
@@ -209,7 +210,7 @@ class AuthorizationCodeGrantServerTest extends OAuthServerTestCase
         self::assertEquals('The resource owner or authorization server denied the request.', $parameters['message']);
     }
 
-    public function testTryToGetAuthCodeWithWithWrongRedirectUri()
+    public function testTryToGetAuthCodeWithWithWrongRedirectUri(): void
     {
         $this->initClient([], self::generateBasicAuthHeader());
         $response = $this->sendAuthCodeRequest(
@@ -226,7 +227,7 @@ class AuthorizationCodeGrantServerTest extends OAuthServerTestCase
         );
     }
 
-    public function testTryToGetAuthCodeWithWithWrongClientId()
+    public function testTryToGetAuthCodeWithWithWrongClientId(): void
     {
         $this->initClient([], self::generateBasicAuthHeader());
         $response = $this->sendAuthCodeRequest(
@@ -243,7 +244,7 @@ class AuthorizationCodeGrantServerTest extends OAuthServerTestCase
         );
     }
 
-    public function testGetAuthToken()
+    public function testGetAuthToken(): void
     {
         $startDateTime = new \DateTime('now', new \DateTimeZone('UTC'));
         $accessToken = $this->sendAccessTokenRequest();
@@ -264,7 +265,7 @@ class AuthorizationCodeGrantServerTest extends OAuthServerTestCase
         self::assertClientLastUsedValueIsCorrect($startDateTime, $client);
     }
 
-    public function testApiRequestWithCorrectAccessTokenShouldReturnRequestedData()
+    public function testApiRequestWithCorrectAccessTokenShouldReturnRequestedData(): void
     {
         $authorizationHeader = $this->getBearerAuthHeaderValue();
         $expectedData = [
@@ -290,7 +291,7 @@ class AuthorizationCodeGrantServerTest extends OAuthServerTestCase
         $this->assertResponseContains($expectedData, $response);
     }
 
-    public function testTryToGetAuthTokenWithWrongAuthCode()
+    public function testTryToGetAuthTokenWithWrongAuthCode(): void
     {
         $accessToken = $this->sendAccessTokenRequest(
             'wrong_code',
@@ -301,7 +302,7 @@ class AuthorizationCodeGrantServerTest extends OAuthServerTestCase
         self::assertEquals('Cannot decrypt the authorization code', $accessToken['hint']);
     }
 
-    public function testTryToGetAuthTokenTwiceWithSameAuthCode()
+    public function testTryToGetAuthTokenTwiceWithSameAuthCode(): void
     {
         $code = $this->getAuthCode(
             LoadAuthorizationCodeGrantClient::OAUTH_CLIENT_ID,
@@ -316,7 +317,7 @@ class AuthorizationCodeGrantServerTest extends OAuthServerTestCase
         self::assertEquals('Authorization code has been revoked', $accessToken1['hint']);
     }
 
-    public function testTryToGetAuthTokenWithWrongRedirectURI()
+    public function testTryToGetAuthTokenWithWrongRedirectURI(): void
     {
         $accessToken = $this->sendAccessTokenRequest(
             null,
@@ -327,13 +328,55 @@ class AuthorizationCodeGrantServerTest extends OAuthServerTestCase
         self::assertEquals('invalid_client', $accessToken['error']);
     }
 
-    public function tryToOpenLoginPageWithoutAdditionalData()
+    public function testTryToOpenLoginPageWithoutAdditionalData(): void
     {
         $this->client->request(
             'GET',
             $this->getUrl('oro_oauth2_server_login_form')
         );
 
-        self::assertEquals(Response::HTTP_NOT_FOUND, $this->client->getResponse());
+        self::assertEquals(Response::HTTP_NOT_FOUND, $this->client->getResponse()->getStatusCode());
+    }
+
+    public function testTryToOpenLoginPageWithoutClientIdParameter(): void
+    {
+        $session = self::getContainer()->get('session');
+        $session->set('_security.oauth2_authorization_authenticate.target_path', 'http://test.com');
+
+        $this->client->request(
+            'GET',
+            $this->getUrl('oro_oauth2_server_login_form')
+        );
+
+        self::assertEquals(Response::HTTP_NOT_FOUND, $this->client->getResponse()->getStatusCode());
+    }
+
+    public function testTryToOpenLoginPageWithWrongClientIdParameter(): void
+    {
+        $session = self::getContainer()->get('session');
+        $session->set('_security.oauth2_authorization_authenticate.target_path', 'http://test.com?client_id=wrong');
+
+        $this->client->request(
+            'GET',
+            $this->getUrl('oro_oauth2_server_login_form')
+        );
+
+        self::assertEquals(Response::HTTP_NOT_FOUND, $this->client->getResponse()->getStatusCode());
+    }
+
+    public function testOpenLoginPage(): void
+    {
+        $session = self::getContainer()->get('session');
+        $session->set(
+            '_security.oauth2_authorization_authenticate.target_path',
+            'http://test.com?client_id=OxvBGZ4Z0gG6Maihm2amg80LcSpJez4'
+        );
+
+        $this->client->request(
+            'GET',
+            $this->getUrl('oro_oauth2_server_login_form')
+        );
+
+        self::assertEquals(Response::HTTP_OK, $this->client->getResponse()->getStatusCode());
     }
 }
