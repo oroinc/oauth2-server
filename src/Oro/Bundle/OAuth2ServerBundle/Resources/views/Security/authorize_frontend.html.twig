@@ -50,7 +50,7 @@
                     <div class="title-box">
                         <h2 class="title">{{ 'oro.oauth2server.auth_code.authorize_message'|trans({'%app_name%': appName}) }}</h2>
                         <p></p>
-                        {{ 'oro.oauth2server.auth_code.authorize_description'|trans({'%app_name%': appName})|raw }}
+                        {{ 'oro.oauth2server.auth_code.authorize_description'|trans({'%app_name%': appName|oro_html_sanitize})|raw }}
                     </div>
                     <div class="form-signin__footer">
                         <button type="submit" id="grantBtn" class="btn extra-submit btn-uppercase btn-primary" >{{ 'oro.oauth2server.auth_code.grant'|trans }}</button>
