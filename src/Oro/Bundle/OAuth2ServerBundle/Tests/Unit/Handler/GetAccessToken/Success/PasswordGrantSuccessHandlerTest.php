@@ -2,7 +2,6 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Handler\GetAccessToken\Success;
 
-use Exception;
 use GuzzleHttp\Psr7\ServerRequest;
 use Oro\Bundle\CustomerBundle\Security\CustomerUserLoader;
 use Oro\Bundle\FrontendBundle\Request\FrontendHelper;
@@ -14,7 +13,6 @@ use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Oro\Bundle\UserBundle\Entity\User;
 use Oro\Bundle\UserBundle\Entity\UserInterface;
 use Oro\Bundle\UserBundle\Security\UserLoader;
-use PHPUnit\Framework\TestCase;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -22,7 +20,7 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
 use Symfony\Component\Security\Http\SecurityEvents;
 
-class PasswordGrantSuccessHandlerTest extends TestCase
+class PasswordGrantSuccessHandlerTest extends \PHPUnit\Framework\TestCase
 {
     /** @var EventDispatcherInterface|\PHPUnit\Framework\MockObject\MockObject */
     private $eventDispatcher;
@@ -238,7 +236,7 @@ class PasswordGrantSuccessHandlerTest extends TestCase
             self::markTestSkipped('Could be tested only with FrontendBundle');
         }
 
-        $exception = new Exception('some error');
+        $exception = new \Exception('some error');
         $this->expectException(get_class($exception));
 
         $requestParameters = [
