@@ -14,13 +14,17 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 
 class OAuth2ListenerTest extends \PHPUnit\Framework\TestCase
 {
-    private TokenStorageInterface|\PHPUnit\Framework\MockObject\MockObject $tokenStorage;
+    /** @var TokenStorageInterface|\PHPUnit\Framework\MockObject\MockObject */
+    private $tokenStorage;
 
-    private AuthenticationManagerInterface|\PHPUnit\Framework\MockObject\MockObject $authenticationManager;
+    /** @var AuthenticationManagerInterface|\PHPUnit\Framework\MockObject\MockObject */
+    private $authenticationManager;
 
-    private HttpMessageFactoryInterface|\PHPUnit\Framework\MockObject\MockObject $httpMessageFactory;
+    /** @var HttpMessageFactoryInterface|\PHPUnit\Framework\MockObject\MockObject */
+    private $httpMessageFactory;
 
-    private OAuth2Listener $listener;
+    /** @var OAuth2Listener */
+    private $listener;
 
     protected function setUp(): void
     {
