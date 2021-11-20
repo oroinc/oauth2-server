@@ -221,7 +221,7 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
                     . ' resource owner credentials) or refresh token is invalid, expired, revoked,'
                     . ' does not match the redirection URI used in the authorization request,'
                     . ' or was issued to another client.',
-                'hint'              => 'Account is locked.'
+                'hint'              => 'Account is disabled.'
             ],
             $responseContent
         );
@@ -417,7 +417,7 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
                     . ' resource owner credentials) or refresh token is invalid, expired, revoked,'
                     . ' does not match the redirection URI used in the authorization request,'
                     . ' or was issued to another client.',
-                'hint'              => 'Account is locked.'
+                'hint'              => 'Account is disabled.'
             ],
             $refreshedToken
         );
