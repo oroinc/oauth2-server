@@ -5,6 +5,28 @@ parameters:
     oro_oauth2_server.cors.allow_origins: []
 
 services:
+    # Symfony to PSR 7 bridge configuration
+    Symfony\Bridge\PsrHttpMessage\HttpFoundationFactoryInterface:
+        class: Symfony\Bridge\PsrHttpMessage\Factory\HttpFoundationFactory
+
+    Symfony\Bridge\PsrHttpMessage\HttpMessageFactoryInterface:
+        class: Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory
+        arguments:
+            - '@Psr\Http\Message\ServerRequestFactoryInterface'
+            - '@Psr\Http\Message\StreamFactoryInterface'
+            - '@Psr\Http\Message\UploadedFileFactoryInterface'
+            - '@Psr\Http\Message\ResponseFactoryInterface'
+
+    Symfony\Bridge\PsrHttpMessage\ArgumentValueResolver\PsrServerRequestResolver:
+        arguments:
+            - '@Symfony\Bridge\PsrHttpMessage\HttpMessageFactoryInterface'
+        tags: [controller.argument_value_resolver]
+
+    Symfony\Bridge\PsrHttpMessage\EventListener\PsrResponseListener:
+        arguments:
+            - '@Symfony\Bridge\PsrHttpMessage\HttpFoundationFactoryInterface'
+        tags: [ kernel.event_subscriber ]
+
     oro_oauth2_server.client_manager:
         class: Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager
         arguments:
@@ -242,7 +264,7 @@ services:
         arguments:
             - '@security.token_storage'
             - '@security.authentication.manager'
-            - '@sensio_framework_extra.psr7.http_message_factory'
+            - '@Symfony\Bridge\PsrHttpMessage\HttpMessageFactoryInterface'
             - ~ # firewall ID; it is set by Oro\Bundle\OAuth2ServerBundle\DependencyInjection\Security\Factory\OAuth2Factory
 
     oro_oauth2_server.security.authentication_provider:

@@ -75,15 +75,8 @@ class FrontendPasswordGrantVisitorOAuthServerTest extends OAuthServerTestCase
         self::assertEquals(
             [
                 'error'             => 'invalid_grant',
-                'message'           => 'The provided authorization grant (e.g., authorization code,'
-                    . ' resource owner credentials) or refresh token is invalid, expired, revoked,'
-                    . ' does not match the redirection URI used in the authorization request,'
-                    . ' or was issued to another client.',
-                'error_description' => 'The provided authorization grant (e.g., authorization code,'
-                    . ' resource owner credentials) or refresh token is invalid, expired, revoked,'
-                    . ' does not match the redirection URI used in the authorization request,'
-                    . ' or was issued to another client.',
-                'hint'              => ''
+                'message'           => 'The user credentials were incorrect.',
+                'error_description' => 'The user credentials were incorrect.'
             ],
             $responseContent
         );
