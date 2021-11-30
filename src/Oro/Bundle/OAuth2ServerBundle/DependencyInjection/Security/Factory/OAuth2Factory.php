@@ -22,8 +22,13 @@ class OAuth2Factory implements SecurityFactoryInterface
     /**
      * {@inheritdoc}
      */
-    public function create(ContainerBuilder $container, $id, $config, $userProvider, $defaultEntryPoint)
-    {
+    public function create(
+        ContainerBuilder $container,
+        string $id,
+        array $config,
+        string $userProviderId,
+        ?string $defaultEntryPointId
+    ): array {
         $definition = new ChildDefinition(self::AUTHENTICATION_PROVIDER_SERVICE);
         if ($this->isVisitorFirewall($config)) {
             $definition->setClass(VisitorOAuth2Provider::class)
@@ -33,7 +38,7 @@ class OAuth2Factory implements SecurityFactoryInterface
         $providerId = self::AUTHENTICATION_PROVIDER_SERVICE . '.' . $id;
         $container
             ->setDefinition($providerId, $definition)
-            ->replaceArgument(0, new Reference($this->getUserProvider($container, $id, $config, $userProvider)))
+            ->replaceArgument(0, new Reference($this->getUserProvider($container, $id, $config, $userProviderId)))
             ->replaceArgument(1, $id)
             ->replaceArgument(4, new Reference('security.user_checker.' . $id));
 
@@ -42,13 +47,13 @@ class OAuth2Factory implements SecurityFactoryInterface
             ->setDefinition($listenerId, new ChildDefinition(self::FIREWALL_LISTENER_SERVICE))
             ->replaceArgument(3, $id);
 
-        return [$providerId, $listenerId, $defaultEntryPoint];
+        return [$providerId, $listenerId, $defaultEntryPointId];
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getPosition()
+    public function getPosition(): string
     {
         return 'pre_auth';
     }
@@ -56,7 +61,7 @@ class OAuth2Factory implements SecurityFactoryInterface
     /**
      * {@inheritdoc}
      */
-    public function getKey()
+    public function getKey(): string
     {
         return 'oauth2';
     }
@@ -64,7 +69,7 @@ class OAuth2Factory implements SecurityFactoryInterface
     /**
      * {@inheritdoc}
      */
-    public function addConfiguration(NodeDefinition $builder)
+    public function addConfiguration(NodeDefinition $builder): void
     {
         $builder
             ->children()
