@@ -63,7 +63,7 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
 
         $configManager = $this->getConfigManager();
         $configManager->set('oro_user_pro.failed_login_limit_enabled', true);
-        $configManager->set('oro_user_pro.failed_login_limit', 2);
+        $configManager->set('oro_user_pro.failed_login_limit', 1);
         $configManager->flush();
 
         $user = $this->getReference('user');

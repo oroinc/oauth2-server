@@ -334,7 +334,6 @@ services:
 
     oro_oauth2_server.handler.get_access_token.exception_handler:
         class: Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Exception\ExceptionHandler
-        public: true
         arguments:
             - !tagged_iterator oro_oauth2_server.get_access_token_exception_handler
 
@@ -361,7 +360,6 @@ services:
 
     oro_oauth2_server.handler.get_access_token.success_handler:
         class: Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Success\SuccessHandler
-        public: true
         arguments:
             - !tagged_iterator oro_oauth2_server.get_access_token_success_handler
 
@@ -381,18 +379,14 @@ services:
 
     oro_oauth2_server.handler.authorize_client.handler:
         class: Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\AuthorizeClientHandler
-        public: true
         arguments:
             - !tagged_iterator oro_oauth2_server.authorize_client_handler
 
-    Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\AuthorizeClientHandler:
-        alias: oro_oauth2_server.handler.authorize_client.handler
-
     oro_oauth2_server.handler.authorize_client.log_handler:
         class: Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\LogAuthorizeClientHandler
-        public: false
         arguments:
-            - '@monolog.logger.oro_account_security'
+            - '@logger'
             - '@oro_user.provider.user_logging_info_provider'
         tags:
             - { name: oro_oauth2_server.authorize_client_handler }
+            - { name: monolog.logger, channel: oro_account_security }

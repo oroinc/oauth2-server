@@ -4,7 +4,7 @@ namespace Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient;
 
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\UserBundle\Entity\UserInterface;
-use Oro\Bundle\UserBundle\Provider\UserLoggingInfoProvider;
+use Oro\Bundle\UserBundle\Provider\UserLoggingInfoProviderInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -12,19 +12,16 @@ use Psr\Log\LoggerInterface;
  */
 class LogAuthorizeClientHandler implements AuthorizeClientHandlerInterface
 {
-    private const APPLICATION_AUTHORIZED     = 'OAuth application authorized';
+    private const APPLICATION_AUTHORIZED = 'OAuth application authorized';
     private const APPLICATION_NOT_AUTHORIZED = 'OAuth application not authorized';
 
-    /** @var LoggerInterface */
-    private $logger;
+    private LoggerInterface $logger;
+    private UserLoggingInfoProviderInterface $loggingInfoProvider;
 
-    /** @var UserLoggingInfoProvider */
-    private $infoProvider;
-
-    public function __construct(LoggerInterface $logger, UserLoggingInfoProvider $infoProvider)
+    public function __construct(LoggerInterface $logger, UserLoggingInfoProviderInterface $loggingInfoProvider)
     {
         $this->logger = $logger;
-        $this->infoProvider = $infoProvider;
+        $this->loggingInfoProvider = $loggingInfoProvider;
     }
 
     /**
@@ -35,12 +32,12 @@ class LogAuthorizeClientHandler implements AuthorizeClientHandlerInterface
         $this->logger->notice(
             $isAuthorized ? self::APPLICATION_AUTHORIZED : self::APPLICATION_NOT_AUTHORIZED,
             array_merge(
-                $this->infoProvider->getUserLoggingInfo($user),
+                $this->loggingInfoProvider->getUserLoggingInfo($user),
                 [
                     'OAuthApp' => [
                         'id'         => $client->getId(),
-                        'identifier' => $client->getIdentifier(),
-                    ],
+                        'identifier' => $client->getIdentifier()
+                    ]
                 ]
             )
         );

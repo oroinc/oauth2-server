@@ -22,6 +22,7 @@ services:
             - [setContainer, ['@Psr\Container\ContainerInterface']]
         tags:
             - { name: container.service_subscriber }
+            - { name: container.service_subscriber, id: oro_oauth2_server.handler.authorize_client.handler, key: Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\AuthorizeClientHandler }
 
     Oro\Bundle\OAuth2ServerBundle\Controller\AuthorizationTokenController:
         calls:

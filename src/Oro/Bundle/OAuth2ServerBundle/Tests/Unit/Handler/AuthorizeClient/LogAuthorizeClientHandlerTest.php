@@ -5,7 +5,7 @@ namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Handler\AuthorizeClient;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\LogAuthorizeClientHandler;
 use Oro\Bundle\UserBundle\Entity\User;
-use Oro\Bundle\UserBundle\Provider\UserLoggingInfoProvider;
+use Oro\Bundle\UserBundle\Provider\UserLoggingInfoProviderInterface;
 use Oro\Component\Testing\Unit\EntityTrait;
 use Psr\Log\LoggerInterface;
 
@@ -18,8 +18,8 @@ class LogAuthorizeClientHandlerTest extends \PHPUnit\Framework\TestCase
         $client = $this->getEntity(Client::class, ['id' => 123, 'identifier' => 'test_identifier']);
         $user = new User();
 
-        $infoProvider = $this->createMock(UserLoggingInfoProvider::class);
-        $infoProvider->expects(self::once())
+        $loggingInfoProvider = $this->createMock(UserLoggingInfoProviderInterface::class);
+        $loggingInfoProvider->expects(self::once())
             ->method('getUserLoggingInfo')
             ->with($user)
             ->willReturn(['id' => 14]);
@@ -37,7 +37,7 @@ class LogAuthorizeClientHandlerTest extends \PHPUnit\Framework\TestCase
                 ]
             );
 
-        $handler = new LogAuthorizeClientHandler($logger, $infoProvider);
+        $handler = new LogAuthorizeClientHandler($logger, $loggingInfoProvider);
         $handler->handle($client, $user, true);
     }
 
@@ -46,8 +46,8 @@ class LogAuthorizeClientHandlerTest extends \PHPUnit\Framework\TestCase
         $client = $this->getEntity(Client::class, ['id' => 123, 'identifier' => 'test_identifier']);
         $user = new User();
 
-        $infoProvider = $this->createMock(UserLoggingInfoProvider::class);
-        $infoProvider->expects(self::once())
+        $loggingInfoProvider = $this->createMock(UserLoggingInfoProviderInterface::class);
+        $loggingInfoProvider->expects(self::once())
             ->method('getUserLoggingInfo')
             ->with($user)
             ->willReturn(['id' => 14]);
@@ -65,7 +65,7 @@ class LogAuthorizeClientHandlerTest extends \PHPUnit\Framework\TestCase
                 ]
             );
 
-        $handler = new LogAuthorizeClientHandler($logger, $infoProvider);
+        $handler = new LogAuthorizeClientHandler($logger, $loggingInfoProvider);
         $handler->handle($client, $user, false);
     }
 }

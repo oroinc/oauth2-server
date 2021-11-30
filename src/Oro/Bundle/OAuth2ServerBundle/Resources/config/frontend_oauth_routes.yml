@@ -17,6 +17,6 @@ oro_oauth2_server_frontend_authenticate:
     path: '/oauth2-token/authorize'
     defaults:
         type: frontend
-        _controller: Oro\Bundle\OAuth2ServerBundle\Controller\AuthorizeClientController::authorizeAction
+        _controller: oro_oauth2_server.frontend_authorize_client_controller::authorizeAction
     options:
         frontend: true
