@@ -283,7 +283,7 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
         self::assertNotEquals($accessToken['access_token'], $refreshedToken['access_token']);
         self::assertNotEquals($accessToken['refresh_token'], $refreshedToken['refresh_token']);
 
-        $updatedClient = static::getContainer()->get('doctrine')
+        $updatedClient = self::getContainer()->get('doctrine')
             ->getRepository(Client::class)
             ->findOneBy(['identifier' => LoadPasswordGrantClient::OAUTH_CLIENT_ID]);
         self::assertClientLastUsedValueIsCorrect($startDateTime, $updatedClient);

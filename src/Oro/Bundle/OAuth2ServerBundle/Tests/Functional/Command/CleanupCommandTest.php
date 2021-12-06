@@ -21,7 +21,7 @@ class CleanupCommandTest extends WebTestCase
     public function testCleanup()
     {
         $result = self::runCommand('oro:cron:oauth-server:cleanup');
-        static::assertStringContainsString('Completed', $result);
+        self::assertStringContainsString('Completed', $result);
 
         /** @var EntityManagerInterface $em */
         $em = self::getContainer()->get('doctrine')->getManagerForClass(Client::class);

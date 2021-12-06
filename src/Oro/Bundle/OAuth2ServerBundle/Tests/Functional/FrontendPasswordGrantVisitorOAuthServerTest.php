@@ -120,10 +120,10 @@ class FrontendPasswordGrantVisitorOAuthServerTest extends OAuthServerTestCase
         $this->assertResponseContains(['data' => []], $response);
 
         // assert the visitor security token has correct roles
-        $token = self::$container->get('security.token_storage')->getToken();
+        $token = self::getContainer()->get('security.token_storage')->getToken();
         self::assertInstanceOf(AnonymousCustomerUserToken::class, $token);
         self::assertEquals(
-            [self::$container->get('oro_website.manager')->getCurrentWebsite()->getGuestRole()->getRole()],
+            [self::getContainer()->get('oro_website.manager')->getCurrentWebsite()->getGuestRole()->getRole()],
             $token->getRoleNames()
         );
 

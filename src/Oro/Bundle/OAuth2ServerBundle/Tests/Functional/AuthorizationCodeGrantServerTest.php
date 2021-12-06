@@ -190,7 +190,7 @@ class AuthorizationCodeGrantServerTest extends OAuthServerTestCase
             ]
         );
 
-        $content = \json_decode($response->getContent(), true);
+        $content = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
         self::assertEquals('invalid_request', $content['error']);
         self::assertEquals('Plain code challenge method is not allowed for this client', $content['hint']);
     }
