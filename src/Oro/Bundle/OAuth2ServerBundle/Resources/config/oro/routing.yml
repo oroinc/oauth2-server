@@ -34,4 +34,4 @@ oro_oauth2_server_authenticate:
     path: '/oauth2-token/authorize'
     defaults:
         type: backoffice
-        _controller: OroOAuth2ServerBundle:AuthorizeClient:authorize
+        _controller: Oro\Bundle\OAuth2ServerBundle\Controller\AuthorizeClientController::authorizeAction

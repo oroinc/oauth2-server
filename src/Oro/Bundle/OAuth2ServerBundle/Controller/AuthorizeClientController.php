@@ -20,6 +20,13 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  */
 class AuthorizeClientController extends AbstractController
 {
+    private $authorizeClientHandlerServiceId = 'oro_oauth2_server.handler.authorize_client.handler';
+
+    public function setAuthorizeClientHandlerServiceId(string $authorizeClientHandlerServiceId): void
+    {
+        $this->authorizeClientHandlerServiceId = $authorizeClientHandlerServiceId;
+    }
+
     /**
      * Processes the authorize client form page.
      *
@@ -63,7 +70,7 @@ class AuthorizeClientController extends AbstractController
                 $isAuthorized = $request->request->get('grantAccess') === 'true';
                 $authRequest->setAuthorizationApproved($isAuthorized);
 
-                $this->get('oro_oauth2_server.handler.authorize_client.handler')
+                $this->get($this->authorizeClientHandlerServiceId)
                     ->handle($client, $loggedUser, $isAuthorized);
 
                 return $authServer->completeAuthorizationRequest($authRequest, new Response());

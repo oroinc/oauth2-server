@@ -364,13 +364,13 @@ services:
         class: Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\AuthorizeClientHandler
         public: true
         arguments:
-            - !tagged oro_oauth2_server.authorize_client_handler
+            - !tagged_iterator oro_oauth2_server.authorize_client_handler
 
     oro_oauth2_server.handler.authorize_client.log_handler:
         class: Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\LogAuthorizeClientHandler
-        public: false
         arguments:
-            - '@monolog.logger.oro_account_security'
+            - '@logger'
             - '@oro_user.provider.user_logging_info_provider'
         tags:
             - { name: oro_oauth2_server.authorize_client_handler }
+            - { name: monolog.logger, channel: oro_account_security }

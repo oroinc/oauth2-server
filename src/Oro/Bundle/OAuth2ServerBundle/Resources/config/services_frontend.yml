@@ -1,4 +1,11 @@
 services:
+    oro_oauth2_server.frontend_authorize_client_controller:
+        class: Oro\Bundle\OAuth2ServerBundle\Controller\AuthorizeClientController
+        public: true
+        calls:
+            - [setContainer, ['@Psr\Container\ContainerInterface']]
+            - [setAuthorizeClientHandlerServiceId, ['oro_oauth2_server.handler.frontend_authorize_client.handler']]
+
     oro_oauth2_server.listener.frontend_routes_listener:
         class: Oro\Bundle\OAuth2ServerBundle\EventListener\FrontendRoutesListener
         tags:
@@ -9,3 +16,19 @@ services:
         calls:
             - [addAllowedUrlPattern, ['^/oauth2-token$']]
         tags: [oro_frontend.guest_access_urls_provider]
+
+    oro_oauth2_server.handler.frontend_authorize_client.handler:
+        class: Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\AuthorizeClientHandler
+        public: true
+        arguments:
+            - !tagged_iterator oro_oauth2_server.frontend_authorize_client_handler
+
+    oro_oauth2_server.handler.frontend_authorize_client.log_handler:
+        class: Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\LogAuthorizeClientHandler
+        public: false
+        arguments:
+            - '@logger'
+            - '@oro_customer.provider.user_logging_info_provider'
+        tags:
+            - { name: oro_oauth2_server.frontend_authorize_client_handler }
+            - { name: monolog.logger, channel: security }
