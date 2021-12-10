@@ -10,6 +10,7 @@ use League\OAuth2\Server\Grant\RefreshTokenGrant;
 use Oro\Bundle\OAuth2ServerBundle\League\Repository\FrontendAuthCodeRepository;
 use Oro\Bundle\OAuth2ServerBundle\League\Repository\FrontendRefreshTokenRepository;
 use Oro\Bundle\OAuth2ServerBundle\League\Repository\FrontendUserRepository;
+use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\OAuth2Token;
 use Oro\Component\DependencyInjection\ExtendedContainerBuilder;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -76,6 +77,8 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
             $this->configureSecurityFirewalls($container);
             $this->reconfigureLoginFirewalls($container);
         }
+
+        $this->configureOrganizationProBundle($container);
 
         if ('test' === $container->getParameter('kernel.environment')) {
             $fileLocator = new FileLocator(__DIR__ . '/../Tests/Functional/Environment');
@@ -375,5 +378,17 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
 
         $securityConfigs[0]['firewalls'] = $firewalls;
         $container->setExtensionConfig('security', $securityConfigs);
+    }
+
+    private function configureOrganizationProBundle(ContainerBuilder $container): void
+    {
+        if (!class_exists('\Oro\Bundle\OrganizationProBundle\OroOrganizationProBundle')) {
+            return;
+        }
+
+        $container->prependExtensionConfig(
+            'oro_organization_pro',
+            ['ignore_preferred_organization_tokens' => [OAuth2Token::class]]
+        );
     }
 }
