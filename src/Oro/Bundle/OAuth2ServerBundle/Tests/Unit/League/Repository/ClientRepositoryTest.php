@@ -2,13 +2,17 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\League\Repository;
 
+use Doctrine\ORM\EntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use League\OAuth2\Server\Exception\OAuthServerException;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
 use Oro\Bundle\OAuth2ServerBundle\League\Entity\ClientEntity;
 use Oro\Bundle\OAuth2ServerBundle\League\Repository\ClientRepository;
 use Oro\Bundle\OAuth2ServerBundle\Security\ApiFeatureChecker;
+use Oro\Bundle\OAuth2ServerBundle\Security\OAuthUserChecker;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
+use Oro\Bundle\UserBundle\Entity\User;
 use Symfony\Component\Security\Core\Encoder\EncoderFactoryInterface;
 use Symfony\Component\Security\Core\Encoder\PasswordEncoderInterface;
 
@@ -17,10 +21,7 @@ use Symfony\Component\Security\Core\Encoder\PasswordEncoderInterface;
  */
 class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
 {
-    /**
-     * @deprecated
-     * @var ManagerRegistry|\PHPUnit\Framework\MockObject\MockObject
-     */
+    /** @var ManagerRegistry|\PHPUnit\Framework\MockObject\MockObject */
     private $doctrine;
 
     /** @var ClientManager|\PHPUnit\Framework\MockObject\MockObject */
@@ -32,6 +33,9 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
     /** @var ApiFeatureChecker|\PHPUnit\Framework\MockObject\MockObject */
     private $featureChecker;
 
+    /** @var OAuthUserChecker|\PHPUnit\Framework\MockObject\MockObject */
+    private $userChecker;
+
     /** @var ClientRepository */
     private $clientRepository;
 
@@ -41,6 +45,8 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         $this->clientManager = $this->createMock(ClientManager::class);
         $this->encoderFactory = $this->createMock(EncoderFactoryInterface::class);
         $this->featureChecker = $this->createMock(ApiFeatureChecker::class);
+        $this->userChecker = $this->createMock(OAuthUserChecker::class);
+        $this->doctrine = $this->createMock(ManagerRegistry::class);
 
         $this->clientRepository = new ClientRepository(
             $this->doctrine,
@@ -48,6 +54,7 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
             $this->featureChecker
         );
         $this->clientRepository->setClientManager($this->clientManager);
+        $this->clientRepository->setUserChecker($this->userChecker);
     }
 
     private function getOrganization(bool $enabled = true): Organization
@@ -252,6 +259,50 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
             ->method('getClient')
             ->with($clientIdentifier)
             ->willReturn($client);
+
+        $result = $this->clientRepository->validateClient(
+            $clientIdentifier,
+            $clientSecret,
+            $grantType
+        );
+        self::assertFalse($result);
+    }
+
+    public function testValidateClientWhenClientHasOwnerAndOwnerIsNotActive()
+    {
+        $clientIdentifier = 'test_client';
+        $clientSecret = 'test_secret';
+        $grantType = 'test_grant';
+        $ownerEntityClass = User::class;
+        $ownerEntityId = 123;
+        $owner = $this->createMock(User::class);
+        $client = new Client();
+        $client->setIdentifier($clientIdentifier);
+        $client->setOrganization($this->getOrganization());
+        $client->setOwnerEntity($ownerEntityClass, $ownerEntityId);
+
+        $this->clientManager->expects(self::once())
+            ->method('getClient')
+            ->with($clientIdentifier)
+            ->willReturn($client);
+        $this->featureChecker->expects(self::once())
+            ->method('isEnabledByClient')
+            ->with(self::identicalTo($client))
+            ->willReturn(true);
+
+        $ownerRepository = $this->createMock(EntityRepository::class);
+        $this->doctrine->expects(self::once())
+            ->method('getRepository')
+            ->with($ownerEntityClass)
+            ->willReturn($ownerRepository);
+        $ownerRepository->expects(self::once())
+            ->method('find')
+            ->with($ownerEntityId)
+            ->willReturn($owner);
+        $this->userChecker->expects(self::once())
+            ->method('checkUser')
+            ->with(self::identicalTo($owner))
+            ->willThrowException(new OAuthServerException('User is disabled', 1, 'user_disabled'));
 
         $result = $this->clientRepository->validateClient(
             $clientIdentifier,
@@ -546,6 +597,68 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
             ->method('isEnabledByClient')
             ->with($client)
             ->willReturn(true);
+        $this->encoderFactory->expects(self::once())
+            ->method('getEncoder')
+            ->with(self::identicalTo($client))
+            ->willReturn($secretEncoder);
+        $secretEncoder->expects(self::once())
+            ->method('isPasswordValid')
+            ->with($clientEncodedSecret, $clientSecret, $clientSecretSalt)
+            ->willReturn(true);
+        $this->featureChecker->expects(self::once())
+            ->method('isEnabledByClient')
+            ->with($client)
+            ->willReturn(true);
+
+        $result = $this->clientRepository->validateClient(
+            $clientIdentifier,
+            $clientSecret,
+            $grantType
+        );
+        self::assertTrue($result);
+    }
+
+    public function testValidateClientWhenValidSecretAndClientHasOwnerAndOwnerIsActive()
+    {
+        $clientIdentifier = 'test_client';
+        $clientSecret = 'test_secret';
+        $grantType = 'test_grant';
+        $clientGrants = ['another_grant', $grantType];
+        $clientEncodedSecret = 'client_encoded_secret';
+        $clientSecretSalt = 'client_secret_salt';
+        $clientRedirectUris = ['test_url'];
+        $ownerEntityClass = User::class;
+        $ownerEntityId = 123;
+        $owner = $this->createMock(User::class);
+        $client = new Client();
+        $client->setIdentifier($clientIdentifier);
+        $client->setRedirectUris($clientRedirectUris);
+        $client->setGrants($clientGrants);
+        $client->setSecret($clientEncodedSecret, $clientSecretSalt);
+        $client->setOrganization($this->getOrganization());
+        $client->setOwnerEntity($ownerEntityClass, $ownerEntityId);
+        $secretEncoder = $this->createMock(PasswordEncoderInterface::class);
+
+        $this->clientManager->expects(self::once())
+            ->method('getClient')
+            ->with($clientIdentifier)
+            ->willReturn($client);
+        $this->featureChecker->expects(self::once())
+            ->method('isEnabledByClient')
+            ->with($client)
+            ->willReturn(true);
+        $ownerRepository = $this->createMock(EntityRepository::class);
+        $this->doctrine->expects(self::once())
+            ->method('getRepository')
+            ->with($ownerEntityClass)
+            ->willReturn($ownerRepository);
+        $ownerRepository->expects(self::once())
+            ->method('find')
+            ->with($ownerEntityId)
+            ->willReturn($owner);
+        $this->userChecker->expects(self::once())
+            ->method('checkUser')
+            ->with(self::identicalTo($owner));
         $this->encoderFactory->expects(self::once())
             ->method('getEncoder')
             ->with(self::identicalTo($client))
