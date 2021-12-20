@@ -2,12 +2,16 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\League\Repository;
 
+use Doctrine\Persistence\ManagerRegistry;
 use League\OAuth2\Server\Entities\ClientEntityInterface;
+use League\OAuth2\Server\Exception\OAuthServerException;
 use League\OAuth2\Server\Repositories\ClientRepositoryInterface;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
 use Oro\Bundle\OAuth2ServerBundle\League\Entity\ClientEntity;
 use Oro\Bundle\OAuth2ServerBundle\Security\ApiFeatureChecker;
+use Oro\Bundle\OAuth2ServerBundle\Security\OAuthUserChecker;
+use Oro\Bundle\UserBundle\Entity\UserInterface;
 use Symfony\Component\Security\Core\Encoder\EncoderFactoryInterface;
 
 /**
@@ -15,23 +19,24 @@ use Symfony\Component\Security\Core\Encoder\EncoderFactoryInterface;
  */
 class ClientRepository implements ClientRepositoryInterface
 {
-    /** @var EncoderFactoryInterface */
-    private $encoderFactory;
-
-    /** @var ApiFeatureChecker */
-    private $featureChecker;
-
-    /** @var ClientManager */
-    private $clientManager;
+    private EncoderFactoryInterface $encoderFactory;
+    private ApiFeatureChecker $featureChecker;
+    private ClientManager $clientManager;
+    private OAuthUserChecker $userChecker;
+    private ManagerRegistry $doctrine;
 
     public function __construct(
         ClientManager $clientManager,
         EncoderFactoryInterface $encoderFactory,
-        ApiFeatureChecker $featureChecker
+        ApiFeatureChecker $featureChecker,
+        OAuthUserChecker $userChecker,
+        ManagerRegistry $doctrine
     ) {
         $this->clientManager = $clientManager;
         $this->encoderFactory = $encoderFactory;
         $this->featureChecker = $featureChecker;
+        $this->userChecker = $userChecker;
+        $this->doctrine = $doctrine;
     }
 
     /**
@@ -73,6 +78,10 @@ class ClientRepository implements ClientRepositoryInterface
             return false;
         }
 
+        if (!$this->isClientOwnerActive($client)) {
+            return false;
+        }
+
         if (!$this->isGrantSupported($client, $grantType)) {
             return false;
         }
@@ -95,6 +104,28 @@ class ClientRepository implements ClientRepositoryInterface
             $client->isActive()
             && $this->featureChecker->isEnabledByClient($client)
             && $client->getOrganization()->isEnabled();
+    }
+
+    private function isClientOwnerActive(Client $client): bool
+    {
+        $ownerClass = $client->getOwnerEntityClass();
+        $ownerId = $client->getOwnerEntityId();
+        if (null === $ownerClass || null === $ownerId || !is_a($ownerClass, UserInterface::class, true)) {
+            return true;
+        }
+
+        $owner = $this->doctrine->getRepository($ownerClass)->find($ownerId);
+        if (null === $owner) {
+            return false;
+        }
+
+        try {
+            $this->userChecker->checkUser($owner);
+        } catch (OAuthServerException $e) {
+            return false;
+        }
+
+        return true;
     }
 
     private function isGrantSupported(Client $client, ?string $grant): bool
