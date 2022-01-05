@@ -14,9 +14,6 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
 {
-    /**
-     * {@inheritdoc}
-     */
     protected function setUp(): void
     {
         if (!class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {
@@ -256,7 +253,13 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
             ['HTTP_AUTHORIZATION' => $authorizationHeader],
             false
         );
-        $this->assertResponseStatusCodeEquals($response, Response::HTTP_UNAUTHORIZED);
+        self::assertResponseStatusCodeEquals($response, Response::HTTP_UNAUTHORIZED);
+        self::assertSame('', $response->getContent());
+        self::assertResponseHeader(
+            $response,
+            'WWW-Authenticate',
+            'WSSE realm="Secured Frontend API", profile="UsernameToken"'
+        );
     }
 
     public function testApiBackendRequestWithFrontendAccessTokenShouldReturnUnauthorizedStatusCode()
@@ -269,7 +272,13 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
             ['HTTP_AUTHORIZATION' => $authorizationHeader],
             false
         );
-        $this->assertResponseStatusCodeEquals($response, Response::HTTP_UNAUTHORIZED);
+        self::assertResponseStatusCodeEquals($response, Response::HTTP_UNAUTHORIZED);
+        self::assertSame('', $response->getContent());
+        self::assertResponseHeader(
+            $response,
+            'WWW-Authenticate',
+            'WSSE realm="Secured API", profile="UsernameToken"'
+        );
     }
 
     public function testGetFrontendRefreshedTokenByFrontendRefreshToken()

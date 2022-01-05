@@ -11,9 +11,6 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class FrontendAuthorizationCodeGrantServerTest extends OAuthServerTestCase
 {
-    /**
-     * {@inheritdoc}
-     */
     protected function setUp(): void
     {
         if (!class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {
@@ -77,7 +74,7 @@ class FrontendAuthorizationCodeGrantServerTest extends OAuthServerTestCase
         $response = $this->sendAuthCodeRequest($type, $clientId, $redirectUri, true);
 
         $parameters = [];
-        self::assertEquals(Response::HTTP_FOUND, $response->getStatusCode());
+        self::assertResponseStatusCodeEquals($response, Response::HTTP_FOUND);
         $redirectUrl = $response->headers->get('location');
         parse_str(parse_url($redirectUrl, PHP_URL_QUERY), $parameters);
 
@@ -131,7 +128,7 @@ class FrontendAuthorizationCodeGrantServerTest extends OAuthServerTestCase
         );
 
         $parameters = [];
-        self::assertEquals(Response::HTTP_FOUND, $response->getStatusCode());
+        self::assertResponseStatusCodeEquals($response, Response::HTTP_FOUND);
         $redirectUrl = $response->headers->get('location');
         parse_str(parse_url($redirectUrl, PHP_URL_QUERY), $parameters);
 
@@ -151,7 +148,7 @@ class FrontendAuthorizationCodeGrantServerTest extends OAuthServerTestCase
         );
 
         $parameters = [];
-        self::assertEquals(Response::HTTP_FOUND, $response->getStatusCode());
+        self::assertResponseStatusCodeEquals($response, Response::HTTP_FOUND);
         $redirectUrl = $response->headers->get('location');
         parse_str(parse_url($redirectUrl, PHP_URL_QUERY), $parameters);
 
@@ -174,12 +171,13 @@ class FrontendAuthorizationCodeGrantServerTest extends OAuthServerTestCase
             true
         );
 
-        self::assertEquals(Response::HTTP_UNAUTHORIZED, $response->getStatusCode());
+        self::assertResponseStatusCodeEquals($response, Response::HTTP_UNAUTHORIZED);
         self::assertEquals(
             '{"error":"invalid_client","error_description":"Client authentication failed",'
             . '"message":"Client authentication failed"}',
             $response->getContent()
         );
+        self::assertResponseHeader($response, 'WWW-Authenticate', 'Basic realm="OAuth"');
     }
 
     public function testTryToGetFrontendAuthCodeWithWithWrongClientId()
@@ -192,12 +190,13 @@ class FrontendAuthorizationCodeGrantServerTest extends OAuthServerTestCase
             true
         );
 
-        self::assertEquals(Response::HTTP_UNAUTHORIZED, $response->getStatusCode());
+        self::assertResponseStatusCodeEquals($response, Response::HTTP_UNAUTHORIZED);
         self::assertEquals(
             '{"error":"invalid_client","error_description":"Client authentication failed",'
             . '"message":"Client authentication failed"}',
             $response->getContent()
         );
+        self::assertResponseHeader($response, 'WWW-Authenticate', 'Basic realm="OAuth"');
     }
 
     public function testTryToGetFrontendAuthCodeOnBackendClient()
@@ -210,7 +209,7 @@ class FrontendAuthorizationCodeGrantServerTest extends OAuthServerTestCase
             true
         );
 
-        self::assertEquals(Response::HTTP_NOT_FOUND, $response->getStatusCode());
+        self::assertResponseStatusCodeEquals($response, Response::HTTP_NOT_FOUND);
     }
 
     public function testTryToGetBackendAuthCodeOnFrontendClient()
@@ -223,7 +222,7 @@ class FrontendAuthorizationCodeGrantServerTest extends OAuthServerTestCase
             true
         );
 
-        self::assertEquals(Response::HTTP_NOT_FOUND, $response->getStatusCode());
+        self::assertResponseStatusCodeEquals($response, Response::HTTP_NOT_FOUND);
     }
 
     public function testGetFrontendAuthToken()
@@ -258,7 +257,13 @@ class FrontendAuthorizationCodeGrantServerTest extends OAuthServerTestCase
             false
         );
 
-        self::assertEquals(Response::HTTP_UNAUTHORIZED, $response->getStatusCode());
+        self::assertResponseStatusCodeEquals($response, Response::HTTP_UNAUTHORIZED);
+        self::assertSame('', $response->getContent());
+        self::assertResponseHeader(
+            $response,
+            'WWW-Authenticate',
+            'WSSE realm="Secured API", profile="UsernameToken"'
+        );
     }
 
     public function testTryToGetAuthTokenWithWrongAuthCode()
