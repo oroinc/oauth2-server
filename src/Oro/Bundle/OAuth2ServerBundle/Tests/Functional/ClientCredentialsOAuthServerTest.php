@@ -12,9 +12,6 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
 {
-    /**
-     * {@inheritdoc}
-     */
     protected function setUp(): void
     {
         $this->initClient();
@@ -188,6 +185,12 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
         );
 
         self::assertResponseStatusCodeEquals($response, Response::HTTP_UNAUTHORIZED);
+        self::assertSame('', $response->getContent());
+        self::assertResponseHeader(
+            $response,
+            'WWW-Authenticate',
+            'WSSE realm="Secured API", profile="UsernameToken"'
+        );
     }
 
     public function testApiRequestWithCorrectAccessTokenButForDeactivatedClientShouldReturnUnauthorizedStatusCode()
@@ -207,6 +210,12 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
         );
 
         self::assertResponseStatusCodeEquals($response, Response::HTTP_UNAUTHORIZED);
+        self::assertSame('', $response->getContent());
+        self::assertResponseHeader(
+            $response,
+            'WWW-Authenticate',
+            'WSSE realm="Secured API", profile="UsernameToken"'
+        );
     }
 
     public function testOptionsRequest()
