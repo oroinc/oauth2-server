@@ -114,7 +114,16 @@ class AuthorizationTokenController extends AbstractController
 
     private function isAllowedOrigin(string $origin): bool
     {
-        return \in_array($origin, $this->getParameter('oro_oauth2_server.cors.allow_origins'), true);
+        /** @var string[] $allowedOrigins */
+        $allowedOrigins = $this->getParameter('oro_oauth2_server.cors.allow_origins');
+
+        foreach ($allowedOrigins as $allowedOrigin) {
+            if ('*' === $allowedOrigin || $origin === $allowedOrigin) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function getAuthorizationServer(): AuthorizationServer

@@ -14,9 +14,6 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class PasswordGrantOAuthServerTest extends OAuthServerTestCase
 {
-    /**
-     * {@inheritdoc}
-     */
     protected function setUp(): void
     {
         $this->initClient();
@@ -267,6 +264,12 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
         );
 
         self::assertResponseStatusCodeEquals($response, Response::HTTP_UNAUTHORIZED);
+        self::assertSame('', $response->getContent());
+        self::assertResponseHeader(
+            $response,
+            'WWW-Authenticate',
+            'WSSE realm="Secured API", profile="UsernameToken"'
+        );
     }
 
     public function testGetRefreshedAuthToken()
@@ -351,7 +354,13 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
             ['HTTP_AUTHORIZATION' => $authorizationHeader],
             false
         );
-        $this->assertResponseStatusCodeEquals($response, Response::HTTP_UNAUTHORIZED);
+        self::assertResponseStatusCodeEquals($response, Response::HTTP_UNAUTHORIZED);
+        self::assertSame('', $response->getContent());
+        self::assertResponseHeader(
+            $response,
+            'WWW-Authenticate',
+            'WSSE realm="Secured API", profile="UsernameToken"'
+        );
 
         // test that refreshed access token can be used to get data
         $response = $this->get(

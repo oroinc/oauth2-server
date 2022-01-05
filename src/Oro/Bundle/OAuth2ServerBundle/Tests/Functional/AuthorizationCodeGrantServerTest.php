@@ -12,9 +12,8 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class AuthorizationCodeGrantServerTest extends OAuthServerTestCase
 {
-    /**
-     * {@inheritdoc}
-     */
+    private const WWW_AUTHENTICATE_HEADER_VALUE = 'Basic realm="OAuth"';
+
     protected function setUp(): void
     {
         $this->initClient();
@@ -66,7 +65,7 @@ class AuthorizationCodeGrantServerTest extends OAuthServerTestCase
         $response = $this->sendAuthCodeRequest($clientId, $redirectUri, true, $additionalParameters);
 
         $parameters = [];
-        self::assertEquals(Response::HTTP_FOUND, $response->getStatusCode());
+        self::assertResponseStatusCodeEquals($response, Response::HTTP_FOUND);
         $redirectUrl = $response->headers->get('location');
         parse_str(parse_url($redirectUrl, PHP_URL_QUERY), $parameters);
 
@@ -111,7 +110,7 @@ class AuthorizationCodeGrantServerTest extends OAuthServerTestCase
 
         $response = $this->client->getResponse();
 
-        self::assertEquals(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
+        self::assertResponseStatusCodeEquals($response, Response::HTTP_BAD_REQUEST);
         self::assertEquals(
             [
                 'error' => 'unsupported_grant_type',
@@ -204,7 +203,7 @@ class AuthorizationCodeGrantServerTest extends OAuthServerTestCase
         );
 
         $parameters = [];
-        self::assertEquals(Response::HTTP_FOUND, $response->getStatusCode());
+        self::assertResponseStatusCodeEquals($response, Response::HTTP_FOUND);
         $redirectUrl = $response->headers->get('location');
         parse_str(parse_url($redirectUrl, PHP_URL_QUERY), $parameters);
 
@@ -223,7 +222,7 @@ class AuthorizationCodeGrantServerTest extends OAuthServerTestCase
         );
 
         $parameters = [];
-        self::assertEquals(Response::HTTP_FOUND, $response->getStatusCode());
+        self::assertResponseStatusCodeEquals($response, Response::HTTP_FOUND);
         $redirectUrl = $response->headers->get('location');
         parse_str(parse_url($redirectUrl, PHP_URL_QUERY), $parameters);
 
@@ -245,12 +244,13 @@ class AuthorizationCodeGrantServerTest extends OAuthServerTestCase
             true
         );
 
-        self::assertEquals(Response::HTTP_UNAUTHORIZED, $response->getStatusCode());
+        self::assertResponseStatusCodeEquals($response, Response::HTTP_UNAUTHORIZED);
         self::assertEquals(
             '{"error":"invalid_client","error_description":"Client authentication failed",'
             .'"message":"Client authentication failed"}',
             $response->getContent()
         );
+        self::assertResponseHeader($response, 'WWW-Authenticate', self::WWW_AUTHENTICATE_HEADER_VALUE);
     }
 
     public function testTryToGetAuthCodeWithWithWrongClientId(): void
@@ -262,12 +262,13 @@ class AuthorizationCodeGrantServerTest extends OAuthServerTestCase
             true
         );
 
-        self::assertEquals(Response::HTTP_UNAUTHORIZED, $response->getStatusCode());
+        self::assertResponseStatusCodeEquals($response, Response::HTTP_UNAUTHORIZED);
         self::assertEquals(
             '{"error":"invalid_client","error_description":"Client authentication failed",'
             .'"message":"Client authentication failed"}',
             $response->getContent()
         );
+        self::assertResponseHeader($response, 'WWW-Authenticate', self::WWW_AUTHENTICATE_HEADER_VALUE);
     }
 
     public function testGetAuthToken(): void
