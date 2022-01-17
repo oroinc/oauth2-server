@@ -31,6 +31,14 @@ class FrontendPasswordGrantVisitorOAuthServerTest extends OAuthServerTestCase
         ]);
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    protected function getListRouteName(): string
+    {
+        return 'oro_frontend_rest_api_list';
+    }
+
     private function sendFrontendPasswordAccessTokenRequest(
         string $userName = 'guest',
         string $password = 'guest',
@@ -164,13 +172,5 @@ class FrontendPasswordGrantVisitorOAuthServerTest extends OAuthServerTestCase
         );
         $responseContent = $this->updateResponseContent('cget_shopping_list.yml', $response);
         $this->assertResponseContains($responseContent, $response);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function getListRouteName()
-    {
-        return 'oro_frontend_rest_api_list';
     }
 }

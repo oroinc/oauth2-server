@@ -235,7 +235,7 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
         self::assertResponseHeaderNotExists($response, 'Access-Control-Allow-Credentials');
     }
 
-    public function methodsProvider()
+    public function methodsProvider(): array
     {
         return [
             ['ANOTHER'],
@@ -250,7 +250,7 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
     /**
      * @dataProvider methodsProvider
      */
-    public function testOptionsPreflightRequest($requestMethod)
+    public function testOptionsPreflightRequest(string $requestMethod)
     {
         $response = $this->sendRequest(
             'OPTIONS',
