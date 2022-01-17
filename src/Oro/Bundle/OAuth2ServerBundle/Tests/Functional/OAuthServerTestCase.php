@@ -12,7 +12,7 @@ class OAuthServerTestCase extends RestJsonApiTestCase
      * {@inheritdoc}
      * The method is overridden to not add HTTP_X-WSSE header to the request.
      */
-    protected function checkWsseAuthHeader(array &$server)
+    protected function checkWsseAuthHeader(array &$server): void
     {
     }
 
@@ -28,13 +28,7 @@ class OAuthServerTestCase extends RestJsonApiTestCase
         return parent::isStatelessRequest($server);
     }
 
-    /**
-     * @param array $requestData
-     * @param int   $expectedStatusCode
-     *
-     * @return array
-     */
-    protected function sendTokenRequest(array $requestData, int $expectedStatusCode = Response::HTTP_OK)
+    protected function sendTokenRequest(array $requestData, int $expectedStatusCode = Response::HTTP_OK): array
     {
         $response = $this->sendRequest(
             'POST',
