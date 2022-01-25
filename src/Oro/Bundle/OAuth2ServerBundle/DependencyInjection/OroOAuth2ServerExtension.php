@@ -134,15 +134,15 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
     private function configureAuthorizationServer(ContainerBuilder $container, array $config): void
     {
         $container->getDefinition(self::PRIVATE_KEY_SERVICE)
-            ->setArgument(0, $config['private_key']);
+            ->setArgument('$keyPath', $config['private_key']);
 
         $privateKey = new Definition(
             CryptKey::class,
             [new Expression(sprintf('service("%s").getKeyPath()', self::PRIVATE_KEY_SERVICE)), null, false]
         );
         $authorizationServer = $container->getDefinition(self::AUTHORIZATION_SERVER_SERVICE)
-            ->setArgument(3, $privateKey)
-            ->setArgument(4, $config['encryption_key']);
+            ->setArgument('$privateKey', $privateKey)
+            ->setArgument('$encryptionKey', $config['encryption_key']);
 
         $accessTokenLifetime = $this->getTokenLifetime($config['access_token_lifetime']);
         $refreshTokenEnabled = $config['enable_refresh_token'];
@@ -201,7 +201,7 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
     private function configureResourceServer(ContainerBuilder $container, array $config): void
     {
         $container->getDefinition(self::PUBLIC_KEY_SERVICE)
-            ->setArgument(0, $config['public_key']);
+            ->setArgument('$keyPath', $config['public_key']);
     }
 
     private function getTokenLifetime(int $lifetimeInSeconds): string

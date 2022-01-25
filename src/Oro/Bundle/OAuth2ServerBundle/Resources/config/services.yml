@@ -229,8 +229,8 @@ services:
             - '@oro_oauth2_server.league.repository.client_repository'
             - '@oro_oauth2_server.league.repository.access_token_repository'
             - '@oro_oauth2_server.league.repository.scope_repository'
-            - ~ # private key; it is set by Oro\Bundle\OAuth2ServerBundle\DependencyInjection\OroOAuth2ServerExtension
-            - ~ # encryption key; it is set by Oro\Bundle\OAuth2ServerBundle\DependencyInjection\OroOAuth2ServerExtension
+            - !abstract '$privateKey defined in Oro\Bundle\OAuth2ServerBundle\DependencyInjection\OroOAuth2ServerExtension'
+            - !abstract '$encryptionKey defined in Oro\Bundle\OAuth2ServerBundle\DependencyInjection\OroOAuth2ServerExtension'
 
     League\OAuth2\Server\AuthorizationServer:
         alias: oro_oauth2_server.league.authorization_server
@@ -244,15 +244,14 @@ services:
 
     oro_oauth2_server.league.private_key:
         class: Oro\Bundle\OAuth2ServerBundle\League\CryptKeyFile
-        public: false
         arguments:
-            - ~ # private key; it is set by Oro\Bundle\OAuth2ServerBundle\DependencyInjection\OroOAuth2ServerExtension
+            - !abstract '$keyPath defined in Oro\Bundle\OAuth2ServerBundle\DependencyInjection\OroOAuth2ServerExtension'
 
     oro_oauth2_server.league.public_key:
         class: Oro\Bundle\OAuth2ServerBundle\League\CryptKeyFile
         public: false
         arguments:
-            - ~ # public key; it is set by Oro\Bundle\OAuth2ServerBundle\DependencyInjection\OroOAuth2ServerExtension
+            - !abstract '$keyPath defined in Oro\Bundle\OAuth2ServerBundle\DependencyInjection\OroOAuth2ServerExtension'
 
     oro_oauth2_server.security.user_checker:
         class: Oro\Bundle\OAuth2ServerBundle\Security\OAuthUserChecker
