@@ -1,17 +1,16 @@
 {% import '@OroUI/macros.html.twig' as UI %}
 {% import '@OroDataGrid/macros.html.twig' as dataGrid %}
 
-<div class="oauth-clients-container">
-    {% if not encryptionKeysExist %}
+{% if not encryptionKeysExist %}
     <div class="alert alert-warning">{{ 'oro.oauth2server.no_encryption_keys'|trans }}</div>
-    {% endif %}
-
+{% endif %}
+<div class="oauth-clients-container">
     {% if creationGranted %}
-    <div class="filter-box btn-container clearfix">
+    <div class="user-fieldset-block-actions clearfix">
         <div class="pull-right">
             {{ UI.clientButton({
                 'dataUrl': path('oro_oauth2_server_client_create', {entityClass: entityClass, entityId: entityId}),
-                'aCss': 'no-hash btn-sm',
+                'aCss': 'no-hash btn-medium',
                 'label': 'oro.oauth2server.client.action.add'|trans,
                 'widget': {
                     'type': 'dialog',
