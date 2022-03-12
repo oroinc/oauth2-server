@@ -5,10 +5,9 @@ namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Form\Type;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\Persistence\ManagerRegistry;
-use Oro\Bundle\EntityConfigBundle\Provider\ConfigProvider;
 use Oro\Bundle\FormBundle\Form\Extension\CollectionExtension;
 use Oro\Bundle\FormBundle\Form\Extension\ConstraintAsOptionExtension;
-use Oro\Bundle\FormBundle\Form\Extension\TooltipFormExtension;
+use Oro\Bundle\FormBundle\Tests\Unit\Stub\TooltipFormExtensionStub;
 use Oro\Bundle\FormBundle\Validator\ConstraintFactory;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Form\Type\ClientType;
@@ -16,7 +15,6 @@ use Oro\Bundle\OAuth2ServerBundle\Provider\ClientOwnerOrganizationsProvider;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Oro\Bundle\TranslationBundle\Form\Extension\TranslatableChoiceTypeExtension;
 use Oro\Bundle\TranslationBundle\Translation\IdentityTranslator;
-use Oro\Bundle\TranslationBundle\Translation\Translator;
 use Oro\Component\Testing\ReflectionUtil;
 use Oro\Component\Testing\Unit\PreloadedExtension;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
@@ -57,7 +55,7 @@ class ClientTypeTest extends TypeTestCase
     /**
      * {@inheritdoc}
      */
-    protected function getExtensions()
+    protected function getExtensions(): array
     {
         $validator = new RecursiveValidator(
             new ExecutionContextFactory(new IdentityTranslator()),
@@ -73,10 +71,7 @@ class ClientTypeTest extends TypeTestCase
                 ],
                 [
                     FormType::class       => [
-                        new TooltipFormExtension(
-                            $this->createMock(ConfigProvider::class),
-                            $this->createMock(Translator::class)
-                        ),
+                        new TooltipFormExtensionStub($this),
                         new FormTypeValidatorExtension($validator),
                         new ConstraintAsOptionExtension(new ConstraintFactory())
                     ],
@@ -97,13 +92,7 @@ class ClientTypeTest extends TypeTestCase
         return $this->factory->create(ClientType::class, $client, $options);
     }
 
-    /**
-     * @param int    $id
-     * @param string $name
-     *
-     * @return Organization|\PHPUnit\Framework\MockObject\MockObject
-     */
-    private function getOrganization($id, $name)
+    private function getOrganization(int $id, string $name): Organization
     {
         $organization = $this->createMock(Organization::class);
         $organization->expects(self::any())
