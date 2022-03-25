@@ -106,7 +106,7 @@ class OrganizationClientDatagridListener
                     'organization' => [
                         'type'         => 'choice',
                         'data_name'    => 'org.id',
-                        'enabled'      => true,
+                        'renderable'   => true,
                         'translatable' => true,
                         'options'      => [
                             'field_options' => [
