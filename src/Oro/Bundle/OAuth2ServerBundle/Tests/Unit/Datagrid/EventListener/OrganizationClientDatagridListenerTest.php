@@ -322,7 +322,7 @@ class OrganizationClientDatagridListenerTest extends \PHPUnit\Framework\TestCase
                 'organization' => [
                     'type'         => 'choice',
                     'data_name'    => 'org.id',
-                    'enabled'      => true,
+                    'renderable'   => true,
                     'translatable' => true,
                     'options'      => [
                         'field_options' => [
