@@ -8,6 +8,7 @@ use League\OAuth2\Server\Exception\OAuthServerException;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
 use Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\AuthorizeClientHandler;
+use Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\Exception\ExceptionHandler;
 use Oro\Bundle\OAuth2ServerBundle\League\Entity\UserEntity;
 use Oro\Bundle\OAuth2ServerBundle\League\Exception\CryptKeyNotFoundException;
 use Psr\Http\Message\ResponseInterface;
@@ -32,7 +33,8 @@ class AuthorizeClientController extends AbstractController
             LoggerInterface::class,
             ClientManager::class,
             AuthorizationServer::class,
-            AuthorizeClientHandler::class
+            AuthorizeClientHandler::class,
+            ExceptionHandler::class
         ]);
     }
 
@@ -84,6 +86,8 @@ class AuthorizeClientController extends AbstractController
                 return $authServer->completeAuthorizationRequest($authRequest, new Response());
             }
         } catch (OAuthServerException $exception) {
+            $this->get(ExceptionHandler::class)->handle($serverRequest, $exception);
+
             return $exception->generateHttpResponse(new Response());
         }
 

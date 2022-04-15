@@ -5,9 +5,8 @@ namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Handler\AuthorizeClient;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\LogAuthorizeClientHandler;
 use Oro\Bundle\UserBundle\Entity\User;
-use Oro\Bundle\UserBundle\Provider\UserLoggingInfoProviderInterface;
+use Oro\Bundle\UserBundle\Security\UserLoginAttemptLogger;
 use Oro\Component\Testing\Unit\EntityTrait;
-use Psr\Log\LoggerInterface;
 
 class LogAuthorizeClientHandlerTest extends \PHPUnit\Framework\TestCase
 {
@@ -18,26 +17,21 @@ class LogAuthorizeClientHandlerTest extends \PHPUnit\Framework\TestCase
         $client = $this->getEntity(Client::class, ['id' => 123, 'identifier' => 'test_identifier']);
         $user = new User();
 
-        $loggingInfoProvider = $this->createMock(UserLoggingInfoProviderInterface::class);
-        $loggingInfoProvider->expects(self::once())
-            ->method('getUserLoggingInfo')
-            ->with($user)
-            ->willReturn(['id' => 14]);
-        $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects(self::once())
-            ->method('notice')
+        $userLoginAttemptLogger = $this->createMock(UserLoginAttemptLogger::class);
+        $userLoginAttemptLogger->expects(self::once())
+            ->method('logSuccessLoginAttempt')
             ->with(
-                'OAuth application authorized',
+                $user,
+                'OAuthCode',
                 [
-                    'id'       => 14,
                     'OAuthApp' => [
                         'id'         => 123,
                         'identifier' => 'test_identifier',
-                    ],
+                    ]
                 ]
             );
 
-        $handler = new LogAuthorizeClientHandler($logger, $loggingInfoProvider);
+        $handler = new LogAuthorizeClientHandler($userLoginAttemptLogger);
         $handler->handle($client, $user, true);
     }
 
@@ -46,26 +40,21 @@ class LogAuthorizeClientHandlerTest extends \PHPUnit\Framework\TestCase
         $client = $this->getEntity(Client::class, ['id' => 123, 'identifier' => 'test_identifier']);
         $user = new User();
 
-        $loggingInfoProvider = $this->createMock(UserLoggingInfoProviderInterface::class);
-        $loggingInfoProvider->expects(self::once())
-            ->method('getUserLoggingInfo')
-            ->with($user)
-            ->willReturn(['id' => 14]);
-        $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects(self::once())
-            ->method('notice')
+        $userLoginAttemptLogger = $this->createMock(UserLoginAttemptLogger::class);
+        $userLoginAttemptLogger->expects(self::once())
+            ->method('logFailedLoginAttempt')
             ->with(
-                'OAuth application not authorized',
+                $user,
+                'OAuthCode',
                 [
-                    'id'       => 14,
                     'OAuthApp' => [
                         'id'         => 123,
                         'identifier' => 'test_identifier',
-                    ],
+                    ]
                 ]
             );
 
-        $handler = new LogAuthorizeClientHandler($logger, $loggingInfoProvider);
+        $handler = new LogAuthorizeClientHandler($userLoginAttemptLogger);
         $handler->handle($client, $user, false);
     }
 }

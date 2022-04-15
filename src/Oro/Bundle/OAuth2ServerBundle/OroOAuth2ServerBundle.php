@@ -2,6 +2,7 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle;
 
+use Oro\Bundle\OAuth2ServerBundle\DependencyInjection\Compiler\AddSkippedLogAttemptsFirewalls;
 use Oro\Bundle\OAuth2ServerBundle\DependencyInjection\Compiler\SkipSyncTrackingPass;
 use Oro\Bundle\OAuth2ServerBundle\DependencyInjection\OroOAuth2ServerExtension;
 use Oro\Bundle\OAuth2ServerBundle\DependencyInjection\Security\Factory\OAuth2Factory;
@@ -38,5 +39,6 @@ class OroOAuth2ServerBundle extends Bundle
         $extension->addSecurityListenerFactory(new OAuth2Factory());
 
         $container->addCompilerPass(new SkipSyncTrackingPass());
+        $container->addCompilerPass(new AddSkippedLogAttemptsFirewalls());
     }
 }

@@ -2,7 +2,7 @@ oro:
     oauth2server:
         client:
             entity_label: OAuth Application
-            entity_frontend_label: Storefront OAuth Application
+            entity_frontend_label: Customer User OAuth Application
             entity_plural_label: OAuth Applications
             entity_grid_all_view_label: All %entity_plural_label%
             id:
@@ -80,7 +80,7 @@ oro:
         no_encryption_keys: OAuth authorization is not available as encryption keys configuration was not complete. Please contact your administrator.
         menu:
             backoffice_oauth_application.label: OAuth Applications
-            frontend_oauth_application.label: Storefront OAuth Applications
+            frontend_oauth_application.label: Customer User OAuth Applications
         auth_code:
             grant: Grant
             cancel: Cancel
@@ -89,3 +89,7 @@ oro:
             authorize_description: |
                 <p>Granting <b>"%app_name%"</b> permission will provide access to all API resources available to your user based on your role and permissions. This means that this application will be able to potentially read, edit, and delete information on your behalf.</p>
                 <p>Please be selective of which third party applications are granted access as well as the level of permission granted to them.</p>
+
+        login_source:
+            oauth: OAuth token
+            oauth_auth_code: OAuth auth code

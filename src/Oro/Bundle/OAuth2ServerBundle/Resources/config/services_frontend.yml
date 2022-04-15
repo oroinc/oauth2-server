@@ -7,6 +7,7 @@ services:
         tags:
             - { name: container.service_subscriber }
             - { name: container.service_subscriber, id: oro_oauth2_server.handler.frontend_authorize_client.handler, key: Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\AuthorizeClientHandler }
+            - { name: container.service_subscriber, id: oro_oauth2_server.handler.authorize_client.exception_handler, key: Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\Exception\ExceptionHandler }
 
     oro_oauth2_server.listener.frontend_routes_listener:
         class: Oro\Bundle\OAuth2ServerBundle\EventListener\FrontendRoutesListener
@@ -27,8 +28,6 @@ services:
     oro_oauth2_server.handler.frontend_authorize_client.log_handler:
         class: Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\LogAuthorizeClientHandler
         arguments:
-            - '@logger'
-            - '@oro_customer.provider.user_logging_info_provider'
+            - '@oro_customer.logger.customer_user_login_attempt'
         tags:
             - { name: oro_oauth2_server.frontend_authorize_client_handler }
-            - { name: monolog.logger, channel: oro_customer_user_security }
