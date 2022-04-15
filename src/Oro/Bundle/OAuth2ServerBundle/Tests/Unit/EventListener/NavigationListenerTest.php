@@ -68,14 +68,13 @@ class NavigationListenerTest extends \PHPUnit\Framework\TestCase
             ->willReturn(true);
 
         $menu = new MenuItem('test', new MenuFactory());
-        $menu->addChild('system_tab', []);
+        $menu->addChild('customers_tab');
         $event = new ConfigureMenuEvent($this->createMock(FactoryInterface::class), $menu);
 
         $this->listener->onNavigationConfigure($event);
 
-        $menuItem = $menu->getChild('system_tab')->getChild('frontend_oauth_applications');
+        $menuItem = $menu->getChild('customers_tab')->getChild('frontend_oauth_applications');
         $this->assertEquals('oro.oauth2server.menu.frontend_oauth_application.label', $menuItem->getLabel());
-        $this->assertEquals(21, $menuItem->getExtra('position'));
     }
 
     public function testOnNavigationConfigureWithSystemTabWhenUserIsNotGrantedToSeeOauthClients()
@@ -98,12 +97,12 @@ class NavigationListenerTest extends \PHPUnit\Framework\TestCase
             ->willReturn(false);
 
         $menu = new MenuItem('test', new MenuFactory());
-        $menu->addChild('system_tab', []);
+        $menu->addChild('customers_tab');
         $event = new ConfigureMenuEvent($this->createMock(FactoryInterface::class), $menu);
 
         $this->listener->onNavigationConfigure($event);
 
-        $this->assertNull($menu->getChild('system_tab')->getChild('frontend_oauth_applications'));
+        $this->assertNull($menu->getChild('customers_tab')->getChild('frontend_oauth_applications'));
     }
 
     public function testOnNavigationConfigureWithSystemTabWothoutUserInToken()
@@ -120,12 +119,12 @@ class NavigationListenerTest extends \PHPUnit\Framework\TestCase
             ->willReturn(true);
 
         $menu = new MenuItem('test', new MenuFactory());
-        $menu->addChild('system_tab', []);
+        $menu->addChild('customers_tab');
         $event = new ConfigureMenuEvent($this->createMock(FactoryInterface::class), $menu);
 
         $this->listener->onNavigationConfigure($event);
 
-        $this->assertNull($menu->getChild('system_tab')->getChild('frontend_oauth_applications'));
+        $this->assertNull($menu->getChild('customers_tab')->getChild('frontend_oauth_applications'));
     }
 
     public function testOnNavigationConfigureWithoutCustomerPortal()

@@ -5,6 +5,7 @@ namespace Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\UserBundle\Entity\UserInterface;
 use Oro\Bundle\UserBundle\Provider\UserLoggingInfoProviderInterface;
+use Oro\Bundle\UserBundle\Security\UserLoginAttemptLogger;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -12,11 +13,13 @@ use Psr\Log\LoggerInterface;
  */
 class LogAuthorizeClientHandler implements AuthorizeClientHandlerInterface
 {
-    private const APPLICATION_AUTHORIZED = 'OAuth application authorized';
-    private const APPLICATION_NOT_AUTHORIZED = 'OAuth application not authorized';
-
+    /** @deprecated */
     private LoggerInterface $logger;
+    /** @deprecated */
     private UserLoggingInfoProviderInterface $loggingInfoProvider;
+
+    private UserLoginAttemptLogger $userLoginAttemptLogger;
+
 
     public function __construct(LoggerInterface $logger, UserLoggingInfoProviderInterface $loggingInfoProvider)
     {
@@ -25,21 +28,36 @@ class LogAuthorizeClientHandler implements AuthorizeClientHandlerInterface
     }
 
     /**
+     * @deprecated
+     */
+    public function setUserLoginAttemptLogger(UserLoginAttemptLogger $userLoginAttemptLogger): void
+    {
+        $this->userLoginAttemptLogger = $userLoginAttemptLogger;
+    }
+
+    /**
      * {@inheritDoc}
      */
     public function handle(Client $client, UserInterface $user, bool $isAuthorized): void
     {
-        $this->logger->notice(
-            $isAuthorized ? self::APPLICATION_AUTHORIZED : self::APPLICATION_NOT_AUTHORIZED,
-            array_merge(
-                $this->loggingInfoProvider->getUserLoggingInfo($user),
-                [
-                    'OAuthApp' => [
-                        'id'         => $client->getId(),
-                        'identifier' => $client->getIdentifier()
-                    ]
-                ]
-            )
-        );
+        if ($isAuthorized) {
+            $this->userLoginAttemptLogger->logSuccessLoginAttempt(
+                $user,
+                'OAuthCode',
+                ['OAuthApp' => [
+                    'id'         => $client->getId(),
+                    'identifier' => $client->getIdentifier()
+                ]]
+            );
+        } else {
+            $this->userLoginAttemptLogger->logFailedLoginAttempt(
+                $user,
+                'OAuthCode',
+                ['OAuthApp' => [
+                    'id'         => $client->getId(),
+                    'identifier' => $client->getIdentifier()
+                ]]
+            );
+        }
     }
 }

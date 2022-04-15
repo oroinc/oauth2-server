@@ -23,6 +23,7 @@ services:
         tags:
             - { name: container.service_subscriber }
             - { name: container.service_subscriber, id: oro_oauth2_server.handler.authorize_client.handler, key: Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\AuthorizeClientHandler }
+            - { name: container.service_subscriber, id: oro_oauth2_server.handler.authorize_client.exception_handler, key: Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\Exception\ExceptionHandler }
 
     Oro\Bundle\OAuth2ServerBundle\Controller\AuthorizationTokenController:
         calls:

@@ -40,6 +40,9 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
     private const AUTH_CODE_REPOSITORY_SERVICE     = 'oro_oauth2_server.league.repository.auth_code_repository';
     private const FRONTEND_USER_LOADER_SERVICE     = 'oro_customer.security.user_loader';
     private const CUSTOMER_VISITOR_MANAGER_SERVICE = 'oro_customer.customer_visitor_manager';
+    private const CUSTOMER_LOGIN_SOURCES           = 'oro_customer_user.login_sources';
+
+    private const AUTH_CODE_LOG_ATTEMPT_HELPER = 'oro_oauth2_server.auth_code_log_attempt.helper';
 
     /**
      * {@inheritdoc}
@@ -66,6 +69,8 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
         $this->configureUserRepository($container);
         $this->configureAuthorizationServer($container, $config['authorization_server']);
         $this->configureResourceServer($container, $config['resource_server']);
+        $this->configureCustomerUserLoginAttempts($container);
+        $this->configureAuthCodeLogAttemptHelper($container, $config['authorization_server']);
     }
 
     /**
@@ -351,5 +356,25 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
             'oro_organization_pro',
             ['ignore_preferred_organization_tokens' => [OAuth2Token::class]]
         );
+    }
+
+    private function configureCustomerUserLoginAttempts(ContainerBuilder $container): void
+    {
+        // add the OAuth login source here to avoid creation of a bridge for the customer-portal package
+        if (class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {
+            $container->setParameter(
+                self::CUSTOMER_LOGIN_SOURCES,
+                array_merge(
+                    $container->getParameter(self::CUSTOMER_LOGIN_SOURCES),
+                    ['OAuth' => ['label' => 'oro.oauth2server.login_source.oauth', 'code' => 20]]
+                )
+            );
+        }
+    }
+
+    private function configureAuthCodeLogAttemptHelper(ContainerBuilder $container, array $config): void
+    {
+        $container->getDefinition(self::AUTH_CODE_LOG_ATTEMPT_HELPER)
+            ->addMethodCall('setEncryptionKey', [$config['encryption_key']]);
     }
 }

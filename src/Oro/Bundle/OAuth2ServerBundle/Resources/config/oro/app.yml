@@ -41,3 +41,12 @@ oro_oauth2_server:
             - api_wsse_secured
             - frontend_api_wsse_secured
             - wsse_secured
+
+oro_user:
+    login_sources:
+        OAuth:
+            label: oro.oauth2server.login_source.oauth
+            code: 20
+        OAuthCode:
+            label: oro.oauth2server.login_source.oauth_auth_code
+            code: 25

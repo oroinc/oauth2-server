@@ -2,14 +2,13 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\EventListener;
 
-use Knp\Menu\ItemInterface;
 use Oro\Bundle\NavigationBundle\Event\ConfigureMenuEvent;
 use Oro\Bundle\OAuth2ServerBundle\Security\ApiFeatureChecker;
 use Oro\Bundle\SecurityBundle\Authentication\TokenAccessorInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
 /**
- * Adds storefront OAuth applications menu item if customer portal is installed and storefront api is enabled.
+ * Adds customer user OAuth applications menu item if customer portal is installed and storefront api is enabled.
  */
 class NavigationListener
 {
@@ -40,9 +39,8 @@ class NavigationListener
             return;
         }
 
-        /** @var ItemInterface $systemTabMenuItem */
-        $systemTabMenuItem = $event->getMenu()->getChild('system_tab');
-        if (!$systemTabMenuItem) {
+        $customersTabMenuItem = $event->getMenu()->getChild('customers_tab');
+        if (!$customersTabMenuItem) {
             return;
         }
 
@@ -54,14 +52,13 @@ class NavigationListener
             return;
         }
 
-        $systemTabMenuItem->addChild(
+        $customersTabMenuItem->addChild(
             'frontend_oauth_applications',
             [
                 'label'           => 'oro.oauth2server.menu.frontend_oauth_application.label',
                 'route'           => 'oro_oauth2_frontend_index',
                 'linkAttributes'  => ['class' => 'no-hash'],
                 'extras'          => [
-                    'position' => 21, // just after the User management.
                     'routes'   => [
                         'oro_oauth2_frontend_view',
                         'oro_oauth2_frontend_create',

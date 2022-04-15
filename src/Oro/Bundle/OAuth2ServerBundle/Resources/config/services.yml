@@ -348,6 +348,13 @@ services:
         tags:
             - { name: oro_oauth2_server.get_access_token_exception_handler }
 
+    oro_oauth2_server.handler.get_access_token.auth_code_grant_exception_handler:
+        class: Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Exception\AuthCodeGrantExceptionHandler
+        arguments:
+            - '@oro_oauth2_server.auth_code_log_attempt.helper'
+        tags:
+            - { name: oro_oauth2_server.get_access_token_exception_handler }
+
     oro_oauth2_server.handler.get_access_token.password_grant_exception_handler:
         class: Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Exception\PasswordGrantExceptionHandler
         public: false
@@ -355,6 +362,16 @@ services:
             - '@event_dispatcher'
             - '@oro_oauth2_server.client_manager'
             - '@?oro_frontend.request.frontend_helper'
+        tags:
+            - { name: oro_oauth2_server.get_access_token_exception_handler }
+
+    oro_oauth2_server.handler.get_access_token.client_credentials_grant_exception_handler:
+        class: Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Exception\ClientCredentialsGrantExceptionHandler
+        arguments:
+            - '@doctrine'
+            - '@oro_oauth2_server.client_manager'
+            - '@oro_user.logger.user_login_attempt'
+            - '@?oro_customer.logger.customer_user_login_attempt'
         tags:
             - { name: oro_oauth2_server.get_access_token_exception_handler }
 
@@ -380,6 +397,23 @@ services:
         tags:
             - { name: oro_oauth2_server.get_access_token_success_handler }
 
+    oro_oauth2_server.handler.get_access_token.client_credentials_grant_success_handler:
+        class: Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Success\ClientCredentialsGrantSuccessHandler
+        arguments:
+            - '@doctrine'
+            - '@oro_oauth2_server.client_manager'
+            - '@oro_user.logger.user_login_attempt'
+            - '@?oro_customer.logger.customer_user_login_attempt'
+        tags:
+            - { name: oro_oauth2_server.get_access_token_success_handler }
+
+    oro_oauth2_server.handler.get_access_token.auth_code_grant_success_handler:
+        class: Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Success\AuthCodeGrantSuccessHandler
+        arguments:
+            - '@oro_oauth2_server.auth_code_log_attempt.helper'
+        tags:
+            - { name: oro_oauth2_server.get_access_token_success_handler }
+
     oro_oauth2_server.handler.authorize_client.handler:
         class: Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\AuthorizeClientHandler
         arguments:
@@ -392,4 +426,32 @@ services:
             - '@oro_user.provider.user_logging_info_provider'
         tags:
             - { name: oro_oauth2_server.authorize_client_handler }
-            - { name: monolog.logger, channel: oro_account_security }
+        calls:
+            - [setUserLoginAttemptLogger, ['@oro_user.logger.user_login_attempt']]
+
+    oro_oauth2_server.handler.authorize_client.exception_handler:
+        class: Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\Exception\ExceptionHandler
+        arguments:
+            - !tagged_iterator oro_oauth2_server.authorize_client_exception_handler
+
+    oro_oauth2_server.handler.authorize_client.exception_log_handler:
+        class: Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\Exception\LogAuthorizeClientHandler
+        arguments:
+            - '@oro_oauth2_server.auth_code_log_attempt.helper'
+        tags:
+            - { name: oro_oauth2_server.authorize_client_exception_handler }
+
+    oro_oauth2_server.security.oauth_login_source_provider:
+        class: Oro\Bundle\OAuth2ServerBundle\Security\OauthLoginSourceProvider
+        tags:
+            - { name: oro_security.login_source_provider.success }
+            - { name: oro_security.login_source_provider.fail }
+
+    oro_oauth2_server.auth_code_log_attempt.helper:
+        class: Oro\Bundle\OAuth2ServerBundle\Provider\AuthCodeLogAttemptHelper
+        arguments:
+            - '@oro_oauth2_server.client_manager'
+            - '@oro_user.security.user_loader'
+            - '@oro_user.logger.user_login_attempt'
+            - '@?oro_customer.security.user_loader'
+            - '@?oro_customer.logger.customer_user_login_attempt'
