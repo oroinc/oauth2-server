@@ -24,23 +24,21 @@ use Symfony\Component\Yaml\Yaml;
 
 class OroOAuth2ServerExtension extends Extension implements PrependExtensionInterface
 {
-    public const ALIAS = 'oro_oauth2_server';
-
-    private const SUPPORTED_GRANT_TYPES_PARAM   = 'oro_oauth2_server.supported_grant_types';
+    private const SUPPORTED_GRANT_TYPES_PARAM = 'oro_oauth2_server.supported_grant_types';
     private const SUPPORTED_CLIENT_OWNERS_PARAM = 'oro_oauth2_server.supported_client_owners';
-    private const CORS_PREFLIGHT_MAX_AGE_PARAM  = 'oro_oauth2_server.cors.preflight_max_age';
-    private const CORS_ALLOW_ORIGINS_PARAM      = 'oro_oauth2_server.cors.allow_origins';
+    private const CORS_PREFLIGHT_MAX_AGE_PARAM = 'oro_oauth2_server.cors.preflight_max_age';
+    private const CORS_ALLOW_ORIGINS_PARAM = 'oro_oauth2_server.cors.allow_origins';
 
     private const PRIVATE_KEY_SERVICE = 'oro_oauth2_server.league.private_key';
-    private const PUBLIC_KEY_SERVICE  = 'oro_oauth2_server.league.public_key';
+    private const PUBLIC_KEY_SERVICE = 'oro_oauth2_server.league.public_key';
 
-    private const AUTHORIZATION_SERVER_SERVICE     = 'oro_oauth2_server.league.authorization_server';
-    private const USER_REPOSITORY_SERVICE          = 'oro_oauth2_server.league.repository.user_repository';
+    private const AUTHORIZATION_SERVER_SERVICE = 'oro_oauth2_server.league.authorization_server';
+    private const USER_REPOSITORY_SERVICE = 'oro_oauth2_server.league.repository.user_repository';
     private const REFRESH_TOKEN_REPOSITORY_SERVICE = 'oro_oauth2_server.league.repository.refresh_token_repository';
-    private const AUTH_CODE_REPOSITORY_SERVICE     = 'oro_oauth2_server.league.repository.auth_code_repository';
-    private const FRONTEND_USER_LOADER_SERVICE     = 'oro_customer.security.user_loader';
+    private const AUTH_CODE_REPOSITORY_SERVICE = 'oro_oauth2_server.league.repository.auth_code_repository';
+    private const FRONTEND_USER_LOADER_SERVICE = 'oro_customer.security.user_loader';
     private const CUSTOMER_VISITOR_MANAGER_SERVICE = 'oro_customer.customer_visitor_manager';
-    private const CUSTOMER_LOGIN_SOURCES           = 'oro_customer_user.login_sources';
+    private const CUSTOMER_LOGIN_SOURCES = 'oro_customer_user.login_sources';
 
     private const AUTH_CODE_LOG_ATTEMPT_HELPER = 'oro_oauth2_server.auth_code_log_attempt.helper';
 
@@ -97,9 +95,9 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
     /**
      * {@inheritdoc}
      */
-    public function getAlias()
+    public function getAlias(): string
     {
-        return self::ALIAS;
+        return Configuration::ROOT_NODE;
     }
 
     private function configureSupportedClientOwners(ContainerBuilder $container): void
