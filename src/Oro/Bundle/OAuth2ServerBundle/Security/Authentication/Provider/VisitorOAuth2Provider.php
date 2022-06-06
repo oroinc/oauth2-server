@@ -44,7 +44,7 @@ class VisitorOAuth2Provider extends OAuth2Provider
     /**
      * {@inheritdoc}
      */
-    protected function validateUserAndGetToken($user, Organization $organization): TokenInterface
+    protected function validateUserAndGetToken(object $user, Organization $organization): TokenInterface
     {
         if ($user instanceof AbstractUser) {
             return parent::validateUserAndGetToken($user, $organization);
