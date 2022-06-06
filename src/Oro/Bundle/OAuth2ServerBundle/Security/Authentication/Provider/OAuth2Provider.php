@@ -58,7 +58,17 @@ class OAuth2Provider implements AuthenticationProviderInterface
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
+     */
+    public function supports(TokenInterface $token): bool
+    {
+        return
+            $token instanceof OAuth2Token
+            && $this->providerKey === $token->getAttribute(OAuth2Token::PROVIDER_KEY_ATTRIBUTE);
+    }
+
+    /**
+     * {@inheritDoc}
      */
     public function authenticate(TokenInterface $token): TokenInterface
     {
@@ -87,11 +97,6 @@ class OAuth2Provider implements AuthenticationProviderInterface
         return $this->validateUserAndGetToken($this->getUser($client, $request), $organization);
     }
 
-    /**
-     * @param string $clientId
-     *
-     * @return Client
-     */
     private function getClient(?string $clientId): Client
     {
         if (!$clientId) {
@@ -110,18 +115,13 @@ class OAuth2Provider implements AuthenticationProviderInterface
         return $client;
     }
 
-    /**
-     * @param Client                 $client
-     * @param ServerRequestInterface $request
-     *
-     * @return object
-     */
-    private function getUser(Client $client, ServerRequestInterface $request)
+    private function getUser(Client $client, ServerRequestInterface $request): object
     {
         $ownerClass = $client->getOwnerEntityClass();
         $ownerId = $client->getOwnerEntityId();
 
         if (null !== $ownerClass && null !== $ownerId) {
+            $this->validateOwnerClass($ownerClass);
             $user = $this->doctrine->getRepository($ownerClass)->find($ownerId);
             if (null === $user) {
                 throw new AuthenticationException(\sprintf(
@@ -134,26 +134,11 @@ class OAuth2Provider implements AuthenticationProviderInterface
             $ownerClass = $client->isFrontend()
                 ? CustomerUser::class
                 : User::class;
-            if (!$this->userProvider->supportsClass($ownerClass)) {
-                throw new AuthenticationException(\sprintf(
-                    'The user provider does not support users of the type "%s".',
-                    $ownerClass
-                ));
-            }
+            $this->validateOwnerClass($ownerClass);
             $user = $this->userProvider->loadUserByUsername($request->getAttribute('oauth_user_id'));
         }
 
         return $user;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function supports(TokenInterface $token): bool
-    {
-        return
-            $token instanceof OAuth2Token
-            && $this->providerKey === $token->getAttribute(OAuth2Token::PROVIDER_KEY_ATTRIBUTE);
     }
 
     /**
@@ -171,5 +156,15 @@ class OAuth2Provider implements AuthenticationProviderInterface
         }
 
         return new OAuth2Token($user, $organization);
+    }
+
+    private function validateOwnerClass(string $ownerClass): void
+    {
+        if (!$this->userProvider->supportsClass($ownerClass)) {
+            throw new AuthenticationException(\sprintf(
+                'The user provider does not support users of the type "%s".',
+                $ownerClass
+            ));
+        }
     }
 }
