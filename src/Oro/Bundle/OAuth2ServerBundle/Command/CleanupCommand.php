@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Oro\Bundle\OAuth2ServerBundle\Command;
 
-use Oro\Bundle\CronBundle\Command\CronCommandInterface;
+use Oro\Bundle\CronBundle\Command\CronCommandScheduleDefinitionInterface;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Cleaner\AccessTokenCleaner;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Cleaner\AuthCodeCleaner;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Cleaner\ClientCleaner;
@@ -22,7 +22,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  * * OAuth 2.0 clients that belong to removed users
  * * outdated OAuth 2.0 auth codes
  */
-class CleanupCommand extends Command implements CronCommandInterface
+class CleanupCommand extends Command implements CronCommandScheduleDefinitionInterface
 {
     /** @var string */
     protected static $defaultName = 'oro:cron:oauth-server:cleanup';
@@ -45,14 +45,12 @@ class CleanupCommand extends Command implements CronCommandInterface
         $this->authCodeCleaner = $authCodeCleaner;
     }
 
-    public function getDefaultDefinition()
+    /**
+     * {@inheritDoc}
+     */
+    public function getDefaultDefinition(): string
     {
         return '0 0 * * *';
-    }
-
-    public function isActive()
-    {
-        return true;
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
