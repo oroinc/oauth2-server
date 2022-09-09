@@ -2,12 +2,11 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Success;
 
-use Oro\Bundle\CustomerBundle\Security\CustomerUserLoader;
 use Oro\Bundle\FrontendBundle\Request\FrontendHelper;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
 use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\OAuth2Token;
-use Oro\Bundle\UserBundle\Security\UserLoader;
+use Oro\Bundle\UserBundle\Security\UserLoaderInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -33,10 +32,10 @@ class PasswordGrantSuccessHandler implements SuccessHandlerInterface
     /** @var TokenStorageInterface */
     private $tokenStorage;
 
-    /** @var UserLoader */
+    /** @var UserLoaderInterface */
     private $backendUserLoader;
 
-    /** @var CustomerUserLoader */
+    /** @var UserLoaderInterface */
     private $frontendUserLoader;
 
     /** @var FrontendHelper */
@@ -47,8 +46,8 @@ class PasswordGrantSuccessHandler implements SuccessHandlerInterface
         RequestStack $requestStack,
         ClientManager $clientManager,
         TokenStorageInterface $tokenStorage,
-        UserLoader $backendUserLoader,
-        ?CustomerUserLoader $frontendUserLoader,
+        UserLoaderInterface $backendUserLoader,
+        ?UserLoaderInterface $frontendUserLoader,
         ?FrontendHelper $frontendHelper
     ) {
         $this->eventDispatcher = $eventDispatcher;
