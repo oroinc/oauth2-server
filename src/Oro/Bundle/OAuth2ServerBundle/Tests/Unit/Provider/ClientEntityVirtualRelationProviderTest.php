@@ -147,10 +147,7 @@ class ClientEntityVirtualRelationProviderTest extends \PHPUnit\Framework\TestCas
         );
     }
 
-    /**
-     * @return array
-     */
-    public function fieldDataProvider()
+    public function fieldDataProvider(): array
     {
         return [
             'incorrect class, incorrect field' => ['stdClass', 'test', false],
