@@ -5,6 +5,7 @@ navigation:
                 label: 'oro.oauth2server.menu.backoffice_oauth_application.label'
                 route: 'oro_oauth2_index'
                 acl_resource_id: oro_oauth2_view
+                position: 60
                 extras:
                     routes: ['oro_oauth2_view', 'oro_oauth2_create', 'oro_oauth2_update']
         tree:
