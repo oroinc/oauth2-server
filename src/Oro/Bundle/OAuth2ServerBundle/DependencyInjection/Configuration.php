@@ -72,7 +72,7 @@ class Configuration implements ConfigurationInterface
                     . ' How to generate an encryption key:'
                     . ' https://oauth2.thephpleague.com/installation/#string-password.'
                 )
-                ->defaultValue('%secret%')
+                ->defaultValue('%kernel.secret%')
                 ->cannotBeEmpty()
             ->end()
             ->arrayNode('cors')
