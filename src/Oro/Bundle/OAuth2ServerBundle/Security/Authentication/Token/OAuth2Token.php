@@ -2,6 +2,7 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token;
 
+use Oro\Bundle\EntityExtendBundle\EntityPropertyInfo;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Oro\Bundle\SecurityBundle\Authentication\Token\OrganizationAwareTokenInterface;
 use Oro\Bundle\SecurityBundle\Authentication\Token\RolesAndOrganizationAwareTokenTrait;
@@ -60,7 +61,7 @@ class OAuth2Token extends AbstractToken implements OrganizationAwareTokenInterfa
 
     private function hasIsGlobalMethod(Organization $organization): bool
     {
-        return method_exists($organization, 'getIsGlobal');
+        return EntityPropertyInfo::methodExists($organization, 'getIsGlobal');
     }
 
     /**
