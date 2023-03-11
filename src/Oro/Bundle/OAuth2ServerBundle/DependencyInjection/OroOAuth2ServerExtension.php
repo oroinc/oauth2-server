@@ -43,11 +43,11 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
     private const AUTH_CODE_LOG_ATTEMPT_HELPER = 'oro_oauth2_server.auth_code_log_attempt.helper';
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
-    public function load(array $configs, ContainerBuilder $container)
+    public function load(array $configs, ContainerBuilder $container): void
     {
-        $config = $this->processConfiguration(new Configuration(), $configs);
+        $config = $this->processConfiguration($this->getConfiguration($configs, $container), $configs);
 
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('services.yml');
@@ -72,9 +72,9 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
-    public function prepend(ContainerBuilder $container)
+    public function prepend(ContainerBuilder $container): void
     {
         if ($container instanceof ExtendedContainerBuilder) {
             $this->configureSecurityFirewalls($container);
@@ -93,7 +93,7 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function getAlias(): string
     {
@@ -212,15 +212,6 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
         return sprintf('PT%dS', $lifetimeInSeconds);
     }
 
-    /**
-     * @param ContainerBuilder $container
-     * @param Definition       $authorizationServer
-     * @param string           $grantTypeName
-     * @param Definition       $grantType
-     * @param string           $accessTokenLifetime
-     * @param string|null      $refreshTokenLifetime
-     * @param bool             $addToVisibleList
-     */
     private function enableGrantType(
         ContainerBuilder $container,
         Definition $authorizationServer,
@@ -228,7 +219,7 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
         Definition $grantType,
         string $accessTokenLifetime,
         string $refreshTokenLifetime = null,
-        $addToVisibleList = true
+        bool $addToVisibleList = true
     ): void {
         if ($refreshTokenLifetime) {
             $grantType->addMethodCall('setRefreshTokenTTL', [
@@ -284,7 +275,7 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
         $configs = $container->getExtensionConfig($this->getAlias());
         foreach ($configs as $config) {
             if (!empty($config['resource_server']['oauth_firewalls'])
-                && is_array($config['resource_server']['oauth_firewalls'])
+                && \is_array($config['resource_server']['oauth_firewalls'])
             ) {
                 $oauthFirewalls[] = $config['resource_server']['oauth_firewalls'];
             }
@@ -313,7 +304,7 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
         // enable basic authorization for test env
         if ('test' === $container->getParameter('kernel.environment')) {
             $firewalls['oauth2_authorization_authenticate']['organization-http-basic'] = [
-                'realm' => "AccountUser REST Area"
+                'realm' => 'AccountUser REST Area'
             ];
         }
 
@@ -335,7 +326,7 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
             // enable basic authorization for test env
             if ('test' === $container->getParameter('kernel.environment')) {
                 $firewalls['oauth2_frontend_authorization_authenticate']['organization-http-basic'] = [
-                    'realm' => "AccountUser REST Area"
+                    'realm' => 'AccountUser REST Area'
                 ];
             }
         }
