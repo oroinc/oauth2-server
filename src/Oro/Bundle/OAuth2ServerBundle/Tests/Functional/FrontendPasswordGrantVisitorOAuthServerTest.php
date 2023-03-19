@@ -13,9 +13,6 @@ class FrontendPasswordGrantVisitorOAuthServerTest extends OAuthServerTestCase
 {
     use ConfigManagerAwareTestTrait;
 
-    /**
-     * {@inheritdoc}
-     */
     protected function setUp(): void
     {
         if (!class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {

@@ -10,20 +10,15 @@ use Symfony\Component\HttpFoundation\Response;
 
 class BackendGrantRequestTest extends OAuthServerTestCase
 {
-    /**
-     * {@inheritdoc}
-     */
     protected function setUp(): void
     {
         $this->initClient();
-        $this->loadFixtures(
-            [
-                LoadClientCredentialsClient::class,
-                LoadPasswordGrantClient::class,
-                LoadAuthorizationCodeGrantClient::class,
-                LoadUser::class,
-            ]
-        );
+        $this->loadFixtures([
+            LoadClientCredentialsClient::class,
+            LoadPasswordGrantClient::class,
+            LoadAuthorizationCodeGrantClient::class,
+            LoadUser::class,
+        ]);
     }
 
     private function getAuthCode(string $clientId): string
@@ -64,8 +59,7 @@ class BackendGrantRequestTest extends OAuthServerTestCase
                 'client_secret' => LoadAuthorizationCodeGrantClient::OAUTH_CLIENT_SECRET,
                 'code'          => $this->getAuthCode(LoadAuthorizationCodeGrantClient::OAUTH_CLIENT_ID),
                 'redirect_uri'  => 'http://test.com',
-            ],
-            Response::HTTP_OK
+            ]
         );
 
         self::assertArrayHasKey('token_type', $responseData);
@@ -127,8 +121,7 @@ class BackendGrantRequestTest extends OAuthServerTestCase
                 'grant_type'    => 'client_credentials',
                 'client_id'     => LoadClientCredentialsClient::OAUTH_CLIENT_ID,
                 'client_secret' => LoadClientCredentialsClient::OAUTH_CLIENT_SECRET,
-            ],
-            Response::HTTP_OK
+            ]
         );
 
         self::assertArrayHasKey('token_type', $responseData);
@@ -188,8 +181,7 @@ class BackendGrantRequestTest extends OAuthServerTestCase
                 'client_secret' => LoadPasswordGrantClient::OAUTH_CLIENT_SECRET,
                 'username'      => $userName,
                 'password'      => $userName,
-            ],
-            Response::HTTP_OK
+            ]
         );
 
         self::assertArrayHasKey('token_type', $responseData);
