@@ -406,4 +406,32 @@ class AuthorizationCodeGrantServerTest extends OAuthServerTestCase
 
         self::assertEquals(Response::HTTP_OK, $this->client->getResponse()->getStatusCode());
     }
+
+    public function testTryToAuthorizeWithPotentialRedirect(): void
+    {
+        $apiUrl = self::getConfigManager('global')->get('oro_website.url');
+        $path = $this->getUrl('oro_oauth2_server_authenticate', []);
+        $url = "http://test.com" . $path;
+        $potentialRedirectUrl = $apiUrl . $path;
+
+        self::assertNotSame($url, $potentialRedirectUrl);
+
+        $this->initClient([], self::generateBasicAuthHeader());
+        $this->client->request(
+            'POST',
+            $url,
+            [
+                'true',
+                '_csrf_token' => $this->getCsrfToken('authorize_client')->getValue(),
+            ]
+        );
+
+        $response = $this->client->getResponse();
+
+        self::assertResponseStatusCodeNotEquals($response, Response::HTTP_FOUND);
+        self::assertStringNotContainsString(
+            "Redirecting to $potentialRedirectUrl",
+            strip_tags($response->getContent())
+        );
+    }
 }
