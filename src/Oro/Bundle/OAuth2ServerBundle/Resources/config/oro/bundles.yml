@@ -1,2 +1,2 @@
 bundles:
-    - { name: Oro\Bundle\OAuth2ServerBundle\OroOAuth2ServerBundle, priority: 110 }
+    - { name: Oro\Bundle\OAuth2ServerBundle\OroOAuth2ServerBundle, priority: 130 }
