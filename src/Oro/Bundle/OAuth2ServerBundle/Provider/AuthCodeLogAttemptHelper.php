@@ -67,7 +67,7 @@ class AuthCodeLogAttemptHelper
             }
         } catch (\Exception $e) {
         }
-        
+
         $logger = (null !== $this->frontendLogger && $isFrontendRequest)
             ? $this->frontendLogger
             : $this->backendLogger;
