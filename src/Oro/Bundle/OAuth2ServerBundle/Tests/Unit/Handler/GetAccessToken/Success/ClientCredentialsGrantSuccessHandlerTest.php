@@ -20,12 +20,12 @@ class ClientCredentialsGrantSuccessHandlerTest extends \PHPUnit\Framework\TestCa
     private $clientManager;
 
     /** @var UserLoginAttemptLogger|\PHPUnit\Framework\MockObject\MockObject */
-    private UserLoginAttemptLogger $backendLogger;
+    private $backendLogger;
 
     /** @var UserLoginAttemptLogger|\PHPUnit\Framework\MockObject\MockObject */
     private $frontendLogger;
 
-    /** @var ObjectRepository|\PHPUnit\Framework\MockObject\MockObject  */
+    /** @var ObjectRepository|\PHPUnit\Framework\MockObject\MockObject */
     private $repo;
 
     protected function setUp(): void
