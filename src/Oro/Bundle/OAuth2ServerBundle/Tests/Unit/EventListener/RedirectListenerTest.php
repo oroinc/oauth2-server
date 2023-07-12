@@ -48,7 +48,6 @@ class RedirectListenerTest extends TestCase
         $this->listener->onRequest($event);
     }
 
-
     public function testOnRequestNoMatchesButOAuthTokenPath(): void
     {
         $request = Request::create('https://ua.orocommerce.com/oauth2-token/a-new-route');

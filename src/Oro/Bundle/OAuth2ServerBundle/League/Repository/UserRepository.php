@@ -65,12 +65,6 @@ class UserRepository implements UserRepositoryInterface
         return $this->userLoader;
     }
 
-    /**
-     * @param UserInterface $user
-     * @param string|null   $password
-     *
-     * @return bool
-     */
     private function isPasswordValid(UserInterface $user, string $password): bool
     {
         return $this->encoderFactory

@@ -127,7 +127,6 @@ class ClientCredentialsGrantSuccessHandlerTest extends \PHPUnit\Framework\TestCa
             ->with(2)
             ->willReturn($user);
 
-
         $this->backendLogger->expects(self::never())
             ->method('logSuccessLoginAttempt');
         $this->frontendLogger->expects(self::once())

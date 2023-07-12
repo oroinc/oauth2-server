@@ -10,7 +10,7 @@ use League\OAuth2\Server\Exception\OAuthServerException;
 class CryptKeyNotFoundException extends OAuthServerException
 {
     /**
-     * @param \Throwable $previous The previous exception
+     * @param \Throwable|null $previous The previous exception
      *
      * @return CryptKeyNotFoundException
      */
