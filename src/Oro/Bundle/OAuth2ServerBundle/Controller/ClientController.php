@@ -401,13 +401,6 @@ class ClientController extends AbstractController
             );
     }
 
-    /**
-     * @param bool   $isSystemApp
-     * @param string $ownerClass
-     * @param int    $ownerId
-     *
-     * @return callable
-     */
     private function getFormTemplateDataProvider(
         bool $isSystemApp = false,
         string $ownerClass = null,
