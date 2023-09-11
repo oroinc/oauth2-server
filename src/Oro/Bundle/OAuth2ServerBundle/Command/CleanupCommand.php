@@ -72,7 +72,7 @@ HELP
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
 
@@ -90,6 +90,6 @@ HELP
 
         $io->success('Completed');
 
-        return 0;
+        return Command::SUCCESS;
     }
 }

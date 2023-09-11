@@ -43,7 +43,7 @@ class VisitorUserProvider implements UserProviderInterface
     /**
      * {@inheritdoc}
      */
-    public function refreshUser(UserInterface $user)
+    public function refreshUser(UserInterface $user): UserInterface
     {
         return $this->innerUserProvider->refreshUser($user);
     }
@@ -51,7 +51,7 @@ class VisitorUserProvider implements UserProviderInterface
     /**
      * {@inheritdoc}
      */
-    public function supportsClass($class)
+    public function supportsClass($class): bool
     {
         return $this->innerUserProvider->supportsClass($class);
     }
