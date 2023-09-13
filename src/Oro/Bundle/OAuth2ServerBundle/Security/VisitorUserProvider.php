@@ -29,7 +29,7 @@ class VisitorUserProvider implements UserProviderInterface
     /**
      * {@inheritdoc}
      */
-    public function loadUserByUsername($username)
+    public function loadUserByUsername(string $username)
     {
         if (VisitorIdentifierUtil::isVisitorIdentifier($username)) {
             list($visitorId, $visitorSessionId) = VisitorIdentifierUtil::decodeIdentifier($username);
@@ -51,7 +51,7 @@ class VisitorUserProvider implements UserProviderInterface
     /**
      * {@inheritdoc}
      */
-    public function supportsClass($class): bool
+    public function supportsClass(string $class): bool
     {
         return $this->innerUserProvider->supportsClass($class);
     }
