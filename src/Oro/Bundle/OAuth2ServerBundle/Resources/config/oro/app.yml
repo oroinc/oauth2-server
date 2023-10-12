@@ -11,8 +11,12 @@ oro_api:
                 - Oro\Bundle\OAuth2ServerBundle\Security\Firewall\OAuth2Listener
 
 security:
-    encoders:
-        Oro\Bundle\OAuth2ServerBundle\Entity\Client: sha512
+    password_hashers:
+        Oro\Bundle\OAuth2ServerBundle\Entity\Client:
+            # the new hasher, along with its options
+            algorithm: sodium
+            migrate_from:
+                - legacy # uses the "legacy" hasher
     firewalls:
         oauth2_authorization_login:
             pattern: '^/oauth2-token/login$'

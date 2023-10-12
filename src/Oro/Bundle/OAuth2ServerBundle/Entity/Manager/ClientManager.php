@@ -7,9 +7,9 @@ use Doctrine\Persistence\ManagerRegistry;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\SecurityBundle\Authentication\TokenAccessorInterface;
 use Oro\Bundle\UserBundle\Entity\User;
+use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
+use Symfony\Component\PasswordHasher\PasswordHasherInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Symfony\Component\Security\Core\Encoder\EncoderFactoryInterface;
-use Symfony\Component\Security\Core\Encoder\PasswordEncoderInterface;
 
 /**
  * Provides a set of methods to simplify manage of the OAuth 2.0 Client entity.
@@ -19,8 +19,8 @@ class ClientManager
     /** @var ManagerRegistry */
     private $doctrine;
 
-    /** @var EncoderFactoryInterface */
-    private $encoderFactory;
+    /** @var PasswordHasherFactoryInterface */
+    private $passwordHasherFactory;
 
     /** @var TokenAccessorInterface */
     private $tokenAccessor;
@@ -33,12 +33,12 @@ class ClientManager
 
     public function __construct(
         ManagerRegistry $doctrine,
-        EncoderFactoryInterface $encoderFactory,
+        PasswordHasherFactoryInterface $passwordHasherFactory,
         TokenAccessorInterface $tokenAccessor,
         AuthorizationCheckerInterface $authorizationChecker
     ) {
         $this->doctrine = $doctrine;
-        $this->encoderFactory = $encoderFactory;
+        $this->passwordHasherFactory = $passwordHasherFactory;
         $this->tokenAccessor = $tokenAccessor;
         $this->authorizationChecker = $authorizationChecker;
     }
@@ -166,15 +166,15 @@ class ClientManager
         if ($client->getPlainSecret()) {
             $salt = $this->generateToken(50);
             $client->setSecret(
-                $this->getSecretEncoder($client)->encodePassword($client->getPlainSecret(), $salt),
+                $this->getSecretPasswordHasher($client)->hash($client->getPlainSecret(), $salt),
                 $salt
             );
         }
     }
 
-    private function getSecretEncoder(Client $client): PasswordEncoderInterface
+    private function getSecretPasswordHasher(Client $client): PasswordHasherInterface
     {
-        return $this->encoderFactory->getEncoder($client);
+        return $this->passwordHasherFactory->getPasswordHasher($client);
     }
 
     private function generateToken(int $maxLength): string

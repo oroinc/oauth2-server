@@ -8,7 +8,7 @@ use Oro\Bundle\OAuth2ServerBundle\League\Entity\UserEntity;
 use Oro\Bundle\OAuth2ServerBundle\Security\OAuthUserChecker;
 use Oro\Bundle\UserBundle\Entity\UserInterface;
 use Oro\Bundle\UserBundle\Security\UserLoaderInterface;
-use Symfony\Component\Security\Core\Encoder\EncoderFactoryInterface;
+use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 
 /**
  * The implementation of the user entity repository for "league/oauth2-server" library.
@@ -18,19 +18,19 @@ class UserRepository implements UserRepositoryInterface
     /** @var UserLoaderInterface */
     private $userLoader;
 
-    /** @var EncoderFactoryInterface */
-    private $encoderFactory;
+    /** @var PasswordHasherFactoryInterface */
+    private $passwordHasherFactory;
 
     /** @var OAuthUserChecker */
     private $userChecker;
 
     public function __construct(
         UserLoaderInterface $userLoader,
-        EncoderFactoryInterface $encoderFactory,
+        PasswordHasherFactoryInterface $passwordHasherFactory,
         OAuthUserChecker $userChecker
     ) {
         $this->userLoader = $userLoader;
-        $this->encoderFactory = $encoderFactory;
+        $this->passwordHasherFactory = $passwordHasherFactory;
         $this->userChecker = $userChecker;
     }
 
@@ -50,7 +50,7 @@ class UserRepository implements UserRepositoryInterface
 
         $this->userChecker->checkUser($user);
 
-        if (!$this->isPasswordValid($user, $password)) {
+        if (!$this->passwordHasherVerify($user, $password)) {
             return null;
         }
 
@@ -65,10 +65,10 @@ class UserRepository implements UserRepositoryInterface
         return $this->userLoader;
     }
 
-    private function isPasswordValid(UserInterface $user, string $password): bool
+    private function passwordHasherVerify(UserInterface $user, string $password): bool
     {
-        return $this->encoderFactory
-            ->getEncoder($user)
-            ->isPasswordValid($user->getPassword(), $password, $user->getSalt());
+        return $this->passwordHasherFactory
+            ->getPasswordHasher($user)
+            ->verify($user->getPassword(), $password, $user->getSalt());
     }
 }

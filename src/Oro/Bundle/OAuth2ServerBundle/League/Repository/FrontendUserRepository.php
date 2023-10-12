@@ -10,7 +10,7 @@ use Oro\Bundle\OAuth2ServerBundle\League\Entity\UserEntity;
 use Oro\Bundle\OAuth2ServerBundle\Security\OAuthUserChecker;
 use Oro\Bundle\OAuth2ServerBundle\Security\VisitorIdentifierUtil;
 use Oro\Bundle\UserBundle\Security\UserLoaderInterface;
-use Symfony\Component\Security\Core\Encoder\EncoderFactoryInterface;
+use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 
 /**
  * The implementation of the user entity repository that can handle storefront users.
@@ -28,12 +28,12 @@ class FrontendUserRepository extends UserRepository
 
     public function __construct(
         UserLoaderInterface $userLoader,
-        EncoderFactoryInterface $encoderFactory,
+        PasswordHasherFactoryInterface $passwordHasherFactory,
         OAuthUserChecker $userChecker,
         UserLoaderInterface $frontendUserLoader,
         CustomerVisitorManager $customerVisitorManager
     ) {
-        parent::__construct($userLoader, $encoderFactory, $userChecker);
+        parent::__construct($userLoader, $passwordHasherFactory, $userChecker);
         $this->frontendUserLoader = $frontendUserLoader;
         $this->customerVisitorManager = $customerVisitorManager;
     }

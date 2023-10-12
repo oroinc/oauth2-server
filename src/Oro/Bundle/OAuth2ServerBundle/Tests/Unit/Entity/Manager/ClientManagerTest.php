@@ -10,9 +10,9 @@ use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Oro\Bundle\SecurityBundle\Authentication\TokenAccessorInterface;
 use Oro\Component\Testing\ReflectionUtil;
+use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
+use Symfony\Component\PasswordHasher\PasswordHasherInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Symfony\Component\Security\Core\Encoder\EncoderFactoryInterface;
-use Symfony\Component\Security\Core\Encoder\PasswordEncoderInterface;
 
 /**
  * @SuppressWarnings(PHPMD.TooManyPublicMethods)
@@ -22,8 +22,8 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
     /** @var ManagerRegistry|\PHPUnit\Framework\MockObject\MockObject */
     private $doctrine;
 
-    /** @var EncoderFactoryInterface|\PHPUnit\Framework\MockObject\MockObject */
-    private $encoderFactory;
+    /** @var PasswordHasherFactoryInterface|\PHPUnit\Framework\MockObject\MockObject */
+    private $passwordHasherFactory;
 
     /** @var TokenAccessorInterface|\PHPUnit\Framework\MockObject\MockObject */
     private $tokenAccessor;
@@ -37,13 +37,13 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
     protected function setUp(): void
     {
         $this->doctrine = $this->createMock(ManagerRegistry::class);
-        $this->encoderFactory = $this->createMock(EncoderFactoryInterface::class);
+        $this->passwordHasherFactory = $this->createMock(PasswordHasherFactoryInterface::class);
         $this->tokenAccessor = $this->createMock(TokenAccessorInterface::class);
         $this->authorizationChecker = $this->createMock(AuthorizationCheckerInterface::class);
 
         $this->clientManager = new ClientManager(
             $this->doctrine,
-            $this->encoderFactory,
+            $this->passwordHasherFactory,
             $this->tokenAccessor,
             $this->authorizationChecker
         );
@@ -97,13 +97,13 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
      */
     private function expectEncodeSecret(Client $client, string $encodedSecret, $plainPassword = null)
     {
-        $encoder = $this->createMock(PasswordEncoderInterface::class);
-        $this->encoderFactory->expects(self::once())
-            ->method('getEncoder')
+        $passwordHasher = $this->createMock(PasswordHasherInterface::class);
+        $this->passwordHasherFactory->expects(self::once())
+            ->method('getPasswordHasher')
             ->with(self::identicalTo($client))
-            ->willReturn($encoder);
-        $encoder->expects(self::once())
-            ->method('encodePassword')
+            ->willReturn($passwordHasher);
+        $passwordHasher->expects(self::once())
+            ->method('hash')
             ->with(
                 $plainPassword ?? self::isType('string'),
                 self::isType('string')

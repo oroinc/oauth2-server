@@ -8,16 +8,16 @@ use Oro\Bundle\OAuth2ServerBundle\League\Repository\UserRepository;
 use Oro\Bundle\OAuth2ServerBundle\Security\OAuthUserChecker;
 use Oro\Bundle\UserBundle\Entity\UserInterface;
 use Oro\Bundle\UserBundle\Security\UserLoaderInterface;
-use Symfony\Component\Security\Core\Encoder\EncoderFactoryInterface;
-use Symfony\Component\Security\Core\Encoder\PasswordEncoderInterface;
+use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
+use Symfony\Component\PasswordHasher\PasswordHasherInterface;
 
 class UserRepositoryTest extends \PHPUnit\Framework\TestCase
 {
     /** @var UserLoaderInterface|\PHPUnit\Framework\MockObject\MockObject */
     private $userLoader;
 
-    /** @var EncoderFactoryInterface|\PHPUnit\Framework\MockObject\MockObject */
-    private $encoderFactory;
+    /** @var PasswordHasherFactoryInterface|\PHPUnit\Framework\MockObject\MockObject */
+    private $passwordHasherFactory;
 
     /** @var UserRepository */
     private $userRepository;
@@ -25,11 +25,11 @@ class UserRepositoryTest extends \PHPUnit\Framework\TestCase
     protected function setUp(): void
     {
         $this->userLoader = $this->createMock(UserLoaderInterface::class);
-        $this->encoderFactory = $this->createMock(EncoderFactoryInterface::class);
+        $this->passwordHasherFactory = $this->createMock(PasswordHasherFactoryInterface::class);
 
         $this->userRepository = new UserRepository(
             $this->userLoader,
-            $this->encoderFactory,
+            $this->passwordHasherFactory,
             $this->createMock(OAuthUserChecker::class)
         );
     }
@@ -63,16 +63,16 @@ class UserRepositoryTest extends \PHPUnit\Framework\TestCase
         $user = $this->createMock(UserInterface::class);
         $userEncodedPassword = 'user_encoded_password';
         $userPasswordSalt = 'user_password_salt';
-        $passwordEncoder = $this->createMock(PasswordEncoderInterface::class);
+        $passwordHasher = $this->createMock(PasswordHasherInterface::class);
 
         $this->userLoader->expects(self::once())
             ->method('loadUser')
             ->with($username)
             ->willReturn($user);
-        $this->encoderFactory->expects(self::once())
-            ->method('getEncoder')
+        $this->passwordHasherFactory->expects(self::once())
+            ->method('getPasswordHasher')
             ->with(self::identicalTo($user))
-            ->willReturn($passwordEncoder);
+            ->willReturn($passwordHasher);
         $user->expects(self::once())
             ->method('getPassword')
             ->willReturn($userEncodedPassword);
@@ -81,8 +81,8 @@ class UserRepositoryTest extends \PHPUnit\Framework\TestCase
             ->willReturn($userPasswordSalt);
         $user->expects(self::never())
             ->method('getUserName');
-        $passwordEncoder->expects(self::once())
-            ->method('isPasswordValid')
+        $passwordHasher->expects(self::once())
+            ->method('verify')
             ->with($userEncodedPassword, $password, $userPasswordSalt)
             ->willReturn(false);
 
@@ -105,16 +105,16 @@ class UserRepositoryTest extends \PHPUnit\Framework\TestCase
         $userEncodedPassword = 'user_encoded_password';
         $userPasswordSalt = 'user_password_salt';
         $userUsername = 'user_username';
-        $passwordEncoder = $this->createMock(PasswordEncoderInterface::class);
+        $passwordHasher = $this->createMock(PasswordHasherInterface::class);
 
         $this->userLoader->expects(self::once())
             ->method('loadUser')
             ->with($username)
             ->willReturn($user);
-        $this->encoderFactory->expects(self::once())
-            ->method('getEncoder')
+        $this->passwordHasherFactory->expects(self::once())
+            ->method('getPasswordHasher')
             ->with(self::identicalTo($user))
-            ->willReturn($passwordEncoder);
+            ->willReturn($passwordHasher);
         $user->expects(self::once())
             ->method('getPassword')
             ->willReturn($userEncodedPassword);
@@ -124,8 +124,8 @@ class UserRepositoryTest extends \PHPUnit\Framework\TestCase
         $user->expects(self::once())
             ->method('getUserName')
             ->willReturn($userUsername);
-        $passwordEncoder->expects(self::once())
-            ->method('isPasswordValid')
+        $passwordHasher->expects(self::once())
+            ->method('verify')
             ->with($userEncodedPassword, $password, $userPasswordSalt)
             ->willReturn(true);
 

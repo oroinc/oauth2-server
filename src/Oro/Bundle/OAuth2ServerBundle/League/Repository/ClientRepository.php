@@ -12,14 +12,14 @@ use Oro\Bundle\OAuth2ServerBundle\League\Entity\ClientEntity;
 use Oro\Bundle\OAuth2ServerBundle\Security\ApiFeatureChecker;
 use Oro\Bundle\OAuth2ServerBundle\Security\OAuthUserChecker;
 use Oro\Bundle\UserBundle\Entity\UserInterface;
-use Symfony\Component\Security\Core\Encoder\EncoderFactoryInterface;
+use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 
 /**
  * The implementation of the client entity repository for "league/oauth2-server" library.
  */
 class ClientRepository implements ClientRepositoryInterface
 {
-    private EncoderFactoryInterface $encoderFactory;
+    private PasswordHasherFactoryInterface $passwordHasherFactory;
     private ApiFeatureChecker $featureChecker;
     private ClientManager $clientManager;
     private OAuthUserChecker $userChecker;
@@ -27,13 +27,13 @@ class ClientRepository implements ClientRepositoryInterface
 
     public function __construct(
         ClientManager $clientManager,
-        EncoderFactoryInterface $encoderFactory,
+        PasswordHasherFactoryInterface $passwordHasherFactory,
         ApiFeatureChecker $featureChecker,
         OAuthUserChecker $userChecker,
         ManagerRegistry $doctrine
     ) {
         $this->clientManager = $clientManager;
-        $this->encoderFactory = $encoderFactory;
+        $this->passwordHasherFactory = $passwordHasherFactory;
         $this->featureChecker = $featureChecker;
         $this->userChecker = $userChecker;
         $this->doctrine = $doctrine;
@@ -86,7 +86,7 @@ class ClientRepository implements ClientRepositoryInterface
             return false;
         }
 
-        if (!$this->isPasswordValid($client, $clientSecret)) {
+        if (!$this->passwordHasherVerify($client, $clientSecret)) {
             return false;
         }
 
@@ -153,10 +153,10 @@ class ClientRepository implements ClientRepositoryInterface
         return \in_array($grant, $grants, true);
     }
 
-    private function isPasswordValid(Client $client, ?string $clientSecret): bool
+    private function passwordHasherVerify(Client $client, ?string $clientSecret): bool
     {
-        return $this->encoderFactory
-            ->getEncoder($client)
-            ->isPasswordValid($client->getSecret(), (string)$clientSecret, $client->getSalt());
+        return $this->passwordHasherFactory
+            ->getPasswordHasher($client)
+            ->verify($client->getSecret(), (string)$clientSecret, $client->getSalt());
     }
 }

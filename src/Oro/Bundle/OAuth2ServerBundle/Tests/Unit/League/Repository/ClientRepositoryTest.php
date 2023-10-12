@@ -13,8 +13,8 @@ use Oro\Bundle\OAuth2ServerBundle\Security\ApiFeatureChecker;
 use Oro\Bundle\OAuth2ServerBundle\Security\OAuthUserChecker;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Oro\Bundle\UserBundle\Entity\User;
-use Symfony\Component\Security\Core\Encoder\EncoderFactoryInterface;
-use Symfony\Component\Security\Core\Encoder\PasswordEncoderInterface;
+use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
+use Symfony\Component\PasswordHasher\PasswordHasherInterface;
 
 /**
  * @SuppressWarnings(PHPMD.TooManyPublicMethods)
@@ -24,8 +24,8 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
     /** @var ClientManager|\PHPUnit\Framework\MockObject\MockObject */
     private $clientManager;
 
-    /** @var EncoderFactoryInterface|\PHPUnit\Framework\MockObject\MockObject */
-    private $encoderFactory;
+    /** @var PasswordHasherFactoryInterface|\PHPUnit\Framework\MockObject\MockObject */
+    private $passwordHasherFactory;
 
     /** @var ApiFeatureChecker|\PHPUnit\Framework\MockObject\MockObject */
     private $featureChecker;
@@ -42,14 +42,14 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
     protected function setUp(): void
     {
         $this->clientManager = $this->createMock(ClientManager::class);
-        $this->encoderFactory = $this->createMock(EncoderFactoryInterface::class);
+        $this->passwordHasherFactory = $this->createMock(PasswordHasherFactoryInterface::class);
         $this->featureChecker = $this->createMock(ApiFeatureChecker::class);
         $this->userChecker = $this->createMock(OAuthUserChecker::class);
         $this->doctrine = $this->createMock(ManagerRegistry::class);
 
         $this->clientRepository = new ClientRepository(
             $this->clientManager,
-            $this->encoderFactory,
+            $this->passwordHasherFactory,
             $this->featureChecker,
             $this->userChecker,
             $this->doctrine
@@ -107,8 +107,8 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
             ->method('getClient')
             ->with($clientIdentifier)
             ->willReturn($client);
-        $this->encoderFactory->expects(self::never())
-            ->method('getEncoder');
+        $this->passwordHasherFactory->expects(self::never())
+            ->method('getPasswordHasher');
         $this->featureChecker->expects(self::once())
             ->method('isEnabledByClient')
             ->with($client)
@@ -135,8 +135,8 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
             ->method('getClient')
             ->with($clientIdentifier)
             ->willReturn($client);
-        $this->encoderFactory->expects(self::never())
-            ->method('getEncoder');
+        $this->passwordHasherFactory->expects(self::never())
+            ->method('getPasswordHasher');
 
         $clientEntity = $this->clientRepository->getClientEntity($clientIdentifier);
         self::assertNull($clientEntity);
@@ -159,8 +159,8 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
             ->method('getClient')
             ->with($clientIdentifier)
             ->willReturn($client);
-        $this->encoderFactory->expects(self::never())
-            ->method('getEncoder');
+        $this->passwordHasherFactory->expects(self::never())
+            ->method('getPasswordHasher');
         $this->featureChecker->expects(self::once())
             ->method('isEnabledByClient')
             ->with($client)
@@ -191,8 +191,8 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
             ->method('getClient')
             ->with($clientIdentifier)
             ->willReturn($client);
-        $this->encoderFactory->expects(self::never())
-            ->method('getEncoder');
+        $this->passwordHasherFactory->expects(self::never())
+            ->method('getPasswordHasher');
         $this->featureChecker->expects(self::once())
             ->method('isEnabledByClient')
             ->with($client)
@@ -219,8 +219,8 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
             ->method('getClient')
             ->with($clientIdentifier)
             ->willReturn($client);
-        $this->encoderFactory->expects(self::never())
-            ->method('getEncoder');
+        $this->passwordHasherFactory->expects(self::never())
+            ->method('getPasswordHasher');
 
         /** @var ClientEntity $clientEntity */
         $clientEntity = $this->clientRepository->getClientEntity($clientIdentifier);
@@ -325,18 +325,18 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         $client->setGrants($clientGrants);
         $client->setSecret($clientEncodedSecret, $clientSecretSalt);
         $client->setOrganization($this->getOrganization());
-        $secretEncoder = $this->createMock(PasswordEncoderInterface::class);
+        $secretHasher = $this->createMock(PasswordHasherInterface::class);
 
         $this->clientManager->expects(self::once())
             ->method('getClient')
             ->with($clientIdentifier)
             ->willReturn($client);
-        $this->encoderFactory->expects(self::once())
-            ->method('getEncoder')
+        $this->passwordHasherFactory->expects(self::once())
+            ->method('getPasswordHasher')
             ->with(self::identicalTo($client))
-            ->willReturn($secretEncoder);
-        $secretEncoder->expects(self::once())
-            ->method('isPasswordValid')
+            ->willReturn($secretHasher);
+        $secretHasher->expects(self::once())
+            ->method('verify')
             ->with($clientEncodedSecret, $clientSecret, $clientSecretSalt)
             ->willReturn(true);
         $this->featureChecker->expects(self::once())
@@ -367,8 +367,8 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
             ->method('getClient')
             ->with($clientIdentifier)
             ->willReturn($client);
-        $this->encoderFactory->expects(self::never())
-            ->method('getEncoder');
+        $this->passwordHasherFactory->expects(self::never())
+            ->method('getPasswordHasher');
 
         $result = $this->clientRepository->validateClient(
             $clientIdentifier,
@@ -392,18 +392,18 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         $client->setGrants($clientGrants);
         $client->setSecret($clientEncodedSecret, $clientSecretSalt);
         $client->setOrganization($this->getOrganization());
-        $secretEncoder = $this->createMock(PasswordEncoderInterface::class);
+        $secretHasher = $this->createMock(PasswordHasherInterface::class);
 
         $this->clientManager->expects(self::once())
             ->method('getClient')
             ->with($clientIdentifier)
             ->willReturn($client);
-        $this->encoderFactory->expects(self::once())
-            ->method('getEncoder')
+        $this->passwordHasherFactory->expects(self::once())
+            ->method('getPasswordHasher')
             ->with(self::identicalTo($client))
-            ->willReturn($secretEncoder);
-        $secretEncoder->expects(self::once())
-            ->method('isPasswordValid')
+            ->willReturn($secretHasher);
+        $secretHasher->expects(self::once())
+            ->method('verify')
             ->with($clientEncodedSecret, $clientSecret, $clientSecretSalt)
             ->willReturn(true);
         $this->featureChecker->expects(self::once())
@@ -433,18 +433,18 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         $client->setGrants($clientGrants);
         $client->setSecret($clientEncodedSecret, $clientSecretSalt);
         $client->setOrganization($this->getOrganization());
-        $secretEncoder = $this->createMock(PasswordEncoderInterface::class);
+        $secretHasher = $this->createMock(PasswordHasherInterface::class);
 
         $this->clientManager->expects(self::once())
             ->method('getClient')
             ->with($clientIdentifier)
             ->willReturn($client);
-        $this->encoderFactory->expects(self::once())
-            ->method('getEncoder')
+        $this->passwordHasherFactory->expects(self::once())
+            ->method('getPasswordHasher')
             ->with(self::identicalTo($client))
-            ->willReturn($secretEncoder);
-        $secretEncoder->expects(self::once())
-            ->method('isPasswordValid')
+            ->willReturn($secretHasher);
+        $secretHasher->expects(self::once())
+            ->method('verify')
             ->with($clientEncodedSecret, $clientSecret, $clientSecretSalt)
             ->willReturn(true);
         $this->featureChecker->expects(self::once())
@@ -475,8 +475,8 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
             ->method('getClient')
             ->with($clientIdentifier)
             ->willReturn($client);
-        $this->encoderFactory->expects(self::never())
-            ->method('getEncoder');
+        $this->passwordHasherFactory->expects(self::never())
+            ->method('getPasswordHasher');
 
         $result = $this->clientRepository->validateClient(
             $clientIdentifier,
@@ -498,7 +498,7 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         $client->setSecret($clientEncodedSecret, $clientSecretSalt);
         $client->setOrganization($this->getOrganization());
         $client->setGrants($clientGrants);
-        $secretEncoder = $this->createMock(PasswordEncoderInterface::class);
+        $secretHasher = $this->createMock(PasswordHasherInterface::class);
 
         $this->clientManager->expects(self::once())
             ->method('getClient')
@@ -508,12 +508,12 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
             ->method('isEnabledByClient')
             ->with($client)
             ->willReturn(true);
-        $this->encoderFactory->expects(self::once())
-            ->method('getEncoder')
+        $this->passwordHasherFactory->expects(self::once())
+            ->method('getPasswordHasher')
             ->with(self::identicalTo($client))
-            ->willReturn($secretEncoder);
-        $secretEncoder->expects(self::once())
-            ->method('isPasswordValid')
+            ->willReturn($secretHasher);
+        $secretHasher->expects(self::once())
+            ->method('verify')
             ->with($clientEncodedSecret, $clientSecret, $clientSecretSalt)
             ->willReturn(false);
 
@@ -540,7 +540,7 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         $client->setGrants($clientGrants);
         $client->setSecret($clientEncodedSecret, $clientSecretSalt);
         $client->setOrganization($this->getOrganization());
-        $secretEncoder = $this->createMock(PasswordEncoderInterface::class);
+        $secretHasher = $this->createMock(PasswordHasherInterface::class);
 
         $this->clientManager->expects(self::once())
             ->method('getClient')
@@ -550,12 +550,12 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
             ->method('isEnabledByClient')
             ->with($client)
             ->willReturn(true);
-        $this->encoderFactory->expects(self::once())
-            ->method('getEncoder')
+        $this->passwordHasherFactory->expects(self::once())
+            ->method('getPasswordHasher')
             ->with(self::identicalTo($client))
-            ->willReturn($secretEncoder);
-        $secretEncoder->expects(self::once())
-            ->method('isPasswordValid')
+            ->willReturn($secretHasher);
+        $secretHasher->expects(self::once())
+            ->method('verify')
             ->with($clientEncodedSecret, $clientSecret, $clientSecretSalt)
             ->willReturn(true);
         $this->featureChecker->expects(self::once())
@@ -586,7 +586,7 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         $client->setSecret($clientEncodedSecret, $clientSecretSalt);
         $client->setOrganization($this->getOrganization());
         $client->setFrontend(true);
-        $secretEncoder = $this->createMock(PasswordEncoderInterface::class);
+        $secretHasher = $this->createMock(PasswordHasherInterface::class);
 
         $this->clientManager->expects(self::once())
             ->method('getClient')
@@ -596,12 +596,12 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
             ->method('isEnabledByClient')
             ->with($client)
             ->willReturn(true);
-        $this->encoderFactory->expects(self::once())
-            ->method('getEncoder')
+        $this->passwordHasherFactory->expects(self::once())
+            ->method('getPasswordHasher')
             ->with(self::identicalTo($client))
-            ->willReturn($secretEncoder);
-        $secretEncoder->expects(self::once())
-            ->method('isPasswordValid')
+            ->willReturn($secretHasher);
+        $secretHasher->expects(self::once())
+            ->method('verify')
             ->with($clientEncodedSecret, $clientSecret, $clientSecretSalt)
             ->willReturn(true);
         $this->featureChecker->expects(self::once())
@@ -636,7 +636,7 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         $client->setSecret($clientEncodedSecret, $clientSecretSalt);
         $client->setOrganization($this->getOrganization());
         $client->setOwnerEntity($ownerEntityClass, $ownerEntityId);
-        $secretEncoder = $this->createMock(PasswordEncoderInterface::class);
+        $secretHasher = $this->createMock(PasswordHasherInterface::class);
 
         $this->clientManager->expects(self::once())
             ->method('getClient')
@@ -658,12 +658,12 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         $this->userChecker->expects(self::once())
             ->method('checkUser')
             ->with(self::identicalTo($owner));
-        $this->encoderFactory->expects(self::once())
-            ->method('getEncoder')
+        $this->passwordHasherFactory->expects(self::once())
+            ->method('getPasswordHasher')
             ->with(self::identicalTo($client))
-            ->willReturn($secretEncoder);
-        $secretEncoder->expects(self::once())
-            ->method('isPasswordValid')
+            ->willReturn($secretHasher);
+        $secretHasher->expects(self::once())
+            ->method('verify')
             ->with($clientEncodedSecret, $clientSecret, $clientSecretSalt)
             ->willReturn(true);
         $this->featureChecker->expects(self::once())
