@@ -63,7 +63,7 @@ class Configuration implements ConfigurationInterface
                     . ' https://oauth2.thephpleague.com/installation/#generating-public-and-private-keys.'
                 )
                 ->example('/var/oauth/private.key')
-                ->defaultValue('%kernel.project_dir%/var/oauth_private.key')
+                ->defaultValue('%oauth2_private_key%')
                 ->cannotBeEmpty()
             ->end()
             ->scalarNode('encryption_key')
@@ -108,7 +108,7 @@ class Configuration implements ConfigurationInterface
                     . ' https://oauth2.thephpleague.com/installation/#generating-public-and-private-keys.'
                 )
                 ->example('/var/oauth/public.key')
-                ->defaultValue('%kernel.project_dir%/var/oauth_public.key')
+                ->defaultValue('%oauth2_public_key%')
                 ->cannotBeEmpty()
             ->end()
             ->arrayNode('oauth_firewalls')
