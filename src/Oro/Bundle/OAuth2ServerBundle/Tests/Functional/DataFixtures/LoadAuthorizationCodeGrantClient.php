@@ -22,6 +22,9 @@ class LoadAuthorizationCodeGrantClient extends AbstractFixture implements
     public const PLAIN_CLIENT_REFERENCE = 'OAuthPlainClient';
     public const PLAIN_CLIENT_CLIENT_ID = 'CvqiP9CLcd5yn1hOGlUxBUGNkiPbzeb_';
 
+    public const PLAIN_CLIENT_REFERENCE1 = 'OAuthPlainClient1';
+    public const PLAIN_CLIENT_CLIENT_ID1 = 'CvqiP9CLcd5yn1hOGlUxBUGNkiPbzRb_';
+
     public const NON_PLAIN_CLIENT_REFERENCE = 'OAuthNonPlainClient';
     public const NON_PLAIN_CLIENT_CLIENT_ID = 'EWlEZCrAO74ZIHHokxoTYhYSms6R3MqG';
 
@@ -71,6 +74,17 @@ class LoadAuthorizationCodeGrantClient extends AbstractFixture implements
         $nonConfidentialPlainPCKEClient->setPlainTextPkceAllowed(true);
         $this->clientManager->updateClient($nonConfidentialPlainPCKEClient);
         $this->setReference(self::PLAIN_CLIENT_REFERENCE, $nonConfidentialPlainPCKEClient);
+
+        $nonConfidentialPlainPCKEClient1 = new Client();
+        $nonConfidentialPlainPCKEClient1->setOrganization($organization);
+        $nonConfidentialPlainPCKEClient1->setName('test Non Confidential plain1');
+        $nonConfidentialPlainPCKEClient1->setGrants(['authorization_code']);
+        $nonConfidentialPlainPCKEClient1->setIdentifier(self::PLAIN_CLIENT_CLIENT_ID1);
+        $nonConfidentialPlainPCKEClient1->setRedirectUris(['http://test.com']);
+        $nonConfidentialPlainPCKEClient1->setConfidential(false);
+        $nonConfidentialPlainPCKEClient1->setPlainTextPkceAllowed(true);
+        $this->clientManager->updateClient($nonConfidentialPlainPCKEClient1);
+        $this->setReference(self::PLAIN_CLIENT_REFERENCE1, $nonConfidentialPlainPCKEClient1);
 
         $nonConfidentialNonPlainPCKEClient = new Client();
         $nonConfidentialNonPlainPCKEClient->setOrganization($organization);

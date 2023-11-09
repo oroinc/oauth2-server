@@ -51,6 +51,8 @@
                     form_row(form.active),
                     grantsRow,
                     form.redirectUris is defined ? form_row_collection(form.redirectUris) : '',
+                    form.confidential is defined ? form_row(form.confidential) : '',
+                    form.skipAuthorizeClientAllowed is defined ? form_row(form.skipAuthorizeClientAllowed) : '',
                     form.owner is defined ? form_row(form.owner) : ''
                 ]
             }

@@ -5,6 +5,7 @@ namespace Oro\Bundle\OAuth2ServerBundle\Controller;
 use GuzzleHttp\Psr7\Response;
 use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\Exception\OAuthServerException;
+use League\OAuth2\Server\RequestTypes\AuthorizationRequest;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
 use Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\AuthorizeClientHandler;
@@ -70,20 +71,15 @@ class AuthorizeClientController extends AbstractController
             }
 
             if ($request->getMethod() === 'POST') {
-                if (!$this->isCsrfTokenValid('authorize_client', $request->request->get('_csrf_token'))) {
-                    throw OAuthServerException::invalidRequest('_csrf_token');
-                }
+                return $this->processAuthorization(
+                    $request->request->get('grantAccess') === 'true',
+                    $authRequest,
+                    $client
+                );
+            }
 
-                $loggedUser = $this->getUser();
-                $user = new UserEntity();
-                $user->setIdentifier($loggedUser->getUsername());
-                $authRequest->setUser($user);
-                $isAuthorized = $request->request->get('grantAccess') === 'true';
-                $authRequest->setAuthorizationApproved($isAuthorized);
-
-                $this->get(AuthorizeClientHandler::class)->handle($client, $loggedUser, $isAuthorized);
-
-                return $authServer->completeAuthorizationRequest($authRequest, new Response());
+            if ($client->isSkipAuthorizeClientAllowed()) {
+                return $this->processAuthorization(true, $authRequest, $client);
             }
         } catch (OAuthServerException $exception) {
             $this->get(ExceptionHandler::class)->handle($serverRequest, $exception);
@@ -99,6 +95,23 @@ class AuthorizeClientController extends AbstractController
             $template,
             ['appName' => $client->getName()]
         );
+    }
+
+    private function processAuthorization(
+        bool $isAuthorized,
+        AuthorizationRequest $authRequest,
+        Client $client
+    ): ResponseInterface {
+        $authServer = $this->getAuthorizationServer();
+        $loggedUser = $this->getUser();
+        $user = new UserEntity();
+        $user->setIdentifier($loggedUser->getUsername());
+        $authRequest->setUser($user);
+        $authRequest->setAuthorizationApproved($isAuthorized);
+
+        $this->get(AuthorizeClientHandler::class)->handle($client, $loggedUser, $isAuthorized);
+
+        return $authServer->completeAuthorizationRequest($authRequest, new Response());
     }
 
     private function getAuthorizationServer(): AuthorizationServer
