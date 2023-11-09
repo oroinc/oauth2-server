@@ -45,6 +45,8 @@ abstract class AbstractClientType extends AbstractType
                 $this->addIdentifierField($event);
                 $this->modifyGrantField($event);
                 $this->addRedirectUrisField($event);
+                $this->addConfidentialField($event);
+                $this->addSkipAuthorizeClientAllowedField($event);
             })
             ->add('name', TextType::class, [
                 'label'   => 'oro.oauth2server.client.name.label',
@@ -262,6 +264,58 @@ abstract class AbstractClientType extends AbstractType
                 'allow_add'      => true,
                 'allow_delete'   => true,
                 'prototype'      => true
+            ]
+        );
+    }
+
+    /**
+     * Adds the confidential field to form.
+     */
+    private function addConfidentialField(FormEvent $event): void
+    {
+        /** @var Client $client */
+        $client = $event->getData();
+        if ($client->getId() && !\in_array('authorization_code', $client->getGrants(), true)) {
+            return;
+        }
+
+        $form = $event->getForm();
+        if (!$form->getConfig()->getOption('show_grants')) {
+            return;
+        }
+
+        $form->add(
+            'confidential',
+            CheckboxType::class,
+            [
+                'label'   => 'oro.oauth2server.client.confidential.label',
+                'tooltip' => 'oro.oauth2server.client.confidential.description'
+            ]
+        );
+    }
+
+    /**
+     * Adds the skipAuthorizeClientAllowed field to form.
+     */
+    private function addSkipAuthorizeClientAllowedField(FormEvent $event): void
+    {
+        /** @var Client $client */
+        $client = $event->getData();
+        if ($client->getId() && !\in_array('authorization_code', $client->getGrants(), true)) {
+            return;
+        }
+
+        $form = $event->getForm();
+        if (!$form->getConfig()->getOption('show_grants')) {
+            return;
+        }
+
+        $form->add(
+            'skipAuthorizeClientAllowed',
+            CheckboxType::class,
+            [
+                'label'   => 'oro.oauth2server.client.skip_authorize_client_allowed.label',
+                'tooltip' => 'oro.oauth2server.client.skip_authorize_client_allowed.description'
             ]
         );
     }

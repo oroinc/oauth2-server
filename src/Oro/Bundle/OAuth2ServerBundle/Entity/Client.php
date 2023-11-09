@@ -191,6 +191,13 @@ class Client
     private $plainTextPkceAllowed = false;
 
     /**
+     * @var bool
+     *
+     * @ORM\Column(name="skip_authorize_client_allowed", type="boolean", options={"default"=false})
+     */
+    private $skipAuthorizeClientAllowed = false;
+
+    /**
      * Gets the entity identifier.
      *
      * @return int|null
@@ -530,5 +537,15 @@ class Client
     public function setPlainTextPkceAllowed(bool $plainTextPkceAllowed)
     {
         $this->plainTextPkceAllowed = $plainTextPkceAllowed;
+    }
+
+    public function isSkipAuthorizeClientAllowed(): bool
+    {
+        return $this->skipAuthorizeClientAllowed;
+    }
+
+    public function setSkipAuthorizeClientAllowed(bool $skipAuthorizeClientAllowed): void
+    {
+        $this->skipAuthorizeClientAllowed = $skipAuthorizeClientAllowed;
     }
 }

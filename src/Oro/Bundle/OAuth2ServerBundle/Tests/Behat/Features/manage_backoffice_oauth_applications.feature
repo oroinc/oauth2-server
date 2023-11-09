@@ -34,6 +34,8 @@ Feature: Manage Backoffice OAuth Applications
       | Grant Type       | Client Credentials |
       | User             | John Doe           |
     And I should not see "Redirect URLs"
+    And I should not see "Confidential Client"
+    And I should not see "Skip User Consent"
 
   Scenario: Delete OAuth application from view page
     When I click "Delete"
@@ -75,6 +77,8 @@ Feature: Manage Backoffice OAuth Applications
       | Grant Type       | Password   |
     And I should not see "User*"
     And I should not see "Redirect URLs"
+    And I should not see "Confidential Client"
+    And I should not see "Skip User Consent"
     And I click "Save and Close"
     Then I should see "OAuth application has been created." flash message
     And I should see "Please copy Client Secret and save it somewhere safe. For security reasons, we cannot show it to you again."
@@ -85,6 +89,8 @@ Feature: Manage Backoffice OAuth Applications
     When I click "Edit"
     Then I should not see "User*"
     And I should not see "Redirect URLs"
+    And I should not see "Confidential Client"
+    And I should not see "Skip User Consent"
     And I should see "Client ID"
     When I fill form with:
       | Application Name | Client App edited |
@@ -136,6 +142,8 @@ Feature: Manage Backoffice OAuth Applications
       | Grant Type       | Authorization Code                      |
       | Redirect URLs    | [https://test.com, https://another.com] |
     And I should not see "User*"
+    And I should see "Confidential Client"
+    And I should see "Skip User Consent"
     And I click "Save and Close"
     Then I should see "OAuth application has been created." flash message
     And I should see "Please copy Client Secret and save it somewhere safe. For security reasons, we cannot show it to you again."
@@ -148,10 +156,14 @@ Feature: Manage Backoffice OAuth Applications
     And I should see "Client ID"
     When I fill form with:
       | Application Name | Auth Code App edited |
+    And I uncheck "Confidential Client"
+    And I check "Skip User Consent"
     And click "Save and Close"
     Then I should see "OAuth application has been updated." flash message
     And I should see OAuth Application with:
-      | Application Name | Auth Code App edited |
-      | Grant Type       | Authorization Code   |
+      | Application Name     | Auth Code App edited |
+      | Grant Type           | Authorization Code   |
+      | Confidential Client  | No                   |
+      | Skip User Consent    | Yes                  |
     And I should see "https://test.com"
     And I should see "https://another.com"

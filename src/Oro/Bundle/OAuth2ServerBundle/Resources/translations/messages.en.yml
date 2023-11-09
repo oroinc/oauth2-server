@@ -52,11 +52,20 @@ oro:
                 label: Last Used At
                 description: The date when the application token was last received.
             confidential:
-                label: Confidential
-                description: Indicates whether the client is a confidential or a public.
+                label: Confidential Client
+                description: Client secret is safely stored on the client side and must be used for authorization. Requests without client secret are accepted with <a href="https://oauth.net/2/pkce/" target="_blank">PKCE</a> if this option is not selected.
+                value:
+                    yes: Yes
+                    no: No
             plain_text_pkce_allowed:
-                label: Plain Text PKCE Allowed
+                label: Plain PKCE Code Challenge Allowed
                 description: Indicates whether the PKCE code challenge can be send as a plain text.
+            skip_authorize_client_allowed:
+                label: Skip User Consent
+                description: Use this option for first party applications to skip user login consent screen
+                value:
+                    yes: Yes
+                    no: No
             action:
                 add: Add Application
                 activate: Activate

@@ -3,10 +3,10 @@
 namespace Oro\Bundle\OAuth2ServerBundle\DependencyInjection;
 
 use League\OAuth2\Server\CryptKey;
-use League\OAuth2\Server\Grant\AuthCodeGrant;
 use League\OAuth2\Server\Grant\ClientCredentialsGrant;
 use League\OAuth2\Server\Grant\PasswordGrant;
 use League\OAuth2\Server\Grant\RefreshTokenGrant;
+use Oro\Bundle\OAuth2ServerBundle\League\Grant\AuthCodeGrant;
 use Oro\Bundle\OAuth2ServerBundle\League\Repository\FrontendAuthCodeRepository;
 use Oro\Bundle\OAuth2ServerBundle\League\Repository\FrontendRefreshTokenRepository;
 use Oro\Bundle\OAuth2ServerBundle\League\Repository\FrontendUserRepository;

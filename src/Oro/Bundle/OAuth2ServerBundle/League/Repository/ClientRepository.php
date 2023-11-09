@@ -86,7 +86,7 @@ class ClientRepository implements ClientRepositoryInterface
             return false;
         }
 
-        if (!$this->passwordHasherVerify($client, $clientSecret)) {
+        if ($client->isConfidential() && !$this->passwordHasherVerify($client, $clientSecret)) {
             return false;
         }
 

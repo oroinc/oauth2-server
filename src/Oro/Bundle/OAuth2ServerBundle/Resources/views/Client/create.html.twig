@@ -51,8 +51,10 @@
                     form_row(form.name),
                     form_row(form.active),
                     grantsRow,
+                    form.owner is defined ? form_row(form.owner, {'group_attr': {'id': 'client-owner', 'class': 'hide'}}) : '',
                     form.redirectUris is defined ? form_row_collection(form.redirectUris, {'group_attr': {'id': 'client-redirect-uris', 'class': 'hide'}}) : '',
-                    form.owner is defined ? form_row(form.owner, {'group_attr': {'id': 'client-owner', 'class': 'hide'}}) : ''
+                    form.confidential is defined ? form_row(form.confidential, {'group_attr': {'id': 'client-confidential', 'class': 'hide'}}) : '',
+                    form.skipAuthorizeClientAllowed is defined ? form_row(form.skipAuthorizeClientAllowed, {'group_attr': {'id': 'skip-authorize-client-allowed', 'class': 'hide'}}) : ''
                 ]
             }
         ]
@@ -67,6 +69,8 @@
     {% set options = {
         ownerField: '#client-owner',
         redirectUrisField: '#client-redirect-uris',
+        confidentialField: '#client-confidential',
+        skipAuthorizeClientAllowedField: '#skip-authorize-client-allowed',
         _sourceElement: '.client-grants input:radio',
     } %}
     <div {{ UI.renderPageComponentAttributes({

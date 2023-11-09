@@ -74,6 +74,16 @@
                     {{ UI.renderProperty('oro.oauth2server.client.grants.label'|trans, grants) }}
                     {% if 'authorization_code' in entity.grants %}
                         {{ UI.renderHtmlProperty('oro.oauth2server.client.redirect_uris.label'|trans, entity.redirectUris|join('\n')|nl2br) }}
+                        {{ UI.renderHtmlProperty('oro.oauth2server.client.confidential.label'|trans,
+                            entity.confidential
+                                ? 'oro.oauth2server.client.confidential.value.yes'|trans
+                                : 'oro.oauth2server.client.confidential.value.no'|trans
+                        ) }}
+                        {{ UI.renderHtmlProperty('oro.oauth2server.client.skip_authorize_client_allowed.label'|trans,
+                            entity.skipAuthorizeClientAllowed
+                            ? 'oro.oauth2server.client.skip_authorize_client_allowed.value.yes'|trans
+                            : 'oro.oauth2server.client.skip_authorize_client_allowed.value.no'|trans
+                        ) }}
                     {% endif -%}
                     {% if user is not null %}
                         {{ UI.renderHtmlProperty(

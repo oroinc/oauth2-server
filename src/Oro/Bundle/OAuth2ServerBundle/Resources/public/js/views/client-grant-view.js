@@ -19,6 +19,8 @@ define(function(require) {
         initialize: function(options) {
             this.ownerField = $(options.ownerField);
             this.redirectUrisField = $(options.redirectUrisField);
+            this.confidentialField = $(options.confidentialField);
+            this.skipAuthorizeClientAllowedField = $(options.skipAuthorizeClientAllowedField);
 
             this.updateClientView();
         },
@@ -32,8 +34,12 @@ define(function(require) {
             }
             if ('authorization_code' === selectedGrant) {
                 this.redirectUrisField.removeClass('hide');
+                this.confidentialField.removeClass('hide');
+                this.skipAuthorizeClientAllowedField.removeClass('hide');
             } else {
                 this.redirectUrisField.addClass('hide');
+                this.confidentialField.addClass('hide');
+                this.skipAuthorizeClientAllowedField.addClass('hide');
             }
         }
     });
