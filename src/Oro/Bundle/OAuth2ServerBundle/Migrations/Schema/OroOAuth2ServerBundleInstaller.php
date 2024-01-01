@@ -9,17 +9,17 @@ use Oro\Bundle\MigrationBundle\Migration\QueryBag;
 class OroOAuth2ServerBundleInstaller implements Installation
 {
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
-    public function getMigrationVersion()
+    public function getMigrationVersion(): string
     {
         return 'v1_6';
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
-    public function up(Schema $schema, QueryBag $queries)
+    public function up(Schema $schema, QueryBag $queries): void
     {
         /** Tables generation **/
         $this->createClientTable($schema);
@@ -37,7 +37,7 @@ class OroOAuth2ServerBundleInstaller implements Installation
     /**
      * Create oro_oauth2_client table
      */
-    protected function createClientTable(Schema $schema)
+    private function createClientTable(Schema $schema): void
     {
         $table = $schema->createTable('oro_oauth2_client');
         $table->addColumn('id', 'integer', ['autoincrement' => true]);
@@ -66,7 +66,7 @@ class OroOAuth2ServerBundleInstaller implements Installation
     /**
      * Create oro_oauth2_access_token table
      */
-    protected function createAccessTokenTable(Schema $schema)
+    private function createAccessTokenTable(Schema $schema): void
     {
         $table = $schema->createTable('oro_oauth2_access_token');
         $table->addColumn('id', 'integer', ['autoincrement' => true]);
@@ -84,7 +84,7 @@ class OroOAuth2ServerBundleInstaller implements Installation
     /**
      * Create oro_oauth2_refresh_token table
      */
-    protected function createRefreshTokenTable(Schema $schema)
+    private function createRefreshTokenTable(Schema $schema): void
     {
         $table = $schema->createTable('oro_oauth2_refresh_token');
         $table->addColumn('id', 'integer', ['autoincrement' => true]);
@@ -100,7 +100,7 @@ class OroOAuth2ServerBundleInstaller implements Installation
     /**
      * Create oro_oauth2_auth_code table
      */
-    protected function createAuthCodeTable(Schema $schema)
+    private function createAuthCodeTable(Schema $schema): void
     {
         $table = $schema->createTable('oro_oauth2_auth_code');
         $table->addColumn('id', 'integer', ['autoincrement' => true]);
@@ -118,7 +118,7 @@ class OroOAuth2ServerBundleInstaller implements Installation
     /**
      * Add oro_oauth2_client foreign keys.
      */
-    protected function addClientForeignKeys(Schema $schema)
+    private function addClientForeignKeys(Schema $schema): void
     {
         $table = $schema->getTable('oro_oauth2_client');
         $table->addForeignKeyConstraint(
@@ -132,7 +132,7 @@ class OroOAuth2ServerBundleInstaller implements Installation
     /**
      * Add oro_oauth2_access_token foreign keys.
      */
-    protected function addAccessTokenForeignKeys(Schema $schema)
+    private function addAccessTokenForeignKeys(Schema $schema): void
     {
         $table = $schema->getTable('oro_oauth2_access_token');
         $table->addForeignKeyConstraint(
@@ -146,7 +146,7 @@ class OroOAuth2ServerBundleInstaller implements Installation
     /**
      * Add oro_oauth2_refresh_token foreign keys.
      */
-    protected function addRefreshTokenForeignKeys(Schema $schema)
+    private function addRefreshTokenForeignKeys(Schema $schema): void
     {
         $table = $schema->getTable('oro_oauth2_refresh_token');
         $table->addForeignKeyConstraint(
@@ -160,7 +160,7 @@ class OroOAuth2ServerBundleInstaller implements Installation
     /**
      * Add oro_oauth2_auth_code foreign keys.
      */
-    protected function addAuthCodeForeignKeys(Schema $schema)
+    private function addAuthCodeForeignKeys(Schema $schema): void
     {
         $table = $schema->getTable('oro_oauth2_auth_code');
         $table->addForeignKeyConstraint(
