@@ -548,8 +548,9 @@ class AuthorizationCodeGrantServerTest extends OAuthServerTestCase
 
     public function testTryToOpenLoginPageWithoutClientIdParameter(): void
     {
-        $session = self::getContainer()->get('session');
+        $session = $this->createSession();
         $session->set('_security.oauth2_authorization_authenticate.target_path', 'http://test.com');
+        $session->save();
 
         $this->client->request(
             'GET',
@@ -561,8 +562,9 @@ class AuthorizationCodeGrantServerTest extends OAuthServerTestCase
 
     public function testTryToOpenLoginPageWithWrongClientIdParameter(): void
     {
-        $session = self::getContainer()->get('session');
+        $session = $this->createSession();
         $session->set('_security.oauth2_authorization_authenticate.target_path', 'http://test.com?client_id=wrong');
+        $session->save();
 
         $this->client->request(
             'GET',
@@ -574,11 +576,12 @@ class AuthorizationCodeGrantServerTest extends OAuthServerTestCase
 
     public function testOpenLoginPage(): void
     {
-        $session = self::getContainer()->get('session');
+        $session = $this->createSession();
         $session->set(
             '_security.oauth2_authorization_authenticate.target_path',
             'http://test.com?client_id=OxvBGZ4Z0gG6Maihm2amg80LcSpJez4'
         );
+        $session->save();
 
         $this->client->request(
             'GET',

@@ -24,7 +24,7 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
     {
         /** @var User $user */
         $user = $this->getReference('user');
-        $userName = $user->getUsername();
+        $userName = $user->getUserIdentifier();
         $responseData = $this->sendPasswordAccessTokenRequest($userName, $userName);
 
         return sprintf('Bearer %s', $responseData['access_token']);
@@ -34,7 +34,7 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
     {
         $startDateTime = new \DateTime('now', new \DateTimeZone('UTC'));
         $user = $this->getReference('user');
-        $accessToken = $this->sendPasswordAccessTokenRequest($user->getUsername(), $user->getUsername());
+        $accessToken = $this->sendPasswordAccessTokenRequest($user->getUserIdentifier(), $user->getUserIdentifier());
 
         self::assertEquals('Bearer', $accessToken['token_type']);
         self::assertLessThanOrEqual(3600, $accessToken['expires_in']);
@@ -65,7 +65,7 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
 
         $user = $this->getReference('user');
         $responseContent = $this->sendPasswordAccessTokenRequest(
-            $user->getUsername(),
+            $user->getUserIdentifier(),
             'wrong',
             Response::HTTP_BAD_REQUEST
         );
@@ -79,7 +79,7 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
         );
 
         $responseContent = $this->sendPasswordAccessTokenRequest(
-            $user->getUsername(),
+            $user->getUserIdentifier(),
             'wrong',
             Response::HTTP_BAD_REQUEST
         );
@@ -93,7 +93,7 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
         );
 
         $responseContent = $this->sendPasswordAccessTokenRequest(
-            $user->getUsername(),
+            $user->getUserIdentifier(),
             'wrong',
             Response::HTTP_BAD_REQUEST
         );
@@ -131,7 +131,7 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
 
         $user = $this->getReference('user');
         $responseContent = $this->sendPasswordAccessTokenRequest(
-            $user->getUsername(),
+            $user->getUserIdentifier(),
             'wrong',
             Response::HTTP_BAD_REQUEST
         );
@@ -146,7 +146,10 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
         $user = self::getContainer()->get('doctrine')->getRepository(User::class)->find($user->getId());
         self::assertEquals(1, $user->getFailedLoginCount());
 
-        $responseContent = $this->sendPasswordAccessTokenRequest($user->getUsername(), $user->getUsername());
+        $responseContent = $this->sendPasswordAccessTokenRequest(
+            $user->getUserIdentifier(),
+            $user->getUserIdentifier()
+        );
         self::assertEquals('Bearer', $responseContent['token_type']);
         $user = self::getContainer()->get('doctrine')->getRepository(User::class)->find($user->getId());
         self::assertEquals(0, $user->getFailedLoginCount());
@@ -175,7 +178,7 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
         $user = $this->getReference('user');
         $user->setEnabled(false);
         $this->getEntityManager()->flush();
-        $userName = $user->getUsername();
+        $userName = $user->getUserIdentifier();
 
         $responseContent = $this->sendPasswordAccessTokenRequest($userName, $userName, Response::HTTP_BAD_REQUEST);
 
@@ -202,7 +205,7 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
     {
         /** @var User $user */
         $user = $this->getReference('user');
-        $userName = $user->getUsername();
+        $userName = $user->getUserIdentifier();
 
         /** @var Client $client */
         $client = $this->getReference(LoadPasswordGrantClient::OAUTH_CLIENT_REFERENCE);
@@ -265,11 +268,6 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
 
         self::assertResponseStatusCodeEquals($response, Response::HTTP_UNAUTHORIZED);
         self::assertSame('', $response->getContent());
-        self::assertResponseHeader(
-            $response,
-            'WWW-Authenticate',
-            'WSSE realm="Secured API", profile="UsernameToken"'
-        );
     }
 
     public function testGetRefreshedAuthToken()
@@ -277,7 +275,7 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
         $user = $this->getReference('user');
         $client = $this->getReference(LoadPasswordGrantClient::OAUTH_CLIENT_REFERENCE);
 
-        $accessToken = $this->sendPasswordAccessTokenRequest($user->getUsername(), $user->getUsername());
+        $accessToken = $this->sendPasswordAccessTokenRequest($user->getUserIdentifier(), $user->getUserIdentifier());
         $passwordAccessDate = clone $client->getLastUsedAt();
 
         $startDateTime = new \DateTime('now', new \DateTimeZone('UTC'));
@@ -311,7 +309,7 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
     public function testApiRequestWithCorrectRefreshedAccessTokenShouldReturnRequestedData()
     {
         $user = $this->getReference('user');
-        $accessToken = $this->sendPasswordAccessTokenRequest($user->getUsername(), $user->getUsername());
+        $accessToken = $this->sendPasswordAccessTokenRequest($user->getUserIdentifier(), $user->getUserIdentifier());
         $refreshedToken = $this->sendRefreshAccessTokenRequest($accessToken['refresh_token']);
         $refreshedAuthorizationHeader = sprintf('Bearer %s', $refreshedToken['access_token']);
 
@@ -341,7 +339,7 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
     public function testApiRequestWithAccessTokedAfterGettingRefreshedAccessTokenShouldNotReturnData()
     {
         $user = $this->getReference('user');
-        $accessToken = $this->sendPasswordAccessTokenRequest($user->getUsername(), $user->getUsername());
+        $accessToken = $this->sendPasswordAccessTokenRequest($user->getUserIdentifier(), $user->getUserIdentifier());
         $refreshedToken = $this->sendRefreshAccessTokenRequest($accessToken['refresh_token']);
 
         $authorizationHeader = sprintf('Bearer %s', $accessToken['access_token']);
@@ -356,11 +354,6 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
         );
         self::assertResponseStatusCodeEquals($response, Response::HTTP_UNAUTHORIZED);
         self::assertSame('', $response->getContent());
-        self::assertResponseHeader(
-            $response,
-            'WWW-Authenticate',
-            'WSSE realm="Secured API", profile="UsernameToken"'
-        );
 
         // test that refreshed access token can be used to get data
         $response = $this->get(
@@ -377,7 +370,7 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
     public function testGetRefreshedAuthTokenForDeactivatedUserShouldReturnUnauthorizedStatusCode()
     {
         $user = $this->getReference('user');
-        $accessToken = $this->sendPasswordAccessTokenRequest($user->getUsername(), $user->getUsername());
+        $accessToken = $this->sendPasswordAccessTokenRequest($user->getUserIdentifier(), $user->getUserIdentifier());
 
         $user->setEnabled(false);
         $this->getEntityManager()->flush();
@@ -408,7 +401,7 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
     {
         /** @var User $user */
         $user = $this->getReference('user');
-        $accessToken = $this->sendPasswordAccessTokenRequest($user->getUsername(), $user->getUsername());
+        $accessToken = $this->sendPasswordAccessTokenRequest($user->getUserIdentifier(), $user->getUserIdentifier());
 
         /** @var Client $client */
         $client = $this->getReference(LoadPasswordGrantClient::OAUTH_CLIENT_REFERENCE);

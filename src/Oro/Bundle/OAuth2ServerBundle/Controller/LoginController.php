@@ -58,9 +58,10 @@ class LoginController extends AbstractController
         return $this->render(
             $template,
             [
-                'last_username' => $this->get(AuthenticationUtils::class)->getLastUsername(),
-                'error'         => $this->get(AuthenticationUtils::class)->getLastAuthenticationError(),
-                'csrf_token'    => $this->get(CsrfTokenManagerInterface::class)->getToken('authenticate')->getValue(),
+                'last_username' => $this->container->get(AuthenticationUtils::class)->getLastUsername(),
+                'error'         => $this->container->get(AuthenticationUtils::class)->getLastAuthenticationError(),
+                'csrf_token'    => $this->container->get(CsrfTokenManagerInterface::class)->getToken('authenticate')
+                    ->getValue(),
                 'appName'       => $client->getName()
             ]
         );
@@ -76,6 +77,6 @@ class LoginController extends AbstractController
 
     private function getClient(string $clientId): ?Client
     {
-        return $this->get(ClientManager::class)->getClient($clientId);
+        return $this->container->get(ClientManager::class)->getClient($clientId);
     }
 }

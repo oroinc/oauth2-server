@@ -25,8 +25,6 @@ class OAuth2Token extends AbstractToken implements OrganizationAwareTokenInterfa
 
     public function __construct(UserInterface $user = null, Organization $organization = null)
     {
-        $this->setAuthenticated(false);
-
         if (null !== $user && null !== $organization) {
             $roles = $user->getUserRoles();
 
@@ -34,8 +32,6 @@ class OAuth2Token extends AbstractToken implements OrganizationAwareTokenInterfa
 
             $this->setUser($user);
             $this->setOrganization($organization);
-
-            $this->setAuthenticated(\count($roles) > 0);
         }
     }
 

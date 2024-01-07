@@ -30,9 +30,9 @@ class AuthorizationTokenController extends AbstractController
         try {
             $response = $this->getAuthorizationServer()
                 ->respondToAccessTokenRequest($serverRequest, $serverResponse);
-            $this->get(SuccessHandler::class)->handle($serverRequest);
+            $this->container->get(SuccessHandler::class)->handle($serverRequest);
         } catch (OAuthServerException $e) {
-            $this->get(ExceptionHandler::class)->handle($serverRequest, $e);
+            $this->container->get(ExceptionHandler::class)->handle($serverRequest, $e);
             $response = $e->generateHttpResponse($serverResponse);
         }
 
@@ -129,7 +129,7 @@ class AuthorizationTokenController extends AbstractController
     private function getAuthorizationServer(): AuthorizationServer
     {
         try {
-            return $this->get(AuthorizationServer::class);
+            return $this->container->get(AuthorizationServer::class);
         } catch (\LogicException $e) {
             $this->getLogger()->warning($e->getMessage(), ['exception' => $e]);
 
@@ -139,7 +139,7 @@ class AuthorizationTokenController extends AbstractController
 
     private function getLogger(): LoggerInterface
     {
-        return $this->get(LoggerInterface::class);
+        return $this->container->get(LoggerInterface::class);
     }
 
     /**

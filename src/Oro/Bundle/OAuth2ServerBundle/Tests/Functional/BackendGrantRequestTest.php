@@ -173,7 +173,7 @@ class BackendGrantRequestTest extends OAuthServerTestCase
 
     public function testSendPasswordGrantRequest()
     {
-        $userName = $this->getReference('user')->getUsername();
+        $userName = $this->getReference('user')->getUserIdentifier();
         $responseData = $this->sendTokenRequest(
             [
                 'grant_type'    => 'password',
@@ -192,7 +192,7 @@ class BackendGrantRequestTest extends OAuthServerTestCase
 
     public function testTryToSendPasswordGrantRequestWithClientCredentialsGrantClient()
     {
-        $userName = $this->getReference('user')->getUsername();
+        $userName = $this->getReference('user')->getUserIdentifier();
         $responseData = $this->sendTokenRequest(
             [
                 'grant_type'    => 'password',
@@ -216,7 +216,7 @@ class BackendGrantRequestTest extends OAuthServerTestCase
 
     public function testTryToSendPasswordGrantRequestWithAuthCodeGrantClient()
     {
-        $userName = $this->getReference('user')->getUsername();
+        $userName = $this->getReference('user')->getUserIdentifier();
         $responseData = $this->sendTokenRequest(
             [
                 'grant_type'    => 'password',

@@ -9,24 +9,28 @@ use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
 use Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Exception\PasswordGrantExceptionHandler;
 use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\FailedUserOAuth2Token;
+use Oro\Bundle\OAuth2ServerBundle\Security\Authenticator\OAuth2Authenticator;
 use Oro\Bundle\UserBundle\Exception\BadCredentialsException;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\Security\Core\AuthenticationEvents;
-use Symfony\Component\Security\Core\Event\AuthenticationFailureEvent;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
+use Symfony\Component\Security\Core\Security;
+use Symfony\Component\Security\Core\User\UserProviderInterface;
+use Symfony\Component\Security\Http\Event\LoginFailureEvent;
 
 class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
 {
-    /** @var EventDispatcherInterface|\PHPUnit\Framework\MockObject\MockObject */
-    private $eventDispatcher;
-
-    /** @var ClientManager|\PHPUnit\Framework\MockObject\MockObject */
-    private $clientManager;
+    private EventDispatcherInterface|\PHPUnit\Framework\MockObject\MockObject $eventDispatcher;
+    private ClientManager|\PHPUnit\Framework\MockObject\MockObject $clientManager;
+    private OAuth2Authenticator|\PHPUnit\Framework\MockObject\MockObject $oAuth2Authenticator;
+    private UserProviderInterface|\PHPUnit\Framework\MockObject\MockObject $userProvider;
 
     protected function setUp(): void
     {
         $this->eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $this->clientManager = $this->createMock(ClientManager::class);
+        $this->oAuth2Authenticator = $this->createMock(OAuth2Authenticator::class);
+        $this->userProvider = $this->createMock(UserProviderInterface::class);
     }
 
     private function mockClientManager(string $identifier, Client $client): void
@@ -43,7 +47,14 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
         $this->eventDispatcher->expects(self::never())
             ->method('dispatch');
 
-        $handler = new PasswordGrantExceptionHandler($this->eventDispatcher, $this->clientManager, null);
+        $handler = new PasswordGrantExceptionHandler(
+            $this->eventDispatcher,
+            $this->clientManager,
+            null,
+            $this->oAuth2Authenticator,
+            $this->userProvider
+        );
+
         $handler->handle($request, OAuthServerException::accessDenied());
     }
 
@@ -68,16 +79,33 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
             $expectedException
         );
 
+        $symfonyRequest = new Request();
+        $symfonyRequest->attributes->set(Security::LAST_USERNAME, 'testUser');
+        $symfonyRequest->attributes->set('user', $this->userProvider->loadUserByIdentifier('testUser'));
+
         $this->eventDispatcher->expects(self::once())
             ->method('dispatch')
             ->with(
-                new AuthenticationFailureEvent($token, $expectedException),
-                AuthenticationEvents::AUTHENTICATION_FAILURE
+                new LoginFailureEvent(
+                    $expectedException,
+                    $this->oAuth2Authenticator,
+                    $symfonyRequest,
+                    null,
+                    'firewallName',
+                ),
             );
 
-        $handler = new PasswordGrantExceptionHandler($this->eventDispatcher, $this->clientManager, null);
+        $handler = new PasswordGrantExceptionHandler(
+            $this->eventDispatcher,
+            $this->clientManager,
+            null,
+            $this->oAuth2Authenticator,
+            $this->userProvider
+        );
+
         $handler->handle($request, $exception);
     }
+
 
     public function testHandleWithOAuthBadCredentialsException()
     {
@@ -91,14 +119,30 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
         $expectedException = new BadCredentialsException('test', 10, $exception);
         $expectedException->setToken($token);
 
+        $symfonyRequest = new Request();
+        $symfonyRequest->attributes->set(Security::LAST_USERNAME, 'testUser');
+        $symfonyRequest->attributes->set('user', $this->userProvider->loadUserByIdentifier('testUser'));
+
         $this->eventDispatcher->expects(self::once())
             ->method('dispatch')
             ->with(
-                new AuthenticationFailureEvent($token, $expectedException),
-                AuthenticationEvents::AUTHENTICATION_FAILURE
+                new LoginFailureEvent(
+                    $expectedException,
+                    $this->oAuth2Authenticator,
+                    $symfonyRequest,
+                    null,
+                    'firewallName',
+                ),
             );
 
-        $handler = new PasswordGrantExceptionHandler($this->eventDispatcher, $this->clientManager, null);
+        $handler = new PasswordGrantExceptionHandler(
+            $this->eventDispatcher,
+            $this->clientManager,
+            null,
+            $this->oAuth2Authenticator,
+            $this->userProvider
+        );
+
         $handler->handle($request, $exception);
     }
 
@@ -118,14 +162,30 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
         );
         $expectedException->setToken($token);
 
+        $symfonyRequest = new Request();
+        $symfonyRequest->attributes->set(Security::LAST_USERNAME, 'testUser');
+        $symfonyRequest->attributes->set('user', $this->userProvider->loadUserByIdentifier('testUser'));
+
         $this->eventDispatcher->expects(self::once())
             ->method('dispatch')
             ->with(
-                new AuthenticationFailureEvent($token, $expectedException),
-                AuthenticationEvents::AUTHENTICATION_FAILURE
+                new LoginFailureEvent(
+                    $expectedException,
+                    $this->oAuth2Authenticator,
+                    $symfonyRequest,
+                    null,
+                    'firewallName',
+                ),
             );
 
-        $handler = new PasswordGrantExceptionHandler($this->eventDispatcher, $this->clientManager, null);
+        $handler = new PasswordGrantExceptionHandler(
+            $this->eventDispatcher,
+            $this->clientManager,
+            null,
+            $this->oAuth2Authenticator,
+            $this->userProvider
+        );
+
         $handler->handle($request, $exception);
     }
 
@@ -148,11 +208,20 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
         $expectedException = new BadCredentialsException('test', 10, $exception);
         $expectedException->setToken($token);
 
+        $symfonyRequest = new Request();
+        $symfonyRequest->attributes->set(Security::LAST_USERNAME, 'testUser');
+        $symfonyRequest->attributes->set('user', $this->userProvider->loadUserByIdentifier('testUser'));
+
         $this->eventDispatcher->expects(self::once())
             ->method('dispatch')
             ->with(
-                new AuthenticationFailureEvent($token, $expectedException),
-                AuthenticationEvents::AUTHENTICATION_FAILURE
+                new LoginFailureEvent(
+                    $expectedException,
+                    $this->oAuth2Authenticator,
+                    $symfonyRequest,
+                    null,
+                    'firewallName',
+                ),
             );
 
         $this->mockClientManager('test_client', $client);
@@ -163,7 +232,13 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
         $frontendHelper->expects(self::once())
             ->method('resetRequestEmulation');
 
-        $handler = new PasswordGrantExceptionHandler($this->eventDispatcher, $this->clientManager, $frontendHelper);
+        $handler = new PasswordGrantExceptionHandler(
+            $this->eventDispatcher,
+            $this->clientManager,
+            $frontendHelper,
+            $this->oAuth2Authenticator,
+            $this->userProvider
+        );
         $handler->handle($request, $exception);
     }
 
@@ -186,11 +261,20 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
         $expectedException = new BadCredentialsException('test', 10, $exception);
         $expectedException->setToken($token);
 
+        $symfonyRequest = new Request();
+        $symfonyRequest->attributes->set(Security::LAST_USERNAME, 'testUser');
+        $symfonyRequest->attributes->set('user', $this->userProvider->loadUserByIdentifier('testUser'));
+
         $this->eventDispatcher->expects(self::once())
             ->method('dispatch')
             ->with(
-                new AuthenticationFailureEvent($token, $expectedException),
-                AuthenticationEvents::AUTHENTICATION_FAILURE
+                new LoginFailureEvent(
+                    $expectedException,
+                    $this->oAuth2Authenticator,
+                    $symfonyRequest,
+                    null,
+                    'firewallName',
+                ),
             );
 
         $this->mockClientManager('test_client', $client);
@@ -201,7 +285,14 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
         $frontendHelper->expects(self::once())
             ->method('resetRequestEmulation');
 
-        $handler = new PasswordGrantExceptionHandler($this->eventDispatcher, $this->clientManager, $frontendHelper);
+        $handler = new PasswordGrantExceptionHandler(
+            $this->eventDispatcher,
+            $this->clientManager,
+            $frontendHelper,
+            $this->oAuth2Authenticator,
+            $this->userProvider
+        );
+
         $handler->handle($request, $exception);
     }
 
@@ -238,7 +329,14 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
         $frontendHelper->expects(self::once())
             ->method('resetRequestEmulation');
 
-        $handler = new PasswordGrantExceptionHandler($this->eventDispatcher, $this->clientManager, $frontendHelper);
+        $handler = new PasswordGrantExceptionHandler(
+            $this->eventDispatcher,
+            $this->clientManager,
+            $frontendHelper,
+            $this->oAuth2Authenticator,
+            $this->userProvider
+        );
+
         $handler->handle($request, $exception);
     }
 
@@ -258,11 +356,20 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
         $expectedException = new BadCredentialsException('test', 10, $exception);
         $expectedException->setToken($token);
 
+        $symfonyRequest = new Request();
+        $symfonyRequest->attributes->set(Security::LAST_USERNAME, 'user');
+        $symfonyRequest->attributes->set('user', $this->userProvider->loadUserByIdentifier('user'));
+
         $this->eventDispatcher->expects(self::once())
             ->method('dispatch')
             ->with(
-                new AuthenticationFailureEvent($token, $expectedException),
-                AuthenticationEvents::AUTHENTICATION_FAILURE
+                new LoginFailureEvent(
+                    $expectedException,
+                    $this->oAuth2Authenticator,
+                    $symfonyRequest,
+                    null,
+                    'firewallName',
+                ),
             );
 
         $this->clientManager->expects(self::once())
@@ -276,7 +383,14 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
         $frontendHelper->expects(self::once())
             ->method('resetRequestEmulation');
 
-        $handler = new PasswordGrantExceptionHandler($this->eventDispatcher, $this->clientManager, $frontendHelper);
+        $handler = new PasswordGrantExceptionHandler(
+            $this->eventDispatcher,
+            $this->clientManager,
+            $frontendHelper,
+            $this->oAuth2Authenticator,
+            $this->userProvider
+        );
+
         $handler->handle($request, $exception);
     }
 }

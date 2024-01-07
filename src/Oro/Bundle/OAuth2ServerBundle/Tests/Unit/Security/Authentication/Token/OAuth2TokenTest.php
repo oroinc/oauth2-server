@@ -11,30 +11,6 @@ use Oro\Bundle\UserBundle\Entity\User;
 
 class OAuth2TokenTest extends \PHPUnit\Framework\TestCase
 {
-    public function testTokenWithoutUserAndOrganization()
-    {
-        $token = new OAuth2Token();
-        self::assertFalse($token->isAuthenticated());
-    }
-
-    public function testTokenWithoutUser()
-    {
-        $token = new OAuth2Token(null, new Organization());
-        self::assertFalse($token->isAuthenticated());
-    }
-
-    public function testTokenWithoutOrganization()
-    {
-        $token = new OAuth2Token(new User());
-        self::assertFalse($token->isAuthenticated());
-    }
-
-    public function testTokenWithUserWithoutRoles()
-    {
-        $token = new OAuth2Token(new User(), new Organization());
-        self::assertFalse($token->isAuthenticated());
-    }
-
     public function testFullyAuthenticatedToken()
     {
         $user = new User();
@@ -44,7 +20,6 @@ class OAuth2TokenTest extends \PHPUnit\Framework\TestCase
 
         $token = new OAuth2Token($user, $organization);
 
-        self::assertTrue($token->isAuthenticated());
         self::assertSame($user, $token->getUser());
         self::assertSame($organization, $token->getOrganization());
         self::assertSame([$role], $token->getRoles());
@@ -69,8 +44,6 @@ class OAuth2TokenTest extends \PHPUnit\Framework\TestCase
         $user->addUserRole($organization2Role);
 
         $token = new OAuth2Token($user, $organization1);
-
-        self::assertTrue($token->isAuthenticated());
 
         $tokenRoles = $token->getRoles();
         self::assertContains($globalRole, $tokenRoles);

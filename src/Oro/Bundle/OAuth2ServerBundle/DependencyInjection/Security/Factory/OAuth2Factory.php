@@ -2,11 +2,10 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\DependencyInjection\Security\Factory;
 
-use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Provider\VisitorOAuth2Provider;
+use Oro\Bundle\OAuth2ServerBundle\Security\Authenticator\OAuth2Authenticator;
 use Oro\Bundle\OAuth2ServerBundle\Security\VisitorUserProvider;
-use Symfony\Bundle\SecurityBundle\DependencyInjection\Security\Factory\SecurityFactoryInterface;
+use Symfony\Bundle\SecurityBundle\DependencyInjection\Security\Factory\AuthenticatorFactoryInterface;
 use Symfony\Component\Config\Definition\Builder\NodeDefinition;
-use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
@@ -14,48 +13,39 @@ use Symfony\Component\DependencyInjection\Reference;
 /**
  * The factory to configure OAuth 2.0 authentication listener.
  */
-class OAuth2Factory implements SecurityFactoryInterface
+class OAuth2Factory implements AuthenticatorFactoryInterface
 {
-    private const FIREWALL_LISTENER_SERVICE = 'oro_oauth2_server.security.firewall_listener';
-    private const AUTHENTICATION_PROVIDER_SERVICE  = 'oro_oauth2_server.security.authentication_provider';
+    private const AUTHENTICATOR_SERVICE  = 'oro_oauth2_server.security.authenticator';
 
-    /**
-     * {@inheritdoc}
-     */
-    public function create(
+    public function createAuthenticator(
         ContainerBuilder $container,
-        string $id,
+        string $firewallName,
         array $config,
-        string $userProviderId,
-        ?string $defaultEntryPointId
-    ): array {
-        $definition = new ChildDefinition(self::AUTHENTICATION_PROVIDER_SERVICE);
-        if ($this->isVisitorFirewall($config)) {
-            $definition->setClass(VisitorOAuth2Provider::class)
-                ->addArgument(new Reference('oro_customer.authentication.anonymous_customer_user_roles_provider'));
-        }
+        string $userProviderId
+    ): string {
+        $authenticatorId = self::AUTHENTICATOR_SERVICE . '.' . $firewallName;
 
-        $providerId = self::AUTHENTICATION_PROVIDER_SERVICE . '.' . $id;
         $container
-            ->setDefinition($providerId, $definition)
-            ->replaceArgument(0, new Reference($this->getUserProvider($container, $id, $config, $userProviderId)))
-            ->replaceArgument(1, $id)
-            ->replaceArgument(4, new Reference('security.user_checker.' . $id));
+            ->register($authenticatorId, OAuth2Authenticator::class)
+            ->addArgument(new Reference('logger'))
+            ->addArgument(new Reference('oro_oauth2_server.client_manager'))
+            ->addArgument(new Reference('doctrine'))
+            ->addArgument(new Reference($this->getUserProvider($container, $firewallName, $config, $userProviderId)))
+            ->addArgument(new Reference('oro_oauth2_server.league.authorization_validator'))
+            ->addArgument(new Reference('Symfony\Bridge\PsrHttpMessage\HttpMessageFactoryInterface'))
+            ->addArgument(new Reference('oro_api.security.authenticator.feature_checker'))
+            ->addArgument($firewallName)
+            ->addArgument(
+                $this->isVisitorFirewall($config) ? $this->createAnonymousCustomerUserRolesProvider() : null
+            )
+        ;
 
-        $listenerId = self::FIREWALL_LISTENER_SERVICE . '.' . $id;
-        $container
-            ->setDefinition($listenerId, new ChildDefinition(self::FIREWALL_LISTENER_SERVICE))
-            ->replaceArgument(3, $id);
-
-        return [$providerId, $listenerId, $defaultEntryPointId];
+        return $authenticatorId;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getPosition(): string
+    public function getPriority(): int
     {
-        return 'pre_auth';
+        return -10;
     }
 
     /**
@@ -95,7 +85,7 @@ class OAuth2Factory implements SecurityFactoryInterface
             VisitorUserProvider::class,
             [new Reference($userProvider), new Reference('oro_customer.customer_visitor_manager')]
         );
-        $definition->setPrivate(true);
+        $definition->setPublic(false);
 
         $userProviderId = 'oro_oauth2_server.security.visitor_user_provider.' . $id;
         $container->setDefinition($userProviderId, $definition);
@@ -108,5 +98,10 @@ class OAuth2Factory implements SecurityFactoryInterface
         return
             class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')
             && $config['anonymous_customer_user'] === true;
+    }
+
+    private function createAnonymousCustomerUserRolesProvider(): Reference
+    {
+        return new Reference('oro_customer.authentication.anonymous_customer_user_roles_provider');
     }
 }

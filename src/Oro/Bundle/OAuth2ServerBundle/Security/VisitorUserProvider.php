@@ -3,6 +3,7 @@
 namespace Oro\Bundle\OAuth2ServerBundle\Security;
 
 use Oro\Bundle\CustomerBundle\Entity\CustomerVisitorManager;
+use Oro\Bundle\CustomerBundle\Security\VisitorIdentifierUtil;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 
@@ -29,15 +30,15 @@ class VisitorUserProvider implements UserProviderInterface
     /**
      * {@inheritdoc}
      */
-    public function loadUserByUsername(string $username)
+    public function loadUserByIdentifier(string $identifier): UserInterface
     {
-        if (VisitorIdentifierUtil::isVisitorIdentifier($username)) {
-            list($visitorId, $visitorSessionId) = VisitorIdentifierUtil::decodeIdentifier($username);
+        if (VisitorIdentifierUtil::isVisitorIdentifier($identifier)) {
+            list($visitorId, $visitorSessionId) = VisitorIdentifierUtil::decodeIdentifier($identifier);
 
             return $this->customerVisitorManager->find($visitorId, $visitorSessionId);
         }
 
-        return $this->innerUserProvider->loadUserByUsername($username);
+        return $this->innerUserProvider->loadUserByIdentifier($identifier);
     }
 
     /**

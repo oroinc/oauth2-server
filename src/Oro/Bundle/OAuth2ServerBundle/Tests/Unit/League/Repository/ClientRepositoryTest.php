@@ -333,7 +333,7 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
             ->willReturn($client);
         $this->passwordHasherFactory->expects(self::once())
             ->method('getPasswordHasher')
-            ->with(self::identicalTo($client))
+            ->with($client::class)
             ->willReturn($secretHasher);
         $secretHasher->expects(self::once())
             ->method('verify')
@@ -400,7 +400,7 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
             ->willReturn($client);
         $this->passwordHasherFactory->expects(self::once())
             ->method('getPasswordHasher')
-            ->with(self::identicalTo($client))
+            ->with($client::class)
             ->willReturn($secretHasher);
         $secretHasher->expects(self::once())
             ->method('verify')
@@ -441,7 +441,7 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
             ->willReturn($client);
         $this->passwordHasherFactory->expects(self::once())
             ->method('getPasswordHasher')
-            ->with(self::identicalTo($client))
+            ->with($client::class)
             ->willReturn($secretHasher);
         $secretHasher->expects(self::once())
             ->method('verify')
@@ -510,7 +510,7 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
             ->willReturn(true);
         $this->passwordHasherFactory->expects(self::once())
             ->method('getPasswordHasher')
-            ->with(self::identicalTo($client))
+            ->with($client::class)
             ->willReturn($secretHasher);
         $secretHasher->expects(self::once())
             ->method('verify')
@@ -552,7 +552,7 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
             ->willReturn(true);
         $this->passwordHasherFactory->expects(self::once())
             ->method('getPasswordHasher')
-            ->with(self::identicalTo($client))
+            ->with($client::class)
             ->willReturn($secretHasher);
         $secretHasher->expects(self::once())
             ->method('verify')
@@ -598,7 +598,7 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
             ->willReturn(true);
         $this->passwordHasherFactory->expects(self::once())
             ->method('getPasswordHasher')
-            ->with(self::identicalTo($client))
+            ->with($client::class)
             ->willReturn($secretHasher);
         $secretHasher->expects(self::once())
             ->method('verify')
@@ -660,7 +660,7 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
             ->with(self::identicalTo($owner));
         $this->passwordHasherFactory->expects(self::once())
             ->method('getPasswordHasher')
-            ->with(self::identicalTo($client))
+            ->with($client::class)
             ->willReturn($secretHasher);
         $secretHasher->expects(self::once())
             ->method('verify')

@@ -33,7 +33,7 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
     {
         /** @var User $user */
         $user = $this->getReference('user');
-        $userName = $user->getUsername();
+        $userName = $user->getUserIdentifier();
         $responseData = $this->sendBackendPasswordAccessTokenRequest($userName, $userName);
 
         return sprintf('Bearer %s', $responseData['access_token']);
@@ -146,8 +146,8 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
     {
         $user = $this->getReference('user');
         $responseContent = $this->sendFrontendPasswordAccessTokenRequest(
-            $user->getUsername(),
-            $user->getUsername(),
+            $user->getUserIdentifier(),
+            $user->getUserIdentifier(),
             Response::HTTP_BAD_REQUEST
         );
 
@@ -241,11 +241,6 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
         );
         self::assertResponseStatusCodeEquals($response, Response::HTTP_UNAUTHORIZED);
         self::assertSame('', $response->getContent());
-        self::assertResponseHeader(
-            $response,
-            'WWW-Authenticate',
-            'WSSE realm="Secured Frontend API", profile="UsernameToken"'
-        );
     }
 
     public function testApiBackendRequestWithFrontendAccessTokenShouldReturnUnauthorizedStatusCode()
@@ -260,11 +255,6 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
         );
         self::assertResponseStatusCodeEquals($response, Response::HTTP_UNAUTHORIZED);
         self::assertSame('', $response->getContent());
-        self::assertResponseHeader(
-            $response,
-            'WWW-Authenticate',
-            'WSSE realm="Secured API", profile="UsernameToken"'
-        );
     }
 
     public function testGetFrontendRefreshedTokenByFrontendRefreshToken()
@@ -291,7 +281,7 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
     {
         /** @var User $user */
         $user = $this->getReference('user');
-        $userName = $user->getUsername();
+        $userName = $user->getUserIdentifier();
         $accessToken = $this->sendBackendPasswordAccessTokenRequest($userName, $userName);
 
         $responseContent = $this->sendTokenRequest(

@@ -58,11 +58,11 @@ class VisitorUserProviderTest extends \PHPUnit\Framework\TestCase
         $user = $this->createMock(UserInterface::class);
 
         $this->innerUserProvider->expects($this->once())
-            ->method('loadUserByUsername')
+            ->method('loadUserByIdentifier')
             ->with($identifier)
             ->willReturn($user);
 
-        $this->assertEquals($user, $this->visitorUserProvider->loadUserByUsername($identifier));
+        $this->assertEquals($user, $this->visitorUserProvider->loadUserByIdentifier($identifier));
     }
 
     public function testLoadUserByUsernameOnVisitorIdentifier()
@@ -71,12 +71,12 @@ class VisitorUserProviderTest extends \PHPUnit\Framework\TestCase
         $visitor = $this->createMock('Oro\Bundle\CustomerBundle\Entity\CustomerVisitor');
 
         $this->innerUserProvider->expects($this->never())
-            ->method('loadUserByUsername');
+            ->method('loadUserByIdentifier');
         $this->customerVisitorManager->expects($this->once())
             ->method('find')
             ->with(345, 'test')
             ->willReturn($visitor);
 
-        $this->assertEquals($visitor, $this->visitorUserProvider->loadUserByUsername($identifier));
+        $this->assertEquals($visitor, $this->visitorUserProvider->loadUserByIdentifier($identifier));
     }
 }

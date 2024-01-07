@@ -174,7 +174,7 @@ class ClientManager
 
     private function getSecretPasswordHasher(Client $client): PasswordHasherInterface
     {
-        return $this->passwordHasherFactory->getPasswordHasher($client);
+        return $this->passwordHasherFactory->getPasswordHasher($client::class);
     }
 
     private function generateToken(int $maxLength): string

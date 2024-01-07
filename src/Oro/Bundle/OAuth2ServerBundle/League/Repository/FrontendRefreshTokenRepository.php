@@ -5,9 +5,9 @@ namespace Oro\Bundle\OAuth2ServerBundle\League\Repository;
 use Doctrine\Persistence\ManagerRegistry;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Oro\Bundle\CustomerBundle\Entity\CustomerVisitorManager;
+use Oro\Bundle\CustomerBundle\Security\VisitorIdentifierUtil;
 use Oro\Bundle\OAuth2ServerBundle\Entity\RefreshToken;
 use Oro\Bundle\OAuth2ServerBundle\Security\OAuthUserChecker;
-use Oro\Bundle\OAuth2ServerBundle\Security\VisitorIdentifierUtil;
 use Oro\Bundle\UserBundle\Security\UserLoaderInterface;
 
 /**

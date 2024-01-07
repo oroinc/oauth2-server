@@ -10,10 +10,11 @@ use Symfony\Component\Security\Core\Authentication\Token\AbstractToken;
  */
 class FailedUserOAuth2Token extends AbstractToken
 {
-    public function __construct(string $user = null)
-    {
-        $this->setUser($user);
-        $this->setAuthenticated(false);
+    public function __construct(
+        private readonly string $username,
+        array $roles = []
+    ) {
+        parent::__construct($roles);
     }
 
     /**
@@ -22,5 +23,10 @@ class FailedUserOAuth2Token extends AbstractToken
     public function getCredentials()
     {
         return $this->getAttribute('password');
+    }
+
+    public function getUsername(): string
+    {
+        return $this->username;
     }
 }

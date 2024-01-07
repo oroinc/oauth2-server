@@ -7,7 +7,7 @@ use Oro\Bundle\OAuth2ServerBundle\League\Entity\ClientEntity;
 use Oro\Bundle\OAuth2ServerBundle\League\Entity\UserEntity;
 use Oro\Bundle\OAuth2ServerBundle\League\Repository\FrontendUserRepository;
 use Oro\Bundle\OAuth2ServerBundle\Security\OAuthUserChecker;
-use Oro\Bundle\UserBundle\Entity\UserInterface;
+use Oro\Bundle\UserBundle\Entity\User;
 use Oro\Bundle\UserBundle\Security\UserLoaderInterface;
 use Oro\Component\Testing\Unit\EntityTrait;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
@@ -115,7 +115,7 @@ class FrontendUserRepositoryTest extends \PHPUnit\Framework\TestCase
         $username = 'test_username';
         $password = 'test_password';
         $grantType = 'test_grant';
-        $user = $this->createMock(UserInterface::class);
+        $user = $this->createMock(User::class);
         $userEncodedPassword = 'user_encoded_password';
         $userPasswordSalt = 'user_password_salt';
         $passwordHasher = $this->createMock(PasswordHasherInterface::class);
@@ -128,7 +128,7 @@ class FrontendUserRepositoryTest extends \PHPUnit\Framework\TestCase
             ->method('loadUser');
         $this->passwordHasherFactory->expects(self::once())
             ->method('getPasswordHasher')
-            ->with(self::identicalTo($user))
+            ->with($user::class)
             ->willReturn($passwordHasher);
         $user->expects(self::once())
             ->method('getPassword')
@@ -137,7 +137,7 @@ class FrontendUserRepositoryTest extends \PHPUnit\Framework\TestCase
             ->method('getSalt')
             ->willReturn($userPasswordSalt);
         $user->expects(self::never())
-            ->method('getUserName');
+            ->method('getUserIdentifier');
         $passwordHasher->expects(self::once())
             ->method('verify')
             ->with($userEncodedPassword, $password, $userPasswordSalt)
@@ -161,10 +161,10 @@ class FrontendUserRepositoryTest extends \PHPUnit\Framework\TestCase
         $username = 'test_username';
         $password = 'test_password';
         $grantType = 'test_grant';
-        $user = $this->createMock(UserInterface::class);
+        $user = $this->createMock(User::class);
         $userEncodedPassword = 'user_encoded_password';
         $userPasswordSalt = 'user_password_salt';
-        $userUsername = 'user_username';
+        $userIdentifier = 'user_identifier';
         $passwordHasher = $this->createMock(PasswordHasherInterface::class);
 
         $this->frontendUserLoader->expects(self::once())
@@ -175,7 +175,7 @@ class FrontendUserRepositoryTest extends \PHPUnit\Framework\TestCase
             ->method('loadUser');
         $this->passwordHasherFactory->expects(self::once())
             ->method('getPasswordHasher')
-            ->with(self::identicalTo($user))
+            ->with($user::class)
             ->willReturn($passwordHasher);
         $user->expects(self::once())
             ->method('getPassword')
@@ -184,8 +184,8 @@ class FrontendUserRepositoryTest extends \PHPUnit\Framework\TestCase
             ->method('getSalt')
             ->willReturn($userPasswordSalt);
         $user->expects(self::once())
-            ->method('getUserName')
-            ->willReturn($userUsername);
+            ->method('getUserIdentifier')
+            ->willReturn($userIdentifier);
         $passwordHasher->expects(self::once())
             ->method('verify')
             ->with($userEncodedPassword, $password, $userPasswordSalt)
@@ -199,7 +199,7 @@ class FrontendUserRepositoryTest extends \PHPUnit\Framework\TestCase
         );
 
         self::assertInstanceOf(UserEntity::class, $userEntity);
-        self::assertEquals($userUsername, $userEntity->getIdentifier());
+        self::assertEquals($userIdentifier, $userEntity->getIdentifier());
     }
 
     public function testCustomerVisitor()

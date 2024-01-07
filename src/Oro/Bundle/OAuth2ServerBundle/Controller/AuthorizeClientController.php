@@ -82,7 +82,7 @@ class AuthorizeClientController extends AbstractController
                 return $this->processAuthorization(true, $authRequest, $client);
             }
         } catch (OAuthServerException $exception) {
-            $this->get(ExceptionHandler::class)->handle($serverRequest, $exception);
+            $this->container->get(ExceptionHandler::class)->handle($serverRequest, $exception);
 
             return $exception->generateHttpResponse(new Response());
         }
@@ -105,11 +105,11 @@ class AuthorizeClientController extends AbstractController
         $authServer = $this->getAuthorizationServer();
         $loggedUser = $this->getUser();
         $user = new UserEntity();
-        $user->setIdentifier($loggedUser->getUsername());
+        $user->setIdentifier($loggedUser->getUserIdentifier());
         $authRequest->setUser($user);
         $authRequest->setAuthorizationApproved($isAuthorized);
 
-        $this->get(AuthorizeClientHandler::class)->handle($client, $loggedUser, $isAuthorized);
+        $this->container->get(AuthorizeClientHandler::class)->handle($client, $loggedUser, $isAuthorized);
 
         return $authServer->completeAuthorizationRequest($authRequest, new Response());
     }
@@ -117,9 +117,9 @@ class AuthorizeClientController extends AbstractController
     private function getAuthorizationServer(): AuthorizationServer
     {
         try {
-            return $this->get(AuthorizationServer::class);
+            return $this->container->get(AuthorizationServer::class);
         } catch (\LogicException $e) {
-            $this->get(LoggerInterface::class)->warning($e->getMessage(), ['exception' => $e]);
+            $this->container->get(LoggerInterface::class)->warning($e->getMessage(), ['exception' => $e]);
 
             throw CryptKeyNotFoundException::create($e);
         }
@@ -127,6 +127,6 @@ class AuthorizeClientController extends AbstractController
 
     private function getClient(string $clientId): ?Client
     {
-        return $this->get(ClientManager::class)->getClient($clientId);
+        return $this->container->get(ClientManager::class)->getClient($clientId);
     }
 }

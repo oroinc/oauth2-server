@@ -2,6 +2,7 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Controller;
 
+use Doctrine\Persistence\ManagerRegistry;
 use Oro\Bundle\EntityBundle\Tools\EntityRoutingHelper;
 use Oro\Bundle\FormBundle\Model\UpdateHandlerFacade;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
@@ -61,7 +62,8 @@ class ClientController extends AbstractController
             ClientManager::class,
             FormFactoryInterface::class,
             TranslatorInterface::class,
-            EncryptionKeysExistenceChecker::class
+            EncryptionKeysExistenceChecker::class,
+            'doctrine' => ManagerRegistry::class
         ]);
     }
 
@@ -124,7 +126,7 @@ class ClientController extends AbstractController
 
         $user = null;
         if ($entity->getOwnerEntityId()) {
-            $user = $this->getDoctrine()->getRepository($entity->getOwnerEntityClass())->find(
+            $user = $this->container->get('doctrine')->getRepository($entity->getOwnerEntityClass())->find(
                 $entity->getOwnerEntityId()
             );
         }
@@ -243,7 +245,7 @@ class ClientController extends AbstractController
         }
 
         $entity = new Client();
-        $entityRoutingHelper = $this->get(EntityRoutingHelper::class);
+        $entityRoutingHelper = $this->container->get(EntityRoutingHelper::class);
         $ownerEntityClass = $entityRoutingHelper->getEntityClassName($request);
         $ownerEntityId = (int)$entityRoutingHelper->getEntityId($request);
         if ($ownerEntityClass && $ownerEntityId) {
@@ -370,7 +372,7 @@ class ClientController extends AbstractController
         $ownerEntityClass = null,
         $ownerEntityId = null
     ) {
-        return $this->get(UpdateHandlerFacade::class)->update(
+        return $this->container->get(UpdateHandlerFacade::class)->update(
             $entity,
             $this->getForm($entity, $isSystemOAuthApplication, $grantTypes),
             $message,
@@ -389,7 +391,7 @@ class ClientController extends AbstractController
      */
     private function getForm(Client $entity, $isSystemOAuthApplication, $grantTypes): FormInterface
     {
-        return $this->get(FormFactoryInterface::class)
+        return $this->container->get(FormFactoryInterface::class)
             ->createNamed(
                 'oro_oauth2_client',
                 $isSystemOAuthApplication ? SystemClientType::class : ClientType::class,
@@ -442,7 +444,7 @@ class ClientController extends AbstractController
 
     private function getClientManager(): ClientManager
     {
-        return $this->get(ClientManager::class);
+        return $this->container->get(ClientManager::class);
     }
 
     private function getTranslator(): TranslatorInterface
@@ -487,7 +489,7 @@ class ClientController extends AbstractController
 
     private function isEncryptionKeysExist(): bool
     {
-        $encryptionKeysExistenceChecker = $this->get(EncryptionKeysExistenceChecker::class);
+        $encryptionKeysExistenceChecker = $this->container->get(EncryptionKeysExistenceChecker::class);
 
         return
             $encryptionKeysExistenceChecker->isPrivateKeyExist()

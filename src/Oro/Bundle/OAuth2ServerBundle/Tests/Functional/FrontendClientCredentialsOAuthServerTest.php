@@ -131,11 +131,6 @@ class FrontendClientCredentialsOAuthServerTest extends OAuthServerTestCase
         );
         self::assertResponseStatusCodeEquals($response, Response::HTTP_UNAUTHORIZED);
         self::assertSame('', $response->getContent());
-        self::assertResponseHeader(
-            $response,
-            'WWW-Authenticate',
-            'WSSE realm="Secured Frontend API", profile="UsernameToken"'
-        );
     }
 
     public function testMakeApiBackendRequestWithBackendAccessToken(): void
@@ -177,10 +172,5 @@ class FrontendClientCredentialsOAuthServerTest extends OAuthServerTestCase
         );
         self::assertResponseStatusCodeEquals($response, Response::HTTP_UNAUTHORIZED);
         self::assertSame('', $response->getContent());
-        self::assertResponseHeader(
-            $response,
-            'WWW-Authenticate',
-            'WSSE realm="Secured API", profile="UsernameToken"'
-        );
     }
 }

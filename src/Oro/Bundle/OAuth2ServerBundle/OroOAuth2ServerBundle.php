@@ -23,7 +23,7 @@ class OroOAuth2ServerBundle extends Bundle
 
         /** @var SecurityExtension $extension */
         $extension = $container->getExtension('security');
-        $extension->addSecurityListenerFactory(new OAuth2Factory());
+        $extension->addAuthenticatorFactory(new OAuth2Factory());
 
         $container->addCompilerPass(new SkipSyncTrackingPass());
         $container->addCompilerPass(new AddSkippedLogAttemptsFirewalls());

@@ -100,7 +100,7 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
         $passwordHasher = $this->createMock(PasswordHasherInterface::class);
         $this->passwordHasherFactory->expects(self::once())
             ->method('getPasswordHasher')
-            ->with(self::identicalTo($client))
+            ->with(self::identicalTo($client::class))
             ->willReturn($passwordHasher);
         $passwordHasher->expects(self::once())
             ->method('hash')

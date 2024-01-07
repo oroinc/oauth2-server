@@ -156,7 +156,7 @@ class ClientRepository implements ClientRepositoryInterface
     private function passwordHasherVerify(Client $client, ?string $clientSecret): bool
     {
         return $this->passwordHasherFactory
-            ->getPasswordHasher($client)
+            ->getPasswordHasher($client::class)
             ->verify($client->getSecret(), (string)$clientSecret, $client->getSalt());
     }
 }

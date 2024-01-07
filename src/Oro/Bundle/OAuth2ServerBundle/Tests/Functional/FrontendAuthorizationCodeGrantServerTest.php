@@ -256,11 +256,6 @@ class FrontendAuthorizationCodeGrantServerTest extends OAuthServerTestCase
 
         self::assertResponseStatusCodeEquals($response, Response::HTTP_UNAUTHORIZED);
         self::assertSame('', $response->getContent());
-        self::assertResponseHeader(
-            $response,
-            'WWW-Authenticate',
-            'WSSE realm="Secured API", profile="UsernameToken"'
-        );
     }
 
     public function testTryToGetAuthTokenWithWrongAuthCode()

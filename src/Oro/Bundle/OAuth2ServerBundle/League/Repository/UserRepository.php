@@ -55,7 +55,7 @@ class UserRepository implements UserRepositoryInterface
         }
 
         $userEntity = new UserEntity();
-        $userEntity->setIdentifier($user->getUsername());
+        $userEntity->setIdentifier($user->getUserIdentifier());
 
         return $userEntity;
     }
@@ -68,7 +68,7 @@ class UserRepository implements UserRepositoryInterface
     private function passwordHasherVerify(UserInterface $user, string $password): bool
     {
         return $this->passwordHasherFactory
-            ->getPasswordHasher($user)
+            ->getPasswordHasher($user::class)
             ->verify($user->getPassword(), $password, $user->getSalt());
     }
 }
