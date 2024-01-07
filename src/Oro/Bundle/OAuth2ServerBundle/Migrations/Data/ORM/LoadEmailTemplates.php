@@ -10,10 +10,9 @@ use Oro\Bundle\EmailBundle\Migrations\Data\ORM\AbstractEmailFixture;
 class LoadEmailTemplates extends AbstractEmailFixture
 {
     /**
-     * @param string $dir
-     * @return array
+     * {@inheritDoc}
      */
-    public function getEmailTemplatesList($dir)
+    public function getEmailTemplatesList($dir): array
     {
         $templates = parent::getEmailTemplatesList($dir);
         if (!class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {
@@ -24,9 +23,9 @@ class LoadEmailTemplates extends AbstractEmailFixture
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
-    public function getEmailsDir()
+    public function getEmailsDir(): string
     {
         return $this->container
             ->get('kernel')
