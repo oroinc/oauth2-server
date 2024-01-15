@@ -1,0 +1,12 @@
+datagrids:
+    oauth-client-frontend-grid:
+        extends: oauth-client-backend-grid
+        properties:
+            view_link:
+                type:   url
+                route:  oro_oauth2_frontend_view
+                params: [ id ]
+            update_link:
+                type: url
+                route: oro_oauth2_frontend_update
+                params: [ id ]
