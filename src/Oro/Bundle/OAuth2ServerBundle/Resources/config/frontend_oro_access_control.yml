@@ -1,0 +1,2 @@
+- { path: ^/oauth2-token/(authorize|login-check), roles: IS_AUTHENTICATED }
+- { path: ^%web_backend_prefix%/oauth2-token/login$, roles: PUBLIC_ACCESS }

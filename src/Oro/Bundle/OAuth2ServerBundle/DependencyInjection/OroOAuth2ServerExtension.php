@@ -329,6 +329,13 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
                     'realm' => 'AccountUser REST Area'
                 ];
             }
+
+            // add access_control configs for frontend
+            $accessControlConfig = Yaml::parseFile(__DIR__ . '/../Resources/config/frontend_oro_access_control.yml');
+            $securityConfigs[0]['access_control'] = array_merge(
+                $accessControlConfig,
+                $securityConfigs[0]['access_control']
+            );
         }
 
         $securityConfigs[0]['firewalls'] = $firewalls;
