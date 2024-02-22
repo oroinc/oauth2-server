@@ -340,9 +340,9 @@ services:
         arguments:
             - '@event_dispatcher'
             - '@oro_oauth2_server.client_manager'
-            - '@?oro_frontend.request.frontend_helper'
             - '@oro_oauth2_server.security.authenticator.api_wsse_secured'
             - '@oro_user.security.provider'
+            - '@?oro_frontend.request.frontend_helper'
         tags:
             - { name: oro_oauth2_server.get_access_token_exception_handler }
 

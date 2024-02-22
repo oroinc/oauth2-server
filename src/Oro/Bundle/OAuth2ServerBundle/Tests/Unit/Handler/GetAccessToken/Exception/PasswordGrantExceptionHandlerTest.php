@@ -50,9 +50,9 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
         $handler = new PasswordGrantExceptionHandler(
             $this->eventDispatcher,
             $this->clientManager,
-            null,
             $this->oAuth2Authenticator,
-            $this->userProvider
+            $this->userProvider,
+            null,
         );
 
         $handler->handle($request, OAuthServerException::accessDenied());
@@ -98,9 +98,9 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
         $handler = new PasswordGrantExceptionHandler(
             $this->eventDispatcher,
             $this->clientManager,
-            null,
             $this->oAuth2Authenticator,
-            $this->userProvider
+            $this->userProvider,
+            null,
         );
 
         $handler->handle($request, $exception);
@@ -138,9 +138,9 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
         $handler = new PasswordGrantExceptionHandler(
             $this->eventDispatcher,
             $this->clientManager,
-            null,
             $this->oAuth2Authenticator,
-            $this->userProvider
+            $this->userProvider,
+            null,
         );
 
         $handler->handle($request, $exception);
@@ -181,9 +181,9 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
         $handler = new PasswordGrantExceptionHandler(
             $this->eventDispatcher,
             $this->clientManager,
-            null,
             $this->oAuth2Authenticator,
-            $this->userProvider
+            $this->userProvider,
+            null,
         );
 
         $handler->handle($request, $exception);
@@ -235,9 +235,9 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
         $handler = new PasswordGrantExceptionHandler(
             $this->eventDispatcher,
             $this->clientManager,
-            $frontendHelper,
             $this->oAuth2Authenticator,
-            $this->userProvider
+            $this->userProvider,
+            $frontendHelper,
         );
         $handler->handle($request, $exception);
     }
@@ -288,9 +288,9 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
         $handler = new PasswordGrantExceptionHandler(
             $this->eventDispatcher,
             $this->clientManager,
-            $frontendHelper,
             $this->oAuth2Authenticator,
-            $this->userProvider
+            $this->userProvider,
+            $frontendHelper,
         );
 
         $handler->handle($request, $exception);
@@ -332,9 +332,9 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
         $handler = new PasswordGrantExceptionHandler(
             $this->eventDispatcher,
             $this->clientManager,
-            $frontendHelper,
             $this->oAuth2Authenticator,
-            $this->userProvider
+            $this->userProvider,
+            $frontendHelper,
         );
 
         $handler->handle($request, $exception);
@@ -386,9 +386,9 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
         $handler = new PasswordGrantExceptionHandler(
             $this->eventDispatcher,
             $this->clientManager,
-            $frontendHelper,
             $this->oAuth2Authenticator,
-            $this->userProvider
+            $this->userProvider,
+            $frontendHelper,
         );
 
         $handler->handle($request, $exception);

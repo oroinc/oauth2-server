@@ -34,9 +34,9 @@ class PasswordGrantExceptionHandler implements ExceptionHandlerInterface
     public function __construct(
         private EventDispatcherInterface $eventDispatcher,
         private ClientManager            $clientManager,
-        private FrontendHelper|null      $frontendHelper = null,
         private OAuth2Authenticator      $oAuth2Authenticator,
         private UserProviderInterface    $userProvider,
+        private FrontendHelper|null      $frontendHelper = null,
     ) {
     }
 
