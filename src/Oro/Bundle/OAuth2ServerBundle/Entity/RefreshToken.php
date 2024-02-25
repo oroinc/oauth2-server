@@ -2,58 +2,34 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Entity;
 
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
  * The entity for OAuth 2.0 refresh token.
- *
- * @ORM\Entity()
- * @ORM\Table(
- *    name="oro_oauth2_refresh_token",
- *    uniqueConstraints={
- *        @ORM\UniqueConstraint(name="oro_oauth2_refresh_token_uidx", columns={"identifier"})
- *    }
- * )
  */
+#[ORM\Entity]
+#[ORM\Table(name: 'oro_oauth2_refresh_token')]
+#[ORM\UniqueConstraint(name: 'oro_oauth2_refresh_token_uidx', columns: ['identifier'])]
 class RefreshToken
 {
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    private $id;
+    #[ORM\Column(name: 'id', type: Types::INTEGER)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    private ?int $id = null;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="identifier", type="string", length=80)
-     */
-    private $identifier;
+    #[ORM\Column(name: 'identifier', type: Types::STRING, length: 80)]
+    private ?string $identifier;
 
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="expires_at", type="datetime")
-     */
-    private $expiresAt;
+    #[ORM\Column(name: 'expires_at', type: Types::DATETIME_MUTABLE)]
+    private ?\DateTimeInterface $expiresAt;
 
-    /**
-     * @var AccessToken
-     *
-     * @ORM\ManyToOne(targetEntity="Oro\Bundle\OAuth2ServerBundle\Entity\AccessToken")
-     * @ORM\JoinColumn(name="access_token_id", referencedColumnName="id", onDelete="CASCADE")
-     */
-    private $accessToken;
+    #[ORM\ManyToOne(targetEntity: AccessToken::class)]
+    #[ORM\JoinColumn(name: 'access_token_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    private ?AccessToken $accessToken;
 
-    /**
-     * @var bool
-     *
-     * @ORM\Column(name="revoked", type="boolean", options={"default"=false})
-     */
-    private $revoked = false;
+    #[ORM\Column(name: 'revoked', type: Types::BOOLEAN, options: ['default' => false])]
+    private ?bool $revoked = false;
 
     public function __construct(
         string $identifier,

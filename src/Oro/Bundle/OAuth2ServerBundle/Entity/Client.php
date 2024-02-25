@@ -2,92 +2,51 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Entity;
 
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Oro\Bundle\EntityConfigBundle\Metadata\Annotation\Config;
-use Oro\Bundle\EntityConfigBundle\Metadata\Annotation\ConfigField;
+use Oro\Bundle\EntityConfigBundle\Metadata\Attribute\Config;
+use Oro\Bundle\EntityConfigBundle\Metadata\Attribute\ConfigField;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 
 /**
  * The entity for OAuth 2.0 client (another name is OAuth 2.0 application).
  *
- * @ORM\Entity()
- * @ORM\Table(
- *      name="oro_oauth2_client",
- *      uniqueConstraints={
- *          @ORM\UniqueConstraint(name="oro_oauth2_client_uidx", columns={"identifier"})
- *      },
- *      indexes={
- *          @ORM\Index(name="oro_oauth2_client_owner_idx", columns={"owner_entity_class", "owner_entity_id"})
- *      }
- * )
- * @Config(
- *  defaultValues={
- *      "ownership"={
- *          "owner_type"="ORGANIZATION",
- *          "owner_field_name"="organization",
- *          "owner_column_name"="organization_id"
- *      },
- *      "security"={
- *          "type"="ACL",
- *          "permissions"="VIEW;CREATE;EDIT;DELETE",
- *          "group_name"=""
- *      }
- *  }
- * )
  * @SuppressWarnings(PHPMD.TooManyFields)
  */
+#[ORM\Entity]
+#[ORM\Table(name: 'oro_oauth2_client')]
+#[ORM\Index(columns: ['owner_entity_class', 'owner_entity_id'], name: 'oro_oauth2_client_owner_idx')]
+#[ORM\UniqueConstraint(name: 'oro_oauth2_client_uidx', columns: ['identifier'])]
+#[Config(
+    defaultValues: [
+        'ownership' => [
+            'owner_type' => 'ORGANIZATION',
+            'owner_field_name' => 'organization',
+            'owner_column_name' => 'organization_id'
+        ],
+        'security' => ['type' => 'ACL', 'permissions' => 'VIEW;CREATE;EDIT;DELETE', 'group_name' => '']
+    ]
+)]
 class Client
 {
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    private $id;
+    #[ORM\Column(name: 'id', type: Types::INTEGER)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    private ?int $id = null;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="name", type="string", length=255)
-     */
-    private $name;
+    #[ORM\Column(name: 'name', type: Types::STRING, length: 255)]
+    private ?string $name = null;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="identifier", type="string", length=32)
-     */
-    private $identifier;
+    #[ORM\Column(name: 'identifier', type: Types::STRING, length: 32)]
+    private ?string $identifier = null;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="secret", type="string", length=128, nullable=true)
-     * @ConfigField(
-     *      defaultValues={
-     *          "email"={
-     *              "available_in_template"=false
-     *          }
-     *      }
-     * )
-     */
-    private $secret;
+    #[ORM\Column(name: 'secret', type: Types::STRING, length: 128, nullable: true)]
+    #[ConfigField(defaultValues: ['email' => ['available_in_template' => false]])]
+    private ?string $secret = null;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="salt", type="string", length=50)
-     * @ConfigField(
-     *      defaultValues={
-     *          "email"={
-     *              "available_in_template"=false
-     *          }
-     *      }
-     * )
-     */
-    private $salt;
+    #[ORM\Column(name: 'salt', type: Types::STRING, length: 50)]
+    #[ConfigField(defaultValues: ['email' => ['available_in_template' => false]])]
+    private ?string $salt = null;
 
     /**
      * This property is used to share the original value of the secret
@@ -98,104 +57,53 @@ class Client
      */
     private $plainSecret;
 
-    /**
-     * @var \DateTime|null
-     *
-     * @ORM\Column(name="last_used_at", type="datetime", nullable=true)
-     */
-    private $lastUsedAt;
+    #[ORM\Column(name: 'last_used_at', type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $lastUsedAt = null;
 
     /**
      * @var string[]
-     *
-     * @ORM\Column(name="grants", type="simple_array")
      */
+    #[ORM\Column(name: 'grants', type: Types::SIMPLE_ARRAY)]
     private $grants;
 
     /**
      * @var string[]|null
-     *
-     * @ORM\Column(name="scopes", type="simple_array", nullable=true)
      */
+    #[ORM\Column(name: 'scopes', type: Types::SIMPLE_ARRAY, nullable: true)]
     private $scopes;
 
     /**
      * @var string[]|null
-     *
-     * @ORM\Column(name="redirect_uris", type="simple_array", nullable=true)
      */
+    #[ORM\Column(name: 'redirect_uris', type: Types::SIMPLE_ARRAY, nullable: true)]
     private $redirectUris;
 
-    /**
-     * @var bool
-     *
-     * @ORM\Column(name="active", type="boolean", options={"default"=true})
-     */
-    private $active = true;
+    #[ORM\Column(name: 'active', type: Types::BOOLEAN, options: ['default' => true])]
+    private ?bool $active = true;
 
-    /**
-     * @var bool
-     *
-     * @ORM\Column(name="frontend", type="boolean", options={"default"=false})
-     */
-    private $frontend = false;
+    #[ORM\Column(name: 'frontend', type: Types::BOOLEAN, options: ['default' => false])]
+    private ?bool $frontend = false;
 
-    /**
-     * @var Organization
-     *
-     * @ORM\ManyToOne(targetEntity="Oro\Bundle\OrganizationBundle\Entity\Organization")
-     * @ORM\JoinColumn(name="organization_id", referencedColumnName="id", onDelete="SET NULL")
-     */
-    private $organization;
+    #[ORM\ManyToOne(targetEntity: Organization::class)]
+    #[ORM\JoinColumn(name: 'organization_id', referencedColumnName: 'id', onDelete: 'SET NULL')]
+    private ?Organization $organization = null;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="owner_entity_class", type="string", length=255, nullable=true)
-     * @ConfigField(
-     *      defaultValues={
-     *          "email"={
-     *              "available_in_template"=false
-     *          }
-     *      }
-     * )
-     */
-    private $ownerEntityClass;
+    #[ORM\Column(name: 'owner_entity_class', type: Types::STRING, length: 255, nullable: true)]
+    #[ConfigField(defaultValues: ['email' => ['available_in_template' => false]])]
+    private ?string $ownerEntityClass = null;
 
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="owner_entity_id", type="integer", nullable=true)
-     * @ConfigField(
-     *      defaultValues={
-     *          "email"={
-     *              "available_in_template"=false
-     *          }
-     *      }
-     * )
-     */
-    private $ownerEntityId;
+    #[ORM\Column(name: 'owner_entity_id', type: Types::INTEGER, nullable: true)]
+    #[ConfigField(defaultValues: ['email' => ['available_in_template' => false]])]
+    private ?int $ownerEntityId = null;
 
-    /**
-     * @var bool
-     *
-     * @ORM\Column(name="confidential", type="boolean", options={"default"=true})
-     */
-    private $confidential = true;
+    #[ORM\Column(name: 'confidential', type: Types::BOOLEAN, options: ['default' => true])]
+    private ?bool $confidential = true;
 
-    /**
-     * @var bool
-     *
-     * @ORM\Column(name="plain_text_pkce_allowed", type="boolean", options={"default"=false})
-     */
-    private $plainTextPkceAllowed = false;
+    #[ORM\Column(name: 'plain_text_pkce_allowed', type: Types::BOOLEAN, options: ['default' => false])]
+    private ?bool $plainTextPkceAllowed = false;
 
-    /**
-     * @var bool
-     *
-     * @ORM\Column(name="skip_authorize_client_allowed", type="boolean", options={"default"=false})
-     */
-    private $skipAuthorizeClientAllowed = false;
+    #[ORM\Column(name: 'skip_authorize_client_allowed', type: Types::BOOLEAN, options: ['default' => false])]
+    private ?bool $skipAuthorizeClientAllowed = false;
 
     /**
      * Gets the entity identifier.

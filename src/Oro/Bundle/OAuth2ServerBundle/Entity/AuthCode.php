@@ -2,72 +2,43 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Entity;
 
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
  * The entity for OAuth 2.0 authorization code.
- *
- * @ORM\Entity()
- * @ORM\Table(
- *    name="oro_oauth2_auth_code",
- *    uniqueConstraints={
- *        @ORM\UniqueConstraint(name="oro_oauth2_auth_code_uidx", columns={"identifier"})
- *    }
- * )
  */
+#[ORM\Entity]
+#[ORM\Table(name: 'oro_oauth2_auth_code')]
+#[ORM\UniqueConstraint(name: 'oro_oauth2_auth_code_uidx', columns: ['identifier'])]
 class AuthCode
 {
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    private $id;
+    #[ORM\Column(name: 'id', type: Types::INTEGER)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    private ?int $id = null;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="identifier", type="string", length=80)
-     */
-    private $identifier;
+    #[ORM\Column(name: 'identifier', type: Types::STRING, length: 80)]
+    private ?string $identifier;
 
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="expires_at", type="datetime")
-     */
-    private $expiresAt;
+    #[ORM\Column(name: 'expires_at', type: Types::DATETIME_MUTABLE)]
+    private ?\DateTimeInterface $expiresAt;
 
     /**
      * @var string[]
-     *
-     * @ORM\Column(name="scopes", type="simple_array", nullable=true)
      */
+    #[ORM\Column(name: 'scopes', type: Types::SIMPLE_ARRAY, nullable: true)]
     private $scopes;
 
-    /**
-     * @var Client
-     *
-     * @ORM\ManyToOne(targetEntity="Oro\Bundle\OAuth2ServerBundle\Entity\Client")
-     * @ORM\JoinColumn(name="client_id", referencedColumnName="id", onDelete="CASCADE")
-     */
-    private $client;
+    #[ORM\ManyToOne(targetEntity: Client::class)]
+    #[ORM\JoinColumn(name: 'client_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    private ?Client $client;
 
-    /**
-     * @var string|null
-     *
-     * @ORM\Column(name="user_identifier", type="string", length=128, nullable=true)
-     */
-    private $userIdentifier;
+    #[ORM\Column(name: 'user_identifier', type: Types::STRING, length: 128, nullable: true)]
+    private ?string $userIdentifier;
 
-    /**
-     * @var bool
-     *
-     * @ORM\Column(name="revoked", type="boolean", options={"default"=false})
-     */
-    private $revoked = false;
+    #[ORM\Column(name: 'revoked', type: Types::BOOLEAN, options: ['default' => false])]
+    private ?bool $revoked = false;
 
     /**
      * @param string      $identifier

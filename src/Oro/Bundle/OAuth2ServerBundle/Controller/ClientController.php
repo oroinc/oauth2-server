@@ -3,6 +3,7 @@
 namespace Oro\Bundle\OAuth2ServerBundle\Controller;
 
 use Doctrine\Persistence\ManagerRegistry;
+use Oro\Bundle\CustomerBundle\OroCustomerBundle;
 use Oro\Bundle\EntityBundle\Tools\EntityRoutingHelper;
 use Oro\Bundle\FormBundle\Model\UpdateHandlerFacade;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
@@ -11,7 +12,7 @@ use Oro\Bundle\OAuth2ServerBundle\Form\Type\ClientType;
 use Oro\Bundle\OAuth2ServerBundle\Form\Type\SystemClientType;
 use Oro\Bundle\OAuth2ServerBundle\Security\ApiFeatureChecker;
 use Oro\Bundle\OAuth2ServerBundle\Security\EncryptionKeysExistenceChecker;
-use Oro\Bundle\SecurityBundle\Annotation\CsrfProtection;
+use Oro\Bundle\SecurityBundle\Attribute\CsrfProtection;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormFactoryInterface;
@@ -67,19 +68,9 @@ class ClientController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route(
-     *     "/",
-     *     name="oro_oauth2_index",
-     *     defaults={"type": "backoffice"}
-     * )
-     * @Route(
-     *     "/frontend",
-     *     name="oro_oauth2_frontend_index",
-     *     defaults={"type": "frontend"}
-     * )
-     * @Template("@OroOAuth2Server/Client/index.html.twig")
-     */
+    #[Route(path: '/', name: 'oro_oauth2_index', defaults: ['type' => 'backoffice'])]
+    #[Route(path: '/frontend', name: 'oro_oauth2_frontend_index', defaults: ['type' => 'frontend'])]
+    #[Template('@OroOAuth2Server/Client/index.html.twig')]
     public function indexAction(string $type): array
     {
         $this->checkTypeEnabled($type);
@@ -95,26 +86,21 @@ class ClientController extends AbstractController
     }
 
     /**
-     * @Route(
-     *     "/{id}",
-     *     name="oro_oauth2_view",
-     *     requirements={"id"="\d+"},
-     *     defaults={"type": "backoffice"}
-     * )
-     * @Route(
-     *     "/frontend/{id}",
-     *     name="oro_oauth2_frontend_view",
-     *     requirements={"id"="\d+"},
-     *     defaults={"type": "frontend"}
-     * )
      *
-     * @Template("@OroOAuth2Server/Client/view.html.twig")
      *
      * @param Client $entity
      * @param string $type
      *
      * @return mixed
      */
+    #[Route(path: '/{id}', name: 'oro_oauth2_view', requirements: ['id' => '\d+'], defaults: ['type' => 'backoffice'])]
+    #[Route(
+        path: '/frontend/{id}',
+        name: 'oro_oauth2_frontend_view',
+        requirements: ['id' => '\d+'],
+        defaults: ['type' => 'frontend']
+    )]
+    #[Template('@OroOAuth2Server/Client/view.html.twig')]
     public function viewAction(Client $entity, string $type): array
     {
         $this->checkTypeEnabled($type);
@@ -135,26 +121,21 @@ class ClientController extends AbstractController
     }
 
     /**
-     * @Route(
-     *     "/create",
-     *     name="oro_oauth2_create",
-     *     defaults={"type": "backoffice"},
-     *     methods={"GET", "POST"}
-     * )
-     * @Route(
-     *     "/create/frontend",
-     *     name="oro_oauth2_frontend_create",
-     *     defaults={"type": "frontend"},
-     *     methods={"GET", "POST"}
-     * )
      *
-     * @Template("@OroOAuth2Server/Client/create.html.twig")
      *
      * @param Request $request
      * @param string  $type
      *
      * @return mixed
      */
+    #[Route(path: '/create', name: 'oro_oauth2_create', defaults: ['type' => 'backoffice'], methods: ['GET', 'POST'])]
+    #[Route(
+        path: '/create/frontend',
+        name: 'oro_oauth2_frontend_create',
+        defaults: ['type' => 'frontend'],
+        methods: ['GET', 'POST']
+    )]
+    #[Template('@OroOAuth2Server/Client/create.html.twig')]
     public function createAction(Request $request, string $type)
     {
         $this->checkTypeEnabled($type);
@@ -188,22 +169,7 @@ class ClientController extends AbstractController
     }
 
     /**
-     * @Route(
-     *     "/update/{id}",
-     *     name="oro_oauth2_update",
-     *     defaults={"type": "backoffice"},
-     *     methods={"GET", "POST"},
-     *     requirements={"id"="\d+"}
-     * )
-     * @Route(
-     *     "/update/frontend/{id}",
-     *     name="oro_oauth2_frontend_update",
-     *     defaults={"type": "frontend"},
-     *     methods={"GET", "POST"},
-     *     requirements={"id"="\d+"}
-     * )
      *
-     * @Template("@OroOAuth2Server/Client/update.html.twig")
      *
      * @param Request $request
      * @param Client  $entity
@@ -211,6 +177,21 @@ class ClientController extends AbstractController
      *
      * @return mixed
      */
+    #[Route(
+        path: '/update/{id}',
+        name: 'oro_oauth2_update',
+        requirements: ['id' => '\d+'],
+        defaults: ['type' => 'backoffice'],
+        methods: ['GET', 'POST']
+    )]
+    #[Route(
+        path: '/update/frontend/{id}',
+        name: 'oro_oauth2_frontend_update',
+        requirements: ['id' => '\d+'],
+        defaults: ['type' => 'frontend'],
+        methods: ['GET', 'POST']
+    )]
+    #[Template('@OroOAuth2Server/Client/update.html.twig')]
     public function updateAction(Request $request, Client $entity, string $type)
     {
         $this->checkTypeEnabled($type);
@@ -227,17 +208,13 @@ class ClientController extends AbstractController
     }
 
     /**
-     * @Route(
-     *     "/create/client",
-     *     name="oro_oauth2_server_client_create",
-     *     methods={"GET", "POST"}
-     * )
-     * @Template("@OroOAuth2Server/Client/create.html.twig")
      *
      * @param Request $request
      *
      * @return array
      */
+    #[Route(path: '/create/client', name: 'oro_oauth2_server_client_create', methods: ['GET', 'POST'])]
+    #[Template('@OroOAuth2Server/Client/create.html.twig')]
     public function createClientAction(Request $request)
     {
         if (!$this->getClientManager()->isCreationGranted()) {
@@ -267,19 +244,19 @@ class ClientController extends AbstractController
     }
 
     /**
-     * @Route(
-     *     "/update/client/{id}",
-     *     name="oro_oauth2_server_client_update",
-     *     methods={"GET", "POST"},
-     *     requirements={"id"="\d+"}
-     * )
-     * @Template("@OroOAuth2Server/Client/update.html.twig")
      *
      * @param Request $request
      * @param Client  $entity
      *
      * @return array
      */
+    #[Route(
+        path: '/update/client/{id}',
+        name: 'oro_oauth2_server_client_update',
+        requirements: ['id' => '\d+'],
+        methods: ['GET', 'POST']
+    )]
+    #[Template('@OroOAuth2Server/Client/update.html.twig')]
     public function updateClientAction(Request $request, Client $entity)
     {
         $this->checkClientEnabled($entity);
@@ -293,15 +270,13 @@ class ClientController extends AbstractController
         );
     }
 
-    /**
-     * @Route(
-     *     "/delete/{id}",
-     *     name="oro_oauth2_server_client_delete",
-     *     methods={"DELETE"},
-     *     requirements={"id"="\d+"}
-     * )
-     * @CsrfProtection()
-     */
+    #[Route(
+        path: '/delete/{id}',
+        name: 'oro_oauth2_server_client_delete',
+        requirements: ['id' => '\d+'],
+        methods: ['DELETE']
+    )]
+    #[CsrfProtection()]
     public function deleteAction(Client $entity): Response
     {
         $this->checkClientEnabled($entity);
@@ -314,15 +289,13 @@ class ClientController extends AbstractController
         return new JsonResponse(['successful' => true]);
     }
 
-    /**
-     * @Route(
-     *     "/activate/{id}",
-     *     name="oro_oauth2_server_client_activate",
-     *     methods={"POST"},
-     *     requirements={"id"="\d+"}
-     * )
-     * @CsrfProtection()
-     */
+    #[Route(
+        path: '/activate/{id}',
+        name: 'oro_oauth2_server_client_activate',
+        requirements: ['id' => '\d+'],
+        methods: ['POST']
+    )]
+    #[CsrfProtection()]
     public function activateAction(Client $entity): Response
     {
         $this->checkClientEnabled($entity);
@@ -333,15 +306,13 @@ class ClientController extends AbstractController
         return new JsonResponse(['successful' => true]);
     }
 
-    /**
-     * @Route(
-     *     "/deactivate/{id}",
-     *     name="oro_oauth2_server_client_deactivate",
-     *     methods={"POST"},
-     *     requirements={"id"="\d+"}
-     * )
-     * @CsrfProtection()
-     */
+    #[Route(
+        path: '/deactivate/{id}',
+        name: 'oro_oauth2_server_client_deactivate',
+        requirements: ['id' => '\d+'],
+        methods: ['POST']
+    )]
+    #[CsrfProtection()]
     public function deactivateAction(Client $entity): Response
     {
         $this->checkClientEnabled($entity);
@@ -469,7 +440,7 @@ class ClientController extends AbstractController
     private function checkTypeEnabled(string $type): void
     {
         if ($type === 'frontend') {
-            if (!class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')
+            if (!class_exists(OroCustomerBundle::class)
                 || !$this->featureChecker->isFrontendApiEnabled()
             ) {
                 throw $this->createNotFoundException();
