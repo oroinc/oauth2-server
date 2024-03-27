@@ -31,3 +31,8 @@ services:
             - '@oro_customer.logger.customer_user_login_attempt'
         tags:
             - { name: oro_oauth2_server.frontend_authorize_client_handler }
+
+    oro_oauth2_server.event_listener.email_template_context_collect_website_aware:
+        class: Oro\Bundle\OAuth2ServerBundle\EventListener\EmailTemplateContextCollectWebsiteAwareEventListener
+        tags:
+            - { name: kernel.event_listener, event: Oro\Bundle\EmailBundle\Event\EmailTemplateContextCollectEvent, method: onContextCollect }
