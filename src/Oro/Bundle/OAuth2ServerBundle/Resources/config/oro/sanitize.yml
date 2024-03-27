@@ -1,0 +1,6 @@
+oro_sanitize:
+    entity:
+        oro_oauth2_access_token: truncate_cascade
+        oro_oauth2_client: truncate_cascade
+        oro_oauth2_auth_code: truncate_cascade
+        oro_oauth2_refresh_token: truncate_cascade
