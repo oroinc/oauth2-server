@@ -17,10 +17,9 @@ oro_security:
 security:
     password_hashers:
         Oro\Bundle\OAuth2ServerBundle\Entity\Client:
-            # the new hasher, along with its options
             algorithm: sodium
             migrate_from:
-                - legacy # uses the "legacy" hasher
+                - sha512
     firewalls:
         oauth2_authorization_login:
             pattern: '^/oauth2-token/login$'
