@@ -1,0 +1,143 @@
+openapi: 3.1.0
+info:
+  title: 'Storefront JSON:API'
+  version: 0.0.0
+paths:
+  /oauth2-token:
+    post:
+      tags:
+        - oauth
+      summary: 'Get OAuth 2.0 access token'
+      description: 'Retrieve JSON object that contains OAuth 2.0 access token.'
+      operationId: oauthtoken-post
+      requestBody:
+        $ref: '#/components/requestBodies/oauthTokenRequestModel'
+      responses:
+        '200':
+          $ref: '#/components/responses/oauthTokenResponseModel'
+        '400':
+          $ref: '#/components/responses/err400_1'
+        '401':
+          $ref: '#/components/responses/err401_1'
+        '500':
+          $ref: '#/components/responses/err500_1'
+    options:
+      tags:
+        - oauth
+      summary: 'Get OAuth 2.0 access token options'
+      description: 'Get communication options for a resource'
+      operationId: oauthtoken-options
+      responses:
+        '200':
+          $ref: '#/components/responses/empty'
+        '500':
+          $ref: '#/components/responses/err500_1'
+components:
+  schemas:
+    oauthTokenRequestModel:
+      required:
+        - grant_type
+        - client_id
+      properties:
+        grant_type:
+          description: 'The OAuth grant type.'
+          type: string
+          enum:
+            - authorization_code
+            - client_credentials
+            - password
+            - refresh_token
+        client_id:
+          description: 'The client ID.'
+          type: string
+        client_secret:
+          description: 'The client secret.'
+          type: string
+        redirect_uri:
+          description: 'The client redirect URI for the "authorization_code" grant type.'
+          type: string
+        code:
+          description: 'The authorization code for the "authorization_code" grant type.'
+          type: string
+        code_verifier:
+          description: 'The code verifier for the PKCE request.'
+          type: string
+        username:
+          description: 'The user username for the "password" grant type.'
+          type: string
+        password:
+          description: 'The user password for the "password" grant type.'
+          type: string
+        refresh_token:
+          description: 'The refresh token for the "refresh_token" grant type.'
+          type: string
+    oauthTokenResponseModel:
+      required:
+        - token_type
+        - access_token
+      properties:
+        token_type:
+          description: 'The type of the access token.'
+          type: string
+          enum:
+            - Bearer
+        access_token:
+          description: 'The access token as issued by the authorization server.'
+          type: string
+        expires_in:
+          description: 'the duration of time in seconds the access token is granted for.'
+          type: integer
+        refresh_token:
+          description: 'The token that should be used to refresh the access token when it is expired.'
+          type: string
+    oauthTokenFailure:
+      required:
+        - error
+      properties:
+        error:
+          description: 'An error code.'
+          type: string
+        error_description:
+          description: 'A human-readable text providing additional information about the error.'
+          type: string
+        hint:
+          description: 'A hint that may help to solve the error.'
+          type: string
+        message:
+          description: 'A human-readable text providing additional information about the error.'
+          type: string
+          deprecated: true
+      type: object
+  responses:
+    oauthTokenResponseModel:
+      description: 'Returned when successful'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/oauthTokenResponseModel'
+    err400_1:
+      description: 'Returned when the request data is not valid'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/oauthTokenFailure'
+    err401_1:
+      description: 'Returned when the server denied the request'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/oauthTokenFailure'
+    err500_1:
+      description: 'Returned when an unexpected error occurs'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/oauthTokenFailure'
+    empty:
+      description: 'Returned when successful'
+  requestBodies:
+    oauthTokenRequestModel:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/oauthTokenRequestModel'
