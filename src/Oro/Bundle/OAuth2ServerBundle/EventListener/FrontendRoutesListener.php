@@ -13,8 +13,8 @@ class FrontendRoutesListener
 {
     public function onCollectionAutoload(RouteCollectionEvent $event): void
     {
-        $loader = new YamlFileLoader(new FileLocator(__DIR__ . '/../Resources/config'));
-        $frontendRoutes = $loader->load('frontend_oauth_routes.yml');
+        $loader = new YamlFileLoader(new FileLocator(__DIR__ . '/../Resources/config/oro'));
+        $frontendRoutes = $loader->load('frontend_routes.yml');
         $event->getCollection()->addCollection($frontendRoutes);
     }
 }

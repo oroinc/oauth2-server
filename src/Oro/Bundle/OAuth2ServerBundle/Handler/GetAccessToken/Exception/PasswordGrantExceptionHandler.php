@@ -2,11 +2,11 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Exception;
 
-use Exception;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Oro\Bundle\FrontendBundle\Request\FrontendHelper;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
+use Oro\Bundle\OAuth2ServerBundle\Provider\ExtractClientIdTrait;
 use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\FailedUserOAuth2Token;
 use Oro\Bundle\OAuth2ServerBundle\Security\Authenticator\OAuth2Authenticator;
 use Oro\Bundle\UserBundle\Exception\BadCredentialsException;
@@ -25,9 +25,11 @@ use Symfony\Component\Security\Http\Event\LoginFailureEvent;
  */
 class PasswordGrantExceptionHandler implements ExceptionHandlerInterface
 {
+    use ExtractClientIdTrait;
+
     /**
-     * @see \League\OAuth2\Server\Exception\OAuthServerException::invalidCredentials
-     * @see \League\OAuth2\Server\Exception\OAuthServerException::invalidGrant
+     * @see OAuthServerException::invalidCredentials
+     * @see OAuthServerException::invalidGrant
      */
     private static $badCredentialsExceptionCodes = [6, 10];
 
@@ -55,22 +57,20 @@ class PasswordGrantExceptionHandler implements ExceptionHandlerInterface
         $authenticationException = $this->getEventException($exception);
         $authenticationException->setToken($token);
 
-        $this->emulateRequestInFrontendHelper($parameters);
+        $this->emulateRequestInFrontendHelper($request);
 
-        $request = new Request();
-        $request->attributes->set(Security::LAST_USERNAME, $username);
-        $request->attributes->set('user', $this->getUser($username));
+        $httpRequest = new Request();
+        $httpRequest->attributes->set(Security::LAST_USERNAME, $username);
+        $httpRequest->attributes->set('user', $this->getUser($username));
 
         try {
-            $this->eventDispatcher->dispatch(
-                new LoginFailureEvent(
-                    $authenticationException,
-                    $this->oAuth2Authenticator,
-                    $request,
-                    null,
-                    'firewallName',
-                )
-            );
+            $this->eventDispatcher->dispatch(new LoginFailureEvent(
+                $authenticationException,
+                $this->oAuth2Authenticator,
+                $httpRequest,
+                null,
+                'firewallName',
+            ));
         } finally {
             $this->restoreFrontendHelper();
         }
@@ -81,7 +81,7 @@ class PasswordGrantExceptionHandler implements ExceptionHandlerInterface
         $exceptionCode = $exception->getCode();
         if ($exception->getPrevious() instanceof AuthenticationException) {
             $authenticationException = $exception->getPrevious();
-        } elseif (in_array($exceptionCode, self::$badCredentialsExceptionCodes, true)) {
+        } elseif (\in_array($exceptionCode, self::$badCredentialsExceptionCodes, true)) {
             $authenticationException = new BadCredentialsException(
                 $exception->getMessage(),
                 $exceptionCode,
@@ -98,12 +98,11 @@ class PasswordGrantExceptionHandler implements ExceptionHandlerInterface
         return $authenticationException;
     }
 
-    private function emulateRequestInFrontendHelper(array $parameters): void
+    private function emulateRequestInFrontendHelper(ServerRequestInterface $request): void
     {
         if ($this->frontendHelper) {
             /** @var Client $client */
-            $client = $this->clientManager->getClient($parameters['client_id']);
-
+            $client = $this->clientManager->getClient($this->getClientId($request));
             if ($client && $client->isFrontend()) {
                 $this->frontendHelper->emulateFrontendRequest();
             } else {
@@ -114,16 +113,14 @@ class PasswordGrantExceptionHandler implements ExceptionHandlerInterface
 
     private function restoreFrontendHelper(): void
     {
-        if ($this->frontendHelper) {
-            $this->frontendHelper->resetRequestEmulation();
-        }
+        $this->frontendHelper?->resetRequestEmulation();
     }
 
     private function getUser(string $username): ?UserInterface
     {
         try {
             return $this->userProvider->loadUserByIdentifier($username);
-        } catch (Exception $exception) {
+        } catch (\Exception $e) {
             return null;
         }
     }
