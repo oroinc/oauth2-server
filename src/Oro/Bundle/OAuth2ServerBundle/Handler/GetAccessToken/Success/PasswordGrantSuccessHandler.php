@@ -5,6 +5,7 @@ namespace Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Success;
 use Oro\Bundle\FrontendBundle\Request\FrontendHelper;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
+use Oro\Bundle\OAuth2ServerBundle\Provider\ExtractClientIdTrait;
 use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\OAuth2Token;
 use Oro\Bundle\UserBundle\Security\UserLoaderInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -20,6 +21,8 @@ use Symfony\Component\Security\Http\SecurityEvents;
  */
 class PasswordGrantSuccessHandler implements SuccessHandlerInterface
 {
+    use ExtractClientIdTrait;
+
     private EventDispatcherInterface $eventDispatcher;
     private RequestStack $requestStack;
     private ClientManager $clientManager;
@@ -57,7 +60,7 @@ class PasswordGrantSuccessHandler implements SuccessHandlerInterface
         }
 
         /** @var Client $client */
-        $client = $this->clientManager->getClient($parameters['client_id']);
+        $client = $this->clientManager->getClient($this->getClientId($request));
 
         if ($client->isFrontend()) {
             $user = $this->frontendUserLoader->loadUser($parameters['username']);

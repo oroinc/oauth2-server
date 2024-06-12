@@ -28,6 +28,7 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
     private const SUPPORTED_CLIENT_OWNERS_PARAM = 'oro_oauth2_server.supported_client_owners';
     private const CORS_PREFLIGHT_MAX_AGE_PARAM = 'oro_oauth2_server.cors.preflight_max_age';
     private const CORS_ALLOW_ORIGINS_PARAM = 'oro_oauth2_server.cors.allow_origins';
+    private const CORS_ALLOW_HEADERS_PARAM = 'oro_oauth2_server.cors.allow_headers';
 
     private const PRIVATE_KEY_SERVICE = 'oro_oauth2_server.league.private_key';
     private const PUBLIC_KEY_SERVICE = 'oro_oauth2_server.league.public_key';
@@ -199,6 +200,7 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
 
         $container->setParameter(self::CORS_PREFLIGHT_MAX_AGE_PARAM, $config['cors']['preflight_max_age']);
         $container->setParameter(self::CORS_ALLOW_ORIGINS_PARAM, $config['cors']['allow_origins']);
+        $container->setParameter(self::CORS_ALLOW_HEADERS_PARAM, $config['cors']['allow_headers']);
     }
 
     private function configureResourceServer(ContainerBuilder $container, array $config): void
@@ -320,7 +322,7 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
             }
 
             // add frontend firewalls
-            $frontendFirewalls = Yaml::parseFile(__DIR__ . '/../Resources/config/frontend_oauth_firewalls.yml');
+            $frontendFirewalls = Yaml::parseFile(__DIR__ . '/../Resources/config/oro/frontend_firewalls.yml');
             $firewalls = array_merge($frontendFirewalls, $firewalls);
 
             // enable basic authorization for test env
@@ -331,7 +333,7 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
             }
 
             // add access_control configs for frontend
-            $accessControlConfig = Yaml::parseFile(__DIR__ . '/../Resources/config/frontend_oro_access_control.yml');
+            $accessControlConfig = Yaml::parseFile(__DIR__ . '/../Resources/config/oro/frontend_access_control.yml');
             $securityConfigs[0]['access_control'] = array_merge(
                 $accessControlConfig,
                 $securityConfigs[0]['access_control']

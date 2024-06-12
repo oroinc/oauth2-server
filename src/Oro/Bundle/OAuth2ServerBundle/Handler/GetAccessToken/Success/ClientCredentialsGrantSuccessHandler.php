@@ -3,7 +3,9 @@
 namespace Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Success;
 
 use Doctrine\Persistence\ManagerRegistry;
+use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
+use Oro\Bundle\OAuth2ServerBundle\Provider\ExtractClientIdTrait;
 use Oro\Bundle\UserBundle\Security\UserLoginAttemptLogger;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -12,10 +14,12 @@ use Psr\Http\Message\ServerRequestInterface;
  */
 class ClientCredentialsGrantSuccessHandler implements SuccessHandlerInterface
 {
+    use ExtractClientIdTrait;
+
     private ManagerRegistry $doctrine;
     private ClientManager $clientManager;
     private UserLoginAttemptLogger $backendLogger;
-    private ?UserLoginAttemptLogger $frontendLogger = null;
+    private ?UserLoginAttemptLogger $frontendLogger;
 
     public function __construct(
         ManagerRegistry $doctrine,
@@ -39,7 +43,8 @@ class ClientCredentialsGrantSuccessHandler implements SuccessHandlerInterface
             return;
         }
 
-        $client = $this->clientManager->getClient($parameters['client_id']);
+        /** @var Client $client */
+        $client = $this->clientManager->getClient($this->getClientId($request));
         $user = $this->doctrine->getRepository($client->getOwnerEntityClass())->find($client->getOwnerEntityId());
         if (null !== $this->frontendLogger && $client->isFrontend()) {
             $this->frontendLogger->logSuccessLoginAttempt($user, 'OAuth');

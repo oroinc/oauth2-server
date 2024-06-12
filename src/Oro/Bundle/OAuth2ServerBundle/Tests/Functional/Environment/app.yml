@@ -3,3 +3,5 @@ oro_oauth2_server:
         cors:
             allow_origins:
                 - 'https://oauth.test.com'
+            allow_headers:
+                - 'X-Foo'

@@ -2,15 +2,15 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Tests\Functional\OpenApi;
 
-use Oro\Bundle\ApiBundle\Tests\Functional\OpenApi\OpenApiTestCase;
+use Oro\Bundle\ApiBundle\Tests\Functional\OpenApi\OpenApiSpecificationTestCase;
 use Symfony\Component\Yaml\Yaml;
 
 /**
  * @group regression
  */
-class OAuthOpenApiTest extends OpenApiTestCase
+class OAuthOpenApiSpecificationTest extends OpenApiSpecificationTestCase
 {
-    public function testValidateGeneratedOpenApiForOAuthTokenEndpoint(): void
+    public function testValidateGeneratedOpenApiForOAuthTokenEndpointAndSecurity(): void
     {
         $result = self::runCommand(
             'oro:api:doc:open-api:dump',
@@ -19,11 +19,22 @@ class OAuthOpenApiTest extends OpenApiTestCase
             true
         );
         $expected = Yaml::parse(file_get_contents(__DIR__ . '/data/rest_json_api_oauth.yml'));
+        $backendPrefix = self::getContainer()->hasParameter('web_backend_prefix')
+            ? self::getContainer()->getParameter('web_backend_prefix')
+            : '';
+        array_walk_recursive(
+            $expected,
+            function (&$val) use ($backendPrefix) {
+                if (is_string($val)) {
+                    $val = str_replace('%web_backend_prefix%', $backendPrefix, $val);
+                }
+            }
+        );
         $actual = Yaml::parse($result);
-        $this->assertOpenApiEquals($expected, $actual);
+        $this->assertOpenApiSpecificationEquals($expected, $actual);
     }
 
-    public function testValidateGeneratedOpenApiForOAuthTokenEndpointForFrontendApi(): void
+    public function testValidateGeneratedOpenApiForOAuthTokenEndpointAndSecurityForFrontendApi(): void
     {
         if (!class_exists('Oro\Bundle\FrontendBundle\OroFrontendBundle')) {
             self::markTestSkipped('Could be tested only with Frontend bundle');
@@ -37,6 +48,6 @@ class OAuthOpenApiTest extends OpenApiTestCase
         );
         $expected = Yaml::parse(file_get_contents(__DIR__ . '/data/frontend_rest_json_api_oauth.yml'));
         $actual = Yaml::parse($result);
-        $this->assertOpenApiEquals($expected, $actual);
+        $this->assertOpenApiSpecificationEquals($expected, $actual);
     }
 }

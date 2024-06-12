@@ -5,6 +5,7 @@ namespace Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Exception;
 use Doctrine\Persistence\ManagerRegistry;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
+use Oro\Bundle\OAuth2ServerBundle\Provider\ExtractClientIdTrait;
 use Oro\Bundle\UserBundle\Security\UserLoginAttemptLogger;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -13,10 +14,12 @@ use Psr\Http\Message\ServerRequestInterface;
  */
 class ClientCredentialsGrantExceptionHandler implements ExceptionHandlerInterface
 {
+    use ExtractClientIdTrait;
+
     private ManagerRegistry $doctrine;
     private ClientManager $clientManager;
     private UserLoginAttemptLogger $backendLogger;
-    private ?UserLoginAttemptLogger $frontendLogger = null;
+    private ?UserLoginAttemptLogger $frontendLogger;
 
     public function __construct(
         ManagerRegistry $doctrine,
@@ -43,7 +46,7 @@ class ClientCredentialsGrantExceptionHandler implements ExceptionHandlerInterfac
         $client = null;
         $user = null;
         try {
-            $client = $this->clientManager->getClient($parameters['client_id']);
+            $client = $this->clientManager->getClient($this->getClientId($request));
             if ($client) {
                 $repo = $this->doctrine->getRepository($client->getOwnerEntityClass());
                 $user = $repo->find($client->getOwnerEntityId());
