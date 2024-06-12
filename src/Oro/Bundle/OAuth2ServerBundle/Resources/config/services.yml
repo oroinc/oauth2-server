@@ -3,6 +3,7 @@ parameters:
     oro_oauth2_server.supported_grant_types: []
     oro_oauth2_server.cors.preflight_max_age: 0
     oro_oauth2_server.cors.allow_origins: []
+    oro_oauth2_server.cors.allow_headers: []
 
 services:
     # Symfony to PSR 7 bridge configuration

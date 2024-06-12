@@ -74,6 +74,54 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
         self::assertClientLastUsedValueIsCorrect($startDateTime, $client);
     }
 
+    public function testGetAuthTokenWhenCredentialsProvidedViaBasicAuthorization()
+    {
+        $startDateTime = new \DateTime('now', new \DateTimeZone('UTC'));
+
+        $method = 'POST';
+        $uri = $this->getUrl('oro_oauth2_server_auth_token');
+        $server = [
+            'CONTENT_TYPE'       => 'application/x-www-form-urlencoded',
+            'HTTP_ACCEPT'        => 'application/json,text/plain,*/*',
+            'HTTP_AUTHORIZATION' => 'Basic ' . base64_encode(
+                LoadClientCredentialsClient::OAUTH_CLIENT_ID
+                . ':'
+                . LoadClientCredentialsClient::OAUTH_CLIENT_SECRET
+            )
+        ];
+        $this->client->request(
+            $method,
+            $uri,
+            [],
+            [],
+            $server,
+            'grant_type=client_credentials'
+        );
+        $this->assertSessionNotStarted($method, $uri, $server);
+        $response = $this->client->getResponse();
+
+        self::assertResponseStatusCodeEquals($response, Response::HTTP_OK);
+        self::assertResponseContentTypeEquals($response, 'application/json; charset=UTF-8');
+        self::assertFalse($response->headers->has('Access-Control-Allow-Origin'));
+
+        self::assertFalse($response->headers->has('Access-Control-Allow-Origin'));
+
+        $accessToken = self::jsonToArray($response->getContent());
+
+        self::assertEquals('Bearer', $accessToken['token_type']);
+        self::assertLessThanOrEqual(3600, $accessToken['expires_in']);
+        self::assertGreaterThanOrEqual(3599, $accessToken['expires_in']);
+        [$accessTokenFirstPart, $accessTokenSecondPart] = explode('.', $accessToken['access_token']);
+        $accessTokenFirstPart = self::jsonToArray(base64_decode($accessTokenFirstPart));
+        $accessTokenSecondPart = self::jsonToArray(base64_decode($accessTokenSecondPart));
+        self::assertEquals('JWT', $accessTokenFirstPart['typ']);
+        self::assertEquals('RS256', $accessTokenFirstPart['alg']);
+        self::assertEquals(LoadClientCredentialsClient::OAUTH_CLIENT_ID, $accessTokenSecondPart['aud']);
+
+        $client = $this->getReference(LoadClientCredentialsClient::OAUTH_CLIENT_REFERENCE);
+        self::assertClientLastUsedValueIsCorrect($startDateTime, $client);
+    }
+
     public function testGetAuthTokenForDeactivatedClient()
     {
         /** @var Client $client */
@@ -97,6 +145,59 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
 
         $client = $this->getReference(LoadClientCredentialsClient::OAUTH_CLIENT_REFERENCE);
         self::assertNull($client->getLastUsedAt());
+    }
+
+    public function testGetAuthTokenWhenCredentialsAreNotProvided()
+    {
+        $response = $this->sendRequest(
+            'POST',
+            $this->getUrl('oro_oauth2_server_auth_token'),
+            ['grant_type' => 'client_credentials']
+        );
+
+        self::assertResponseStatusCodeEquals($response, Response::HTTP_BAD_REQUEST);
+        self::assertResponseContentTypeEquals($response, 'application/json');
+        self::assertFalse($response->headers->has('Access-Control-Allow-Origin'));
+
+        $responseContent = self::jsonToArray($response->getContent());
+
+        self::assertEquals(
+            [
+                'error'             => 'invalid_request',
+                'message'           => 'The request is missing a required parameter,'
+                    . ' includes an invalid parameter value, includes a parameter more than once,'
+                    . ' or is otherwise malformed.',
+                'error_description' => 'The request is missing a required parameter,'
+                    . ' includes an invalid parameter value, includes a parameter more than once,'
+                    . ' or is otherwise malformed.',
+                'hint'              => 'Check the `client_id` parameter'
+            ],
+            $responseContent
+        );
+    }
+
+    public function testGetAuthTokenWhenProvidedCredentialsAreEmpty()
+    {
+        $response = $this->sendRequest(
+            'POST',
+            $this->getUrl('oro_oauth2_server_auth_token'),
+            ['grant_type' => 'client_credentials', 'client_id' => '', 'client_secret' => '']
+        );
+
+        self::assertResponseStatusCodeEquals($response, Response::HTTP_UNAUTHORIZED);
+        self::assertResponseContentTypeEquals($response, 'application/json');
+        self::assertFalse($response->headers->has('Access-Control-Allow-Origin'));
+
+        $responseContent = self::jsonToArray($response->getContent());
+
+        self::assertEquals(
+            [
+                'error'             => 'invalid_client',
+                'message'           => 'Client authentication failed',
+                'error_description' => 'Client authentication failed'
+            ],
+            $responseContent
+        );
     }
 
     public function testGetAuthTokenForCorsRequest()
@@ -264,7 +365,7 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
 
         self::assertResponseHeader($response, 'Access-Control-Allow-Origin', 'https://oauth.test.com');
         self::assertResponseHeader($response, 'Access-Control-Allow-Methods', 'OPTIONS, POST');
-        self::assertResponseHeader($response, 'Access-Control-Allow-Headers', 'Content-Type');
+        self::assertResponseHeader($response, 'Access-Control-Allow-Headers', 'Authorization,Content-Type,X-Foo');
         self::assertResponseHeaderNotExists($response, 'Access-Control-Expose-Headers');
         self::assertResponseHeader($response, 'Access-Control-Max-Age', 600);
         self::assertResponseHeaderNotExists($response, 'Access-Control-Allow-Credentials');

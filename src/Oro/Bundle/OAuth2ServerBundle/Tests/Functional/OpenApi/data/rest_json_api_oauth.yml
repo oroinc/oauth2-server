@@ -141,3 +141,26 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/oauthTokenRequestModel'
+  securitySchemes:
+    oAuth2:
+      type: oauth2
+      description: 'For more information, see https://doc.oroinc.com/master/api/authentication/oauth/'
+      flows:
+        clientCredentials:
+          tokenUrl: /oauth2-token
+          scopes: {  }
+        authorizationCode:
+          authorizationUrl: '%web_backend_prefix%/oauth2-token/authorize'
+          tokenUrl: /oauth2-token
+          scopes: {  }
+        password:
+          tokenUrl: /oauth2-token
+          scopes: {  }
+    bearerAuth:
+      type: http
+      scheme: bearer
+security:
+  -
+    oAuth2: []
+  -
+    bearerAuth: []

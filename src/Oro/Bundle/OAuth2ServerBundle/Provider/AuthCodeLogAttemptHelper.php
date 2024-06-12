@@ -19,14 +19,14 @@ class AuthCodeLogAttemptHelper
     private ClientManager $clientManager;
     private UserLoader $backendUserLoader;
     private UserLoginAttemptLogger $backendLogger;
-    private ?CustomerUserLoader $frontendUserLoader = null;
-    private ?UserLoginAttemptLogger $frontendLogger = null;
+    private ?CustomerUserLoader $frontendUserLoader;
+    private ?UserLoginAttemptLogger $frontendLogger;
 
     public function __construct(
-        ClientManager           $clientManager,
-        UserLoader              $backendUserLoader,
-        UserLoginAttemptLogger  $backendLogger,
-        ?CustomerUserLoader     $frontendUserLoader,
+        ClientManager $clientManager,
+        UserLoader $backendUserLoader,
+        UserLoginAttemptLogger $backendLogger,
+        ?CustomerUserLoader $frontendUserLoader,
         ?UserLoginAttemptLogger $frontendLogger
     ) {
         $this->clientManager = $clientManager;
@@ -56,7 +56,7 @@ class AuthCodeLogAttemptHelper
         $isFrontendRequest = false;
         $user = null;
         try {
-            $authCodePayload = \json_decode($this->decrypt($parameters['code']));
+            $authCodePayload = json_decode($this->decrypt($parameters['code']), null, 512, JSON_THROW_ON_ERROR);
             $userId = $authCodePayload->user_id;
             $client = $this->clientManager->getClient($parameters['client_id']);
             if ($this->frontendUserLoader !== null && $client && $client->isFrontend()) {
@@ -71,20 +71,12 @@ class AuthCodeLogAttemptHelper
         $logger = (null !== $this->frontendLogger && $isFrontendRequest)
             ? $this->frontendLogger
             : $this->backendLogger;
-        $this->logAttemptToTheLogger($logger, $user, $source, $isSuccess, $exception);
-    }
-
-    private function logAttemptToTheLogger(
-        UserLoginAttemptLogger $logger,
-        mixed $user,
-        string $source,
-        bool $isSuccess,
-        ?\Exception $exception
-    ): void {
-        if ($isSuccess) {
-            $logger->logSuccessLoginAttempt($user, $source);
-        } else {
-            $logger->logFailedLoginAttempt($user, $source, ['exception' => $exception]);
+        if (null !== $logger) {
+            if ($isSuccess) {
+                $logger->logSuccessLoginAttempt($user, $source);
+            } else {
+                $logger->logFailedLoginAttempt($user, $source, ['exception' => $exception]);
+            }
         }
     }
 }

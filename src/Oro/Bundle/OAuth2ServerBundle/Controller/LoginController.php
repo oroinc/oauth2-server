@@ -17,7 +17,7 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 class LoginController extends AbstractController
 {
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public static function getSubscribedServices(): array
     {
@@ -40,7 +40,7 @@ class LoginController extends AbstractController
         }
         $session = $request->hasSession() ? $request->getSession() : null;
 
-        if (!$session || !$session->has($sessionParameterName)) {
+        if (null === $session || !$session->has($sessionParameterName)) {
             throw $this->createNotFoundException();
         }
 

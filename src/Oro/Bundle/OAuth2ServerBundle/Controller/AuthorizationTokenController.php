@@ -62,7 +62,16 @@ class AuthorizationTokenController extends AbstractController
             if ($requestMethod) {
                 $response->headers->set('Access-Control-Allow-Methods', $response->headers->get('Allow'));
                 $response->headers->remove('Allow');
-                $response->headers->set('Access-Control-Allow-Headers', 'Content-Type');
+                $response->headers->set(
+                    'Access-Control-Allow-Headers',
+                    implode(
+                        ',',
+                        array_merge(
+                            ['Authorization', 'Content-Type'],
+                            $this->getParameter('oro_oauth2_server.cors.allow_headers')
+                        )
+                    )
+                );
                 $preflightMaxAge = $this->getParameter('oro_oauth2_server.cors.preflight_max_age');
                 if ($preflightMaxAge > 0) {
                     $response->headers->set('Access-Control-Max-Age', $preflightMaxAge);
@@ -116,7 +125,6 @@ class AuthorizationTokenController extends AbstractController
     {
         /** @var string[] $allowedOrigins */
         $allowedOrigins = $this->getParameter('oro_oauth2_server.cors.allow_origins');
-
         foreach ($allowedOrigins as $allowedOrigin) {
             if ('*' === $allowedOrigin || $origin === $allowedOrigin) {
                 return true;

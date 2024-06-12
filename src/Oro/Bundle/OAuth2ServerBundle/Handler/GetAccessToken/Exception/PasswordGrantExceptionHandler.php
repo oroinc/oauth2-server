@@ -6,6 +6,7 @@ use League\OAuth2\Server\Exception\OAuthServerException;
 use Oro\Bundle\FrontendBundle\Request\FrontendHelper;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
+use Oro\Bundle\OAuth2ServerBundle\Provider\ExtractClientIdTrait;
 use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\FailedUserOAuth2Token;
 use Oro\Bundle\UserBundle\Exception\BadCredentialsException;
 use Psr\Http\Message\ServerRequestInterface;
@@ -20,9 +21,11 @@ use Symfony\Component\Security\Core\Exception\AuthenticationException;
  */
 class PasswordGrantExceptionHandler implements ExceptionHandlerInterface
 {
+    use ExtractClientIdTrait;
+
     /**
-     * @see \League\OAuth2\Server\Exception\OAuthServerException::invalidCredentials
-     * @see \League\OAuth2\Server\Exception\OAuthServerException::invalidGrant
+     * @see OAuthServerException::invalidCredentials
+     * @see OAuthServerException::invalidGrant
      */
     private static $badCredentialsExceptionCodes = [6, 10];
 
@@ -61,7 +64,7 @@ class PasswordGrantExceptionHandler implements ExceptionHandlerInterface
         $authenticationException = $this->getEventException($exception);
         $authenticationException->setToken($token);
 
-        $this->emulateRequestInFrontendHelper($parameters);
+        $this->emulateRequestInFrontendHelper($request);
         try {
             $this->eventDispatcher->dispatch(
                 new AuthenticationFailureEvent($token, $authenticationException),
@@ -77,7 +80,7 @@ class PasswordGrantExceptionHandler implements ExceptionHandlerInterface
         $exceptionCode = $exception->getCode();
         if ($exception->getPrevious() instanceof AuthenticationException) {
             $authenticationException = $exception->getPrevious();
-        } elseif (in_array($exceptionCode, self::$badCredentialsExceptionCodes, true)) {
+        } elseif (\in_array($exceptionCode, self::$badCredentialsExceptionCodes, true)) {
             $authenticationException = new BadCredentialsException(
                 $exception->getMessage(),
                 $exceptionCode,
@@ -94,12 +97,11 @@ class PasswordGrantExceptionHandler implements ExceptionHandlerInterface
         return $authenticationException;
     }
 
-    private function emulateRequestInFrontendHelper(array $parameters): void
+    private function emulateRequestInFrontendHelper(ServerRequestInterface $request): void
     {
         if ($this->frontendHelper) {
             /** @var Client $client */
-            $client = $this->clientManager->getClient($parameters['client_id']);
-
+            $client = $this->clientManager->getClient($this->getClientId($request));
             if ($client && $client->isFrontend()) {
                 $this->frontendHelper->emulateFrontendRequest();
             } else {

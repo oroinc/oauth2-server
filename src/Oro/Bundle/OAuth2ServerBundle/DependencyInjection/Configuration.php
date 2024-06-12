@@ -89,6 +89,11 @@ class Configuration implements ConfigurationInterface
                         ->example(['https://foo.com', 'https://bar.com'])
                         ->prototype('scalar')->cannotBeEmpty()->end()
                     ->end()
+                    ->arrayNode('allow_headers')
+                        ->info('The list of headers that are allowed to send by CORS requests.')
+                        ->example(['X-Foo', 'X-Bar'])
+                        ->prototype('scalar')->cannotBeEmpty()->end()
+                    ->end()
                 ->end()
             ->end();
     }
