@@ -6,15 +6,15 @@ use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\LogAuthorizeClientHandler;
 use Oro\Bundle\UserBundle\Entity\User;
 use Oro\Bundle\UserBundle\Security\UserLoginAttemptLogger;
-use Oro\Component\Testing\Unit\EntityTrait;
+use Oro\Component\Testing\ReflectionUtil;
 
 class LogAuthorizeClientHandlerTest extends \PHPUnit\Framework\TestCase
 {
-    use EntityTrait;
-
-    public function testHandleOnAuthorize()
+    public function testHandleOnAuthorize(): void
     {
-        $client = $this->getEntity(Client::class, ['id' => 123, 'identifier' => 'test_identifier']);
+        $client = new Client();
+        ReflectionUtil::setId($client, 123);
+        $client->setIdentifier('test_identifier');
         $user = new User();
 
         $userLoginAttemptLogger = $this->createMock(UserLoginAttemptLogger::class);
@@ -35,9 +35,11 @@ class LogAuthorizeClientHandlerTest extends \PHPUnit\Framework\TestCase
         $handler->handle($client, $user, true);
     }
 
-    public function testHandleOnNotAuthorize()
+    public function testHandleOnNotAuthorize(): void
     {
-        $client = $this->getEntity(Client::class, ['id' => 123, 'identifier' => 'test_identifier']);
+        $client = new Client();
+        ReflectionUtil::setId($client, 123);
+        $client->setIdentifier('test_identifier');
         $user = new User();
 
         $userLoginAttemptLogger = $this->createMock(UserLoginAttemptLogger::class);

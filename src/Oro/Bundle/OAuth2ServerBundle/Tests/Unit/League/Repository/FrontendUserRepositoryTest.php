@@ -3,20 +3,20 @@
 namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\League\Repository;
 
 use League\OAuth2\Server\Exception\OAuthServerException;
+use Oro\Bundle\CustomerBundle\Entity\CustomerVisitor;
+use Oro\Bundle\CustomerBundle\Entity\CustomerVisitorManager;
 use Oro\Bundle\OAuth2ServerBundle\League\Entity\ClientEntity;
 use Oro\Bundle\OAuth2ServerBundle\League\Entity\UserEntity;
 use Oro\Bundle\OAuth2ServerBundle\League\Repository\FrontendUserRepository;
 use Oro\Bundle\OAuth2ServerBundle\Security\OAuthUserChecker;
 use Oro\Bundle\UserBundle\Entity\User;
 use Oro\Bundle\UserBundle\Security\UserLoaderInterface;
-use Oro\Component\Testing\Unit\EntityTrait;
+use Oro\Component\Testing\ReflectionUtil;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\PasswordHasher\PasswordHasherInterface;
 
 class FrontendUserRepositoryTest extends \PHPUnit\Framework\TestCase
 {
-    use EntityTrait;
-
     /** @var UserLoaderInterface|\PHPUnit\Framework\MockObject\MockObject */
     private $userLoader;
 
@@ -29,7 +29,7 @@ class FrontendUserRepositoryTest extends \PHPUnit\Framework\TestCase
     /** @var OAuthUserChecker|\PHPUnit\Framework\MockObject\MockObject */
     private $userChecker;
 
-    /** @var PHPUnit\Framework\MockObject\MockObject */
+    /** @var CustomerVisitorManager|\PHPUnit\Framework\MockObject\MockObject */
     private $customerVisitorManager;
 
     /** @var FrontendUserRepository */
@@ -45,7 +45,7 @@ class FrontendUserRepositoryTest extends \PHPUnit\Framework\TestCase
         $this->frontendUserLoader = $this->createMock(UserLoaderInterface::class);
         $this->passwordHasherFactory = $this->createMock(PasswordHasherFactoryInterface::class);
         $this->userChecker = $this->createMock(OAuthUserChecker::class);
-        $this->customerVisitorManager = $this->createMock('Oro\Bundle\CustomerBundle\Entity\CustomerVisitorManager');
+        $this->customerVisitorManager = $this->createMock(CustomerVisitorManager::class);
 
         $this->repository = new FrontendUserRepository(
             $this->userLoader,
@@ -207,10 +207,9 @@ class FrontendUserRepositoryTest extends \PHPUnit\Framework\TestCase
         $client = new ClientEntity();
         $client->setFrontend(true);
 
-        $visitor = $this->getEntity(
-            'Oro\Bundle\CustomerBundle\Entity\CustomerVisitor',
-            ['id' => 234, 'sessionId' => 'testSession']
-        );
+        $visitor = new CustomerVisitor();
+        ReflectionUtil::setId($visitor, 234);
+        $visitor->setSessionId('testSession');
 
         $this->customerVisitorManager->expects(self::once())
             ->method('findOrCreate')
