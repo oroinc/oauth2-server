@@ -12,15 +12,19 @@ class LoadEmailTemplates extends AbstractHashEmailMigration implements Versioned
 {
     public function getVersion()
     {
-        return '1.1';
+        return '1.2';
     }
 
     protected function getEmailHashesToUpdate(): array
     {
         return [
-            'user_oauth_application_created' => [],
+            'user_oauth_application_created' => [
+                '80f01a02d61b5669de9b16fdcd946629', // 1.2
+            ],
             'customer_user_oauth_application_created' => [
                 '0705ea843a35f8ab65afbfe7626f076a', // 1.0
+                '3864db00688660fe85c46232bc78ac9f', // 1.1
+                '3864db00688660fe85c46232bc78ac9f', // 1.2
             ],
         ];
     }
