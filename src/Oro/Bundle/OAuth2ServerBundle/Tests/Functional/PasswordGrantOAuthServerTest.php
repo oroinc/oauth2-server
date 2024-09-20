@@ -114,7 +114,7 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
         );
 
         $user = self::getContainer()->get('doctrine')->getRepository(User::class)->find($user->getId());
-        self::assertEquals('locked', $user->getAuthStatus()->getId());
+        self::assertEquals('locked', $user->getAuthStatus()->getInternalId());
         self::assertEquals(3, $user->getFailedLoginCount());
     }
 
