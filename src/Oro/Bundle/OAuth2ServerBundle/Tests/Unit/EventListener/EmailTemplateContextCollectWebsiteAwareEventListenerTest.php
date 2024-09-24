@@ -18,6 +18,7 @@ class EmailTemplateContextCollectWebsiteAwareEventListenerTest extends TestCase
 {
     private EmailTemplateContextCollectWebsiteAwareEventListener $listener;
 
+    #[\Override]
     public static function setUpBeforeClass(): void
     {
         if (!class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {
@@ -27,6 +28,7 @@ class EmailTemplateContextCollectWebsiteAwareEventListenerTest extends TestCase
         parent::setUpBeforeClass();
     }
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->listener = new EmailTemplateContextCollectWebsiteAwareEventListener();

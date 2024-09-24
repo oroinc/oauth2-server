@@ -23,6 +23,7 @@ class ClientAdditionalEmailAssociationProviderTest extends \PHPUnit\Framework\Te
     /** @var ClientAdditionalEmailAssociationProvider */
     private $provider;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->entityConfigProvider = new ConfigProviderMock($this->createMock(ConfigManager::class), 'entity');

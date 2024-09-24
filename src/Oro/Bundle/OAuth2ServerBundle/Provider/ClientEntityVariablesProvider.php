@@ -37,9 +37,7 @@ class ClientEntityVariablesProvider implements EntityVariablesProviderInterface
         $this->entityConfigProvider = $entityConfigProvider;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getVariableDefinitions(): array
     {
         return [
@@ -47,9 +45,7 @@ class ClientEntityVariablesProvider implements EntityVariablesProviderInterface
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getVariableGetters(): array
     {
         return [
@@ -57,9 +53,7 @@ class ClientEntityVariablesProvider implements EntityVariablesProviderInterface
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getVariableProcessors(string $entityClass): array
     {
         if (Client::class === $entityClass) {

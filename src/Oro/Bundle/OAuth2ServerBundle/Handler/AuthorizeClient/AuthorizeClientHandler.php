@@ -18,9 +18,7 @@ class AuthorizeClientHandler implements AuthorizeClientHandlerInterface
         $this->handlers = $handlers;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function handle(Client $client, UserInterface $user, bool $isAuthorized): void
     {
         foreach ($this->handlers as $handler) {

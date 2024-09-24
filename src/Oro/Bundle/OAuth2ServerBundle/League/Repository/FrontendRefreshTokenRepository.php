@@ -33,9 +33,7 @@ class FrontendRefreshTokenRepository extends RefreshTokenRepository
         $this->customerVisitorManager = $customerVisitorManager;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function getUserLoader(RefreshToken $token): UserLoaderInterface
     {
         if ($token->getAccessToken()->getClient()->isFrontend()) {
@@ -45,9 +43,7 @@ class FrontendRefreshTokenRepository extends RefreshTokenRepository
         return parent::getUserLoader($token);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function checkUser(UserLoaderInterface $userLoader, string $userIdentifier): void
     {
         if (VisitorIdentifierUtil::isVisitorIdentifier($userIdentifier)) {

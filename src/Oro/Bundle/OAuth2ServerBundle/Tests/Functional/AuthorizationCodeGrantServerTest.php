@@ -27,6 +27,7 @@ class AuthorizationCodeGrantServerTest extends OAuthServerTestCase
      */
     private const CODE_CHALLENGE = 'dkimRr35tjRdwIqRLCENZkVa5p-EoH3i9-VbnNXlnuY';
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->initClient();

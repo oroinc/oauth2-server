@@ -22,6 +22,7 @@ class ClientEntityVariableProviderTest extends \PHPUnit\Framework\TestCase
     /** @var ClientEntityVariablesProvider */
     private $provider;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->ownerEntityClasses = [

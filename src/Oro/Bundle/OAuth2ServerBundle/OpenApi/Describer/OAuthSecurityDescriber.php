@@ -25,9 +25,7 @@ class OAuthSecurityDescriber implements DescriberInterface
         $this->docViewDetector = $docViewDetector;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function describe(OA\OpenApi $api, array $options): void
     {
         Util::ensureComponentCollectionInitialized($api, 'securitySchemes');

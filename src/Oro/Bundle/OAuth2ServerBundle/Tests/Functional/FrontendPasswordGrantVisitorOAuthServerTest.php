@@ -13,6 +13,7 @@ class FrontendPasswordGrantVisitorOAuthServerTest extends OAuthServerTestCase
 {
     use ConfigManagerAwareTestTrait;
 
+    #[\Override]
     protected function setUp(): void
     {
         if (!class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {
@@ -28,9 +29,7 @@ class FrontendPasswordGrantVisitorOAuthServerTest extends OAuthServerTestCase
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function getListRouteName(): string
     {
         return 'oro_frontend_rest_api_list';

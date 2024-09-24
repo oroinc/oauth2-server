@@ -39,9 +39,7 @@ class ClientRepository implements ClientRepositoryInterface
         $this->doctrine = $doctrine;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getClientEntity($clientIdentifier): ?ClientEntityInterface
     {
         /** @var Client $client */
@@ -64,9 +62,7 @@ class ClientRepository implements ClientRepositoryInterface
         return $clientEntity;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function validateClient($clientIdentifier, $clientSecret, $grantType)
     {
         $client = $this->getClient($clientIdentifier);

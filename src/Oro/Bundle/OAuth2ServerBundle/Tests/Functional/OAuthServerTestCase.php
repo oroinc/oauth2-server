@@ -8,17 +8,12 @@ use Symfony\Component\HttpFoundation\Response;
 
 class OAuthServerTestCase extends RestJsonApiTestCase
 {
-    /**
-     * {@inheritdoc}
-     * The method is overridden to not add HTTP_X-WSSE header to the request.
-     */
+    #[\Override]
     protected function checkWsseAuthHeader(array &$server): void
     {
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function isStatelessRequest(array $server): bool
     {
         if (isset($server['HTTP_AUTHORIZATION']) && str_starts_with($server['HTTP_AUTHORIZATION'], 'Bearer ')) {

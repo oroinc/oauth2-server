@@ -24,9 +24,7 @@ class SkipSyncTrackingPass implements CompilerPassInterface
         RefreshToken::class
     ];
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function process(ContainerBuilder $container)
     {
         $definition = $container->getDefinition(self::SERVICE_ID);

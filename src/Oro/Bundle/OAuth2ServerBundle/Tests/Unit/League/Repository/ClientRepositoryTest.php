@@ -39,6 +39,7 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
     /** @var ClientRepository */
     private $clientRepository;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->clientManager = $this->createMock(ClientManager::class);

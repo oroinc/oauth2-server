@@ -45,17 +45,13 @@ class AuthCodeRepository implements AuthCodeRepositoryInterface
         $this->clientManager = $clientManager;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getNewAuthCode(): AuthCodeEntityInterface
     {
         return new AuthCodeEntity();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function persistNewAuthCode(AuthCodeEntityInterface $authCodeEntity): void
     {
         $em = $this->getEntityManager();
@@ -76,9 +72,7 @@ class AuthCodeRepository implements AuthCodeRepositoryInterface
         $em->flush();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function revokeAuthCode($codeId): void
     {
         $em = $this->getEntityManager();
@@ -91,9 +85,7 @@ class AuthCodeRepository implements AuthCodeRepositoryInterface
         $em->flush();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function isAuthCodeRevoked($codeId): bool
     {
         $authCode = $this->findAuthCodeEntity($this->getEntityManager(), $codeId);

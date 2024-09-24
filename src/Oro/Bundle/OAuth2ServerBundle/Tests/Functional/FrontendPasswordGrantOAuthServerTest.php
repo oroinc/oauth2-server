@@ -14,6 +14,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
 {
+    #[\Override]
     protected function setUp(): void
     {
         if (!class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {

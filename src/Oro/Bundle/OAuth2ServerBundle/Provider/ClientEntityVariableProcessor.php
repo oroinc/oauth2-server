@@ -20,9 +20,7 @@ class ClientEntityVariableProcessor implements VariableProcessorInterface
         $this->doctrine = $doctrine;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function process(string $variable, array $processorArguments, TemplateData $data): void
     {
         /** @var Client $entity */

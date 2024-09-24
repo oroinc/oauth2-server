@@ -33,9 +33,7 @@ class ClientCredentialsGrantExceptionHandler implements ExceptionHandlerInterfac
         $this->frontendLogger = $frontendLogger;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function handle(ServerRequestInterface $request, OAuthServerException $exception): void
     {
         $parameters = $request->getParsedBody();

@@ -24,25 +24,19 @@ class LoadSecondOrgData extends AbstractFixture implements ContainerAwareInterfa
     /** @var ClientManager */
     private $clientManager;
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setContainer(ContainerInterface $container = null)
     {
         $this->clientManager = $container->get('oro_oauth2_server.client_manager');
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDependencies()
     {
         return [LoadUser::class];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function load(ObjectManager $manager)
     {
         $this->createOrganization($manager);

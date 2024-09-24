@@ -32,6 +32,7 @@ class AddClientsToViewPageListenerTest extends \PHPUnit\Framework\TestCase
     /** @var AddClientsToViewPageListener */
     private $listener;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->translator = $this->createMock(TranslatorInterface::class);

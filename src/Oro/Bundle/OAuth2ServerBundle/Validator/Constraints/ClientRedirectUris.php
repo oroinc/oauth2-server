@@ -13,9 +13,7 @@ class ClientRedirectUris extends Constraint
     /** @var string */
     public $message = 'oro.oauth2server.client.redirectUris.not_empty.message';
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getTargets(): string|array
     {
         return self::CLASS_CONSTRAINT;

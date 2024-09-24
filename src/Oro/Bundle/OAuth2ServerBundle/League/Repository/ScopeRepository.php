@@ -11,9 +11,7 @@ use Oro\Bundle\OAuth2ServerBundle\League\Entity\ScopeEntity;
  */
 class ScopeRepository implements ScopeRepositoryInterface
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getScopeEntityByIdentifier($identifier)
     {
         $scopeEntity = new ScopeEntity();
@@ -22,9 +20,7 @@ class ScopeRepository implements ScopeRepositoryInterface
         return $scopeEntity;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function finalizeScopes(
         array $scopes,
         $grantType,

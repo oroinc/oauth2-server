@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class BackendGrantRequestTest extends OAuthServerTestCase
 {
+    #[\Override]
     protected function setUp(): void
     {
         $this->initClient();

@@ -17,6 +17,7 @@ class OAuth2Factory implements AuthenticatorFactoryInterface
 {
     private const AUTHENTICATOR_SERVICE  = 'oro_oauth2_server.security.authenticator';
 
+    #[\Override]
     public function createAuthenticator(
         ContainerBuilder $container,
         string $firewallName,
@@ -43,22 +44,19 @@ class OAuth2Factory implements AuthenticatorFactoryInterface
         return $authenticatorId;
     }
 
+    #[\Override]
     public function getPriority(): int
     {
         return -10;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getKey(): string
     {
         return 'oauth2';
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function addConfiguration(NodeDefinition $builder): void
     {
         $builder

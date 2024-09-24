@@ -15,9 +15,7 @@ use Symfony\Component\DependencyInjection\Reference;
  */
 class OpenApiCompilerPass implements CompilerPassInterface
 {
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function process(ContainerBuilder $container): void
     {
         $views = $this->getApiDocViews($container);

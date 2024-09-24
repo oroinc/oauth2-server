@@ -20,9 +20,7 @@ class GuestAccessAllowedUrlsProvider implements GuestAccessAllowedUrlsProviderIn
         $this->allowedUrls[] = $pattern;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getAllowedUrlsPatterns(): array
     {
         return $this->allowedUrls;

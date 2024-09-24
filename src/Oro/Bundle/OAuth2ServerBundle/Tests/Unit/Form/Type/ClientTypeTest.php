@@ -44,6 +44,7 @@ class ClientTypeTest extends TypeTestCase
     /** @var ManagerRegistry|\PHPUnit\Framework\MockObject\MockObject */
     private $doctrine;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->organizationsProvider = $this->createMock(ClientOwnerOrganizationsProvider::class);
@@ -52,9 +53,7 @@ class ClientTypeTest extends TypeTestCase
         parent::setUp();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function getExtensions(): array
     {
         $validator = new RecursiveValidator(

@@ -18,9 +18,7 @@ class ScopesFormatter implements FormatterInterface
         $this->translator = $translator;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function format($value, array $formatterArguments = [])
     {
         if (!$value) {
@@ -30,9 +28,7 @@ class ScopesFormatter implements FormatterInterface
         return implode(', ', $value);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDefaultValue()
     {
         return $this->translator->trans('oro.oauth2server.scopes.all');

@@ -35,9 +35,7 @@ class OAuth2Token extends AbstractToken implements OrganizationAwareTokenInterfa
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getRoles(): array
     {
         if (!$this->hasIsGlobalMethod($this->organization)) {
@@ -47,9 +45,6 @@ class OAuth2Token extends AbstractToken implements OrganizationAwareTokenInterfa
         return $this->filterRolesByOrganization($this->organization, $this->traitGetRoles());
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getCredentials(): string
     {
         return '';

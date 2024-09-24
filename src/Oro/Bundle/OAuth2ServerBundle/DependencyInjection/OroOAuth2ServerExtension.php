@@ -43,9 +43,7 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
 
     private const AUTH_CODE_LOG_ATTEMPT_HELPER = 'oro_oauth2_server.auth_code_log_attempt.helper';
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function load(array $configs, ContainerBuilder $container): void
     {
         $config = $this->processConfiguration($this->getConfiguration($configs, $container), $configs);
@@ -72,9 +70,7 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
         $this->configureAuthCodeLogAttemptHelper($container, $config['authorization_server']);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function prepend(ContainerBuilder $container): void
     {
         if ($container instanceof ExtendedContainerBuilder) {
@@ -93,9 +89,7 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getAlias(): string
     {
         return Configuration::ROOT_NODE;

@@ -52,6 +52,7 @@ class PasswordGrantExceptionHandler implements ExceptionHandlerInterface
         $this->frontendHelper = $frontendHelper;
     }
 
+    #[\Override]
     public function handle(ServerRequestInterface $request, OAuthServerException $exception): void
     {
         $parameters = $request->getParsedBody();

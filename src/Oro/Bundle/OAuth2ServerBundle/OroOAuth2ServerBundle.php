@@ -15,9 +15,7 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 class OroOAuth2ServerBundle extends Bundle
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function build(ContainerBuilder $container): void
     {
         parent::build($container);
@@ -32,9 +30,7 @@ class OroOAuth2ServerBundle extends Bundle
         $container->addCompilerPass(new OpenApiCompilerPass());
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getContainerExtension(): ?ExtensionInterface
     {
         if (null === $this->extension) {

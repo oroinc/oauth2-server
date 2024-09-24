@@ -17,9 +17,6 @@ class FailedUserOAuth2Token extends AbstractToken
         parent::__construct($roles);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getCredentials()
     {
         return $this->getAttribute('password');

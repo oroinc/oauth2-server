@@ -22,17 +22,13 @@ class LoadPasswordGrantClient extends AbstractFixture implements
     /** @var ClientManager */
     private $clientManager;
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setContainer(ContainerInterface $container = null)
     {
         $this->clientManager = $container->get('oro_oauth2_server.client_manager');
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDependencies()
     {
         return [
@@ -40,9 +36,7 @@ class LoadPasswordGrantClient extends AbstractFixture implements
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function load(ObjectManager $manager)
     {
         $client = new Client();

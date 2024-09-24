@@ -13,6 +13,7 @@ class BackendApiFeatureOAuthServerTest extends OAuthServerTestCase
 {
     use ApiFeatureTrait;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->initClient();

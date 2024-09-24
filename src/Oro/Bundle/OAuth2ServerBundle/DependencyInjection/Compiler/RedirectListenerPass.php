@@ -13,9 +13,7 @@ use Symfony\Component\DependencyInjection\Reference;
  */
 class RedirectListenerPass implements CompilerPassInterface
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function process(ContainerBuilder $container): void
     {
         if ($container->hasDefinition('oro_website.event_listener.redirect')) {

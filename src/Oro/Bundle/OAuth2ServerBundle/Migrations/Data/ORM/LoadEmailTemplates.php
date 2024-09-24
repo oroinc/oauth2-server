@@ -10,11 +10,13 @@ use Oro\Bundle\MigrationBundle\Fixture\VersionedFixtureInterface;
  */
 class LoadEmailTemplates extends AbstractHashEmailMigration implements VersionedFixtureInterface
 {
+    #[\Override]
     public function getVersion()
     {
         return '1.2';
     }
 
+    #[\Override]
     protected function getEmailHashesToUpdate(): array
     {
         return [
@@ -29,9 +31,7 @@ class LoadEmailTemplates extends AbstractHashEmailMigration implements Versioned
         ];
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getEmailTemplatesList($dir): array
     {
         $templates = parent::getEmailTemplatesList($dir);
@@ -42,9 +42,7 @@ class LoadEmailTemplates extends AbstractHashEmailMigration implements Versioned
         return $templates;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getEmailsDir(): string
     {
         return $this->container

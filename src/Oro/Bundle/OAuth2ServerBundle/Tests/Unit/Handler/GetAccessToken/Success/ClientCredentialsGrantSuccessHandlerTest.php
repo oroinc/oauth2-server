@@ -28,6 +28,7 @@ class ClientCredentialsGrantSuccessHandlerTest extends \PHPUnit\Framework\TestCa
     /** @var ObjectRepository|\PHPUnit\Framework\MockObject\MockObject */
     private $repo;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->doctrine = $this->createMock(ManagerRegistry::class);

@@ -22,6 +22,7 @@ class UserRepositoryTest extends \PHPUnit\Framework\TestCase
     /** @var UserRepository */
     private $userRepository;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->userLoader = $this->createMock(UserLoaderInterface::class);

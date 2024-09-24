@@ -45,9 +45,7 @@ class ClientEntityVirtualRelationProvider implements VirtualRelationProviderInte
         $this->entityConfigProvider = $entityConfigProvider;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function isVirtualRelation($className, $fieldName)
     {
         return
@@ -55,9 +53,7 @@ class ClientEntityVirtualRelationProvider implements VirtualRelationProviderInte
             && isset($this->ownerEntityClasses[$fieldName]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getVirtualRelations($className)
     {
         if (!is_a($className, Client::class, true)) {
@@ -94,9 +90,7 @@ class ClientEntityVirtualRelationProvider implements VirtualRelationProviderInte
         return $result;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getVirtualRelationQuery($className, $fieldName)
     {
         $relations = $this->getVirtualRelations($className);
@@ -107,9 +101,7 @@ class ClientEntityVirtualRelationProvider implements VirtualRelationProviderInte
         return [];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getTargetJoinAlias($className, $fieldName, $selectFieldName = null)
     {
         return $fieldName;

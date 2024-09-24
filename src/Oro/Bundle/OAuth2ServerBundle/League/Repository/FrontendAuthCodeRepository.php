@@ -35,9 +35,7 @@ class FrontendAuthCodeRepository extends AuthCodeRepository
         $this->customerVisitorManager = $customerVisitorManager;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function getUserLoader(AuthCode $authCode): UserLoaderInterface
     {
         if ($authCode->getClient()->isFrontend()) {
@@ -47,9 +45,7 @@ class FrontendAuthCodeRepository extends AuthCodeRepository
         return parent::getUserLoader($authCode);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function checkUser(UserLoaderInterface $userLoader, string $userIdentifier): void
     {
         if (VisitorIdentifierUtil::isVisitorIdentifier($userIdentifier)) {

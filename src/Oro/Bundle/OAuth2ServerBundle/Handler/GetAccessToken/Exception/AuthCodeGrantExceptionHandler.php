@@ -18,6 +18,7 @@ class AuthCodeGrantExceptionHandler implements ExceptionHandlerInterface
         $this->logAttemptHelper = $logAttemptHelper;
     }
 
+    #[\Override]
     public function handle(ServerRequestInterface $request, OAuthServerException $exception): void
     {
         if ('authorization_code' !== $request->getParsedBody()['grant_type']) {

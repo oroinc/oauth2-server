@@ -34,9 +34,7 @@ class UserRepository implements UserRepositoryInterface
         $this->userChecker = $userChecker;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getUserEntityByUserCredentials(
         $username,
         $password,

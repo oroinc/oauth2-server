@@ -13,9 +13,7 @@ class ClientOwner extends Constraint
     /** @var string */
     public $message = 'oro.oauth2server.client.owner.not_null.message';
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getTargets(): string|array
     {
         return self::CLASS_CONSTRAINT;

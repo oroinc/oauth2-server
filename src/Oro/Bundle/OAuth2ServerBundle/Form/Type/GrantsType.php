@@ -12,9 +12,7 @@ use Symfony\Component\Form\FormBuilderInterface;
  */
 class GrantsType extends AbstractType
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         if (!$options['multiple']) {
@@ -22,9 +20,7 @@ class GrantsType extends AbstractType
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getParent(): ?string
     {
         return ChoiceType::class;

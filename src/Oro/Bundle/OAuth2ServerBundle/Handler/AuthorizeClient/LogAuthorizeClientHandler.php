@@ -18,9 +18,7 @@ class LogAuthorizeClientHandler implements AuthorizeClientHandlerInterface
         $this->userLoginAttemptLogger = $userLoginAttemptLogger;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function handle(Client $client, UserInterface $user, bool $isAuthorized): void
     {
         if ($isAuthorized) {

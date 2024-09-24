@@ -33,6 +33,7 @@ class RefreshTokenRepositoryTest extends \PHPUnit\Framework\TestCase
     /** @var RefreshTokenRepository */
     private $repository;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->doctrine = $this->createMock(ManagerRegistry::class);

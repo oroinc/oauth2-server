@@ -19,6 +19,7 @@ class RedirectListener implements RedirectListenerInterface
     ) {
     }
 
+    #[\Override]
     public function onRequest(RequestEvent $event): void
     {
         if ($this->isOAuthRequest($event)) {

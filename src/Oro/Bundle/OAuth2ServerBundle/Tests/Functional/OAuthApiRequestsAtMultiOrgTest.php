@@ -7,6 +7,7 @@ use Oro\Bundle\OAuth2ServerBundle\Tests\Functional\DataFixtures\LoadSecondOrgDat
 
 class OAuthApiRequestsAtMultiOrgTest extends OAuthServerTestCase
 {
+    #[\Override]
     protected function setUp(): void
     {
         if (!class_exists('Oro\Bundle\OrganizationProBundle\OroOrganizationProBundle')) {

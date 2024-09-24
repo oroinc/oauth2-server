@@ -14,6 +14,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class PasswordGrantOAuthServerTest extends OAuthServerTestCase
 {
+    #[\Override]
     protected function setUp(): void
     {
         $this->initClient();

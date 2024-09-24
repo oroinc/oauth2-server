@@ -46,9 +46,7 @@ class OAuthDescriber implements
         $this->dataTypeDescribeHelper = $dataTypeDescribeHelper;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function describe(OA\OpenApi $api, array $options): void
     {
         if (Generator::isDefault($api->paths)) {

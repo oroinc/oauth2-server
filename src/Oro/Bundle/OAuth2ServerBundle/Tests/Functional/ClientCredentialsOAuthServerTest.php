@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
 {
+    #[\Override]
     protected function setUp(): void
     {
         $this->initClient();

@@ -10,6 +10,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
  */
 class AddSkippedLogAttemptsFirewalls implements CompilerPassInterface
 {
+    #[\Override]
     public function process(ContainerBuilder $container): void
     {
         $container->getDefinition('oro_user.security.skipped_log_attempts_firewalls_provider')

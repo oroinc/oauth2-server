@@ -15,6 +15,7 @@ class AuthCodeGrantSuccessHandlerTest extends \PHPUnit\Framework\TestCase
     /** @var LogAuthorizeClientHandler */
     private $handler;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->logAttemptHelper = $this->createMock(AuthCodeLogAttemptHelper::class);

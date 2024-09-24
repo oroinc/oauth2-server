@@ -41,9 +41,7 @@ class AuthorizationValidator implements AuthorizationValidatorInterface
         $this->authorizationValidator = $authorizationValidator;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function validateAuthorization(ServerRequestInterface $request)
     {
         return $this->getResourceServer()->validateAuthenticatedRequest($request);

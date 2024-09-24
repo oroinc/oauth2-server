@@ -12,10 +12,7 @@ use Psr\Http\Message\ServerRequestInterface;
  */
 class AuthCodeGrant extends LeagueAuthCodeGrant
 {
-    /**
-     * {@inheritDoc}
-     * We should always validate the client to be sure that it supports current grant type.
-     */
+    #[\Override]
     public function respondToAccessTokenRequest(
         ServerRequestInterface $request,
         ResponseTypeInterface $responseType,

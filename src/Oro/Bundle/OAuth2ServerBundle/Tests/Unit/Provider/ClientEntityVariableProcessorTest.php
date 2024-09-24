@@ -20,6 +20,7 @@ class ClientEntityVariableProcessorTest extends \PHPUnit\Framework\TestCase
     /** @var ClientEntityVariableProcessor */
     private $processor;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->doctrine = $this->createMock(ManagerRegistry::class);

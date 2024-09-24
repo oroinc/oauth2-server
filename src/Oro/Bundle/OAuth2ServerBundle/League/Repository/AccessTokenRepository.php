@@ -30,9 +30,7 @@ class AccessTokenRepository implements AccessTokenRepositoryInterface
         $this->clientManager = $clientManager;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getNewToken(
         ClientEntityInterface $clientEntity,
         array $scopes,
@@ -48,9 +46,7 @@ class AccessTokenRepository implements AccessTokenRepositoryInterface
         return $accessToken;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function persistNewAccessToken(AccessTokenEntityInterface $accessTokenEntity): void
     {
         $accessToken = $this->findAccessTokenEntity($accessTokenEntity->getIdentifier());
@@ -74,9 +70,7 @@ class AccessTokenRepository implements AccessTokenRepositoryInterface
         $em->flush();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function revokeAccessToken($tokenId): void
     {
         $accessToken = $this->findAccessTokenEntity($tokenId);
@@ -91,9 +85,7 @@ class AccessTokenRepository implements AccessTokenRepositoryInterface
         $em->flush();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function isAccessTokenRevoked($tokenId): bool
     {
         $accessToken = $this->findAccessTokenEntity($tokenId);

@@ -150,9 +150,7 @@ class AuthorizationTokenController extends AbstractController
         return $this->container->get(LoggerInterface::class);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public static function getSubscribedServices(): array
     {
         return array_merge(

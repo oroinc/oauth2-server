@@ -18,9 +18,7 @@ class ExceptionHandler implements ExceptionHandlerInterface
         $this->handlers = $handlers;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function handle(ServerRequestInterface $request, OAuthServerException $exception): void
     {
         foreach ($this->handlers as $handler) {

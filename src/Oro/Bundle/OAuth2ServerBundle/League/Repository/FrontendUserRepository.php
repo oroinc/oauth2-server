@@ -38,9 +38,7 @@ class FrontendUserRepository extends UserRepository
         $this->customerVisitorManager = $customerVisitorManager;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getUserEntityByUserCredentials(
         $username,
         $password,
@@ -67,6 +65,7 @@ class FrontendUserRepository extends UserRepository
         return parent::getUserEntityByUserCredentials($username, $password, $grantType, $clientEntity);
     }
 
+    #[\Override]
     protected function getUserLoader(ClientEntityInterface $clientEntity): UserLoaderInterface
     {
         if ($this->isFrontendClient($clientEntity)) {

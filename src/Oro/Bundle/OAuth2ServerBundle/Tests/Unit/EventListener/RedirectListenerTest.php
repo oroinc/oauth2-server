@@ -21,6 +21,7 @@ class RedirectListenerTest extends TestCase
     /** @var  */
     private RedirectListener $listener;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->innerRedirectListener = $this->createMock(RedirectListenerInterface::class);

@@ -15,6 +15,7 @@ class ClientActionsVisibilityProviderTest extends \PHPUnit\Framework\TestCase
     /** @var ClientActionsVisibilityProvider */
     private $visibilityProvider;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->clientManager = $this->createMock(ClientManager::class);

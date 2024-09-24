@@ -25,9 +25,7 @@ class UniqueClientNameValidator extends ConstraintValidator
         $this->doctrine = $doctrine;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function validate($value, Constraint $constraint)
     {
         if (!$constraint instanceof UniqueClientName) {

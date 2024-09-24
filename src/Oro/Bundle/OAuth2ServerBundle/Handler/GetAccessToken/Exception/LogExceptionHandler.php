@@ -19,9 +19,7 @@ class LogExceptionHandler implements ExceptionHandlerInterface
         $this->logger = $logger;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function handle(ServerRequestInterface $request, OAuthServerException $exception): void
     {
         $this->logger->info($exception->getMessage(), ['exception' => $exception]);

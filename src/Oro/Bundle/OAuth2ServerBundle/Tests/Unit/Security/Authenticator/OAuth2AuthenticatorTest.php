@@ -38,6 +38,7 @@ class OAuth2AuthenticatorTest extends \PHPUnit\Framework\TestCase
     private AnonymousCustomerUserRolesProvider $rolesProviderMock;
     private FeatureDependAuthenticatorChecker $featureDependAuthenticationChecker;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->loggerMock = $this->createMock(LoggerInterface::class);

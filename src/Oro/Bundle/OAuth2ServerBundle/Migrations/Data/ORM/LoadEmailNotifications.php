@@ -15,17 +15,13 @@ use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
  */
 class LoadEmailNotifications extends AbstractFixture implements DependentFixtureInterface
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDependencies()
     {
         return [LoadEmailTemplates::class];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function load(ObjectManager $manager)
     {
         $this->createEmailNotification($manager, 'persist', 'user_oauth_application_created', 'user');

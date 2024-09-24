@@ -14,6 +14,7 @@ class GrantClientDatagridListenerTest extends \PHPUnit\Framework\TestCase
     /** @var GrantClientDatagridListener */
     private $listener;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->listener = new GrantClientDatagridListener();

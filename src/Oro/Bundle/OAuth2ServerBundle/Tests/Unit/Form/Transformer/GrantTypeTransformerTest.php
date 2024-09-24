@@ -12,6 +12,7 @@ class GrantTypeTransformerTest extends \PHPUnit\Framework\TestCase
 {
     private $transformer;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->transformer = new GrantTypeTransformer();

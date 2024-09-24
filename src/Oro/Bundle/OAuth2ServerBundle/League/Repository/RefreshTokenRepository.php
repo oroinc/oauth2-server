@@ -38,17 +38,13 @@ class RefreshTokenRepository implements RefreshTokenRepositoryInterface
         $this->userChecker = $userChecker;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getNewRefreshToken(): RefreshTokenEntityInterface
     {
         return new RefreshTokenEntity();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function persistNewRefreshToken(RefreshTokenEntityInterface $refreshTokenEntity): void
     {
         $em = $this->getEntityManager();
@@ -70,9 +66,7 @@ class RefreshTokenRepository implements RefreshTokenRepositoryInterface
         $em->flush();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function revokeRefreshToken($tokenId): void
     {
         $em = $this->getEntityManager();
@@ -87,9 +81,7 @@ class RefreshTokenRepository implements RefreshTokenRepositoryInterface
         $em->flush();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function isRefreshTokenRevoked($tokenId): bool
     {
         $refreshToken = $this->findRefreshTokenEntity($this->getEntityManager(), $tokenId);

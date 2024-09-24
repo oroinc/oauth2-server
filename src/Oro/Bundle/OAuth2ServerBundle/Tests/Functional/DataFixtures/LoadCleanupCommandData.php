@@ -25,18 +25,14 @@ class LoadCleanupCommandData extends AbstractFixture implements ContainerAwareIn
     /** @var ClientManager */
     private $clientManager;
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setContainer(ContainerInterface $container = null)
     {
         $this->userManager = $container->get('oro_user.manager');
         $this->clientManager = $container->get('oro_oauth2_server.client_manager');
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDependencies()
     {
         return [
@@ -45,9 +41,7 @@ class LoadCleanupCommandData extends AbstractFixture implements ContainerAwareIn
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function load(ObjectManager $manager)
     {
         $user1 = $this->createUser('1');

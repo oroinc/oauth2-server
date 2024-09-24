@@ -12,17 +12,13 @@ use Symfony\Component\Form\FormBuilderInterface;
  */
 class HiddenGrantsType extends AbstractType
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->addModelTransformer(new GrantTypeTransformer());
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getParent(): ?string
     {
         return HiddenType::class;

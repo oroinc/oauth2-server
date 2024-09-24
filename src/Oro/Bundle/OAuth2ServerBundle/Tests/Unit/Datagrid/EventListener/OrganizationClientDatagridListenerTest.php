@@ -25,6 +25,7 @@ class OrganizationClientDatagridListenerTest extends \PHPUnit\Framework\TestCase
     /** @var OrganizationClientDatagridListener */
     private $listener;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->organizationsProvider = $this->createMock(ClientOwnerOrganizationsProvider::class);

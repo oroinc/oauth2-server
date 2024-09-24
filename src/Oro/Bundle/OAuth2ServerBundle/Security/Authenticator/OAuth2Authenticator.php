@@ -48,6 +48,7 @@ class OAuth2Authenticator implements AuthenticatorInterface
     ) {
     }
 
+    #[\Override]
     public function supports(Request $request): ?bool
     {
         if (!$this->featureDependAuthenticatorChecker->isEnabled($this, $this->firewallName)) {
@@ -62,6 +63,7 @@ class OAuth2Authenticator implements AuthenticatorInterface
         return true;
     }
 
+    #[\Override]
     public function authenticate(Request $request): Passport
     {
         $serverRequest = $this->validateAuthorization($this->createServerRequest($request));
@@ -77,6 +79,7 @@ class OAuth2Authenticator implements AuthenticatorInterface
         return $passport;
     }
 
+    #[\Override]
     public function createToken(Passport $passport, string $firewallName): TokenInterface
     {
         $user = $passport->getUser();
@@ -93,11 +96,13 @@ class OAuth2Authenticator implements AuthenticatorInterface
         );
     }
 
+    #[\Override]
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
         return null;
     }
 
+    #[\Override]
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
     {
         return new Response('', 401, []);

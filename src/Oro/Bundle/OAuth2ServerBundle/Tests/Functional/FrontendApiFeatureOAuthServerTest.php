@@ -16,6 +16,7 @@ class FrontendApiFeatureOAuthServerTest extends OAuthServerTestCase
 
     private const API_FEATURE_NAME = 'oro_frontend.web_api';
 
+    #[\Override]
     protected function setUp(): void
     {
         if (!class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {

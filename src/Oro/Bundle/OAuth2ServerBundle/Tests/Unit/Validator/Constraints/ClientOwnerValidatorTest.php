@@ -11,9 +11,7 @@ use Symfony\Component\Validator\Test\ConstraintValidatorTestCase;
 
 class ClientOwnerValidatorTest extends ConstraintValidatorTestCase
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function createValidator()
     {
         return new ClientOwnerValidator();

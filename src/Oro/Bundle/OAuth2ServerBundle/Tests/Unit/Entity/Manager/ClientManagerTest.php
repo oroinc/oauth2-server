@@ -34,6 +34,7 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
     /** @var ClientManager */
     private $clientManager;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->doctrine = $this->createMock(ManagerRegistry::class);

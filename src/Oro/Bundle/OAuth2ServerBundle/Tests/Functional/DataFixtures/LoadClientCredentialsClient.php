@@ -22,17 +22,13 @@ class LoadClientCredentialsClient extends AbstractFixture implements ContainerAw
     /** @var ClientManager */
     private $clientManager;
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setContainer(ContainerInterface $container = null)
     {
         $this->clientManager = $container->get('oro_oauth2_server.client_manager');
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDependencies()
     {
         return [
@@ -41,9 +37,7 @@ class LoadClientCredentialsClient extends AbstractFixture implements ContainerAw
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function load(ObjectManager $manager)
     {
         /** @var User $owner */

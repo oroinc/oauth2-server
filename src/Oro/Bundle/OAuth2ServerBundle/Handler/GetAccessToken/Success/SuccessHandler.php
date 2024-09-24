@@ -17,9 +17,7 @@ class SuccessHandler implements SuccessHandlerInterface
         $this->handlers = $handlers;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function handle(ServerRequestInterface $request): void
     {
         foreach ($this->handlers as $handler) {

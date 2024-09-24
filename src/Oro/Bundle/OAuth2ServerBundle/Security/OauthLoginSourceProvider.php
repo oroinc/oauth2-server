@@ -17,9 +17,7 @@ class OauthLoginSourceProvider implements
     LoginSourceProviderForSuccessRequestInterface,
     LoginSourceProviderForFailedRequestInterface
 {
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getLoginSourceForFailedRequest(
         AuthenticatorInterface $authenticator,
         \Exception $exception
@@ -39,9 +37,7 @@ class OauthLoginSourceProvider implements
         return null;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getLoginSourceForSuccessRequest(TokenInterface $token): ?string
     {
         if (is_a($token, OAuth2Token::class)) {

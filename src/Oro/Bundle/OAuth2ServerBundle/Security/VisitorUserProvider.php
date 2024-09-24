@@ -27,9 +27,7 @@ class VisitorUserProvider implements UserProviderInterface
         $this->customerVisitorManager = $customerVisitorManager;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function loadUserByIdentifier(string $identifier): UserInterface
     {
         if (VisitorIdentifierUtil::isVisitorIdentifier($identifier)) {
@@ -41,17 +39,13 @@ class VisitorUserProvider implements UserProviderInterface
         return $this->innerUserProvider->loadUserByIdentifier($identifier);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function refreshUser(UserInterface $user): UserInterface
     {
         return $this->innerUserProvider->refreshUser($user);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function supportsClass(string $class): bool
     {
         return $this->innerUserProvider->supportsClass($class);

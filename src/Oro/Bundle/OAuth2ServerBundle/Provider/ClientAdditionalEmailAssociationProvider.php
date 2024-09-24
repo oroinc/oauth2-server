@@ -37,9 +37,7 @@ class ClientAdditionalEmailAssociationProvider implements AdditionalEmailAssocia
         $this->doctrine = $doctrine;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getAssociations(string $entityClass): array
     {
         if (!is_a($entityClass, Client::class, true)) {
@@ -57,9 +55,7 @@ class ClientAdditionalEmailAssociationProvider implements AdditionalEmailAssocia
         return $result;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function isAssociationSupported($entity, string $associationName): bool
     {
         return
@@ -67,9 +63,7 @@ class ClientAdditionalEmailAssociationProvider implements AdditionalEmailAssocia
             && isset($this->ownerEntityClasses[$associationName]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getAssociationValue($entity, string $associationName)
     {
         /** @var Client $entity */

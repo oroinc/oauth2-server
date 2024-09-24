@@ -27,6 +27,7 @@ class ClientEntityVirtualRelationProviderTest extends \PHPUnit\Framework\TestCas
     /** @var ClientEntityVirtualRelationProvider */
     private $provider;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->ownerEntityClasses = [

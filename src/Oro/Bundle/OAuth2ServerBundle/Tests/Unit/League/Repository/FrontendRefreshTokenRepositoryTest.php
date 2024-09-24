@@ -35,6 +35,7 @@ class FrontendRefreshTokenRepositoryTest extends \PHPUnit\Framework\TestCase
     /** @var FrontendRefreshTokenRepository */
     private $repository;
 
+    #[\Override]
     protected function setUp(): void
     {
         if (!class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {

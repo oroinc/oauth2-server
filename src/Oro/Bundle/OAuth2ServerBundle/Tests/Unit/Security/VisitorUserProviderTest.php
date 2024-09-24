@@ -17,6 +17,7 @@ class VisitorUserProviderTest extends \PHPUnit\Framework\TestCase
     /** @var VisitorUserProvider */
     private $visitorUserProvider;
 
+    #[\Override]
     protected function setUp(): void
     {
         if (!class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {

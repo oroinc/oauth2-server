@@ -11,6 +11,7 @@ class ScopeRepositoryTest extends \PHPUnit\Framework\TestCase
     /** @var ScopeRepository */
     private $repository;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->repository = new ScopeRepository();

@@ -10,6 +10,7 @@ class ScopesFormatterTest extends \PHPUnit\Framework\TestCase
     /** @var ScopesFormatter */
     private $formatter;
 
+    #[\Override]
     protected function setUp(): void
     {
         $translator = $this->createMock(TranslatorInterface::class);

@@ -19,6 +19,7 @@ class ApiFeatureCheckerTest extends \PHPUnit\Framework\TestCase
     /** @var ApiFeatureChecker */
     private $apiFeatureChecker;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->featureChecker = $this->createMock(FeatureChecker::class);

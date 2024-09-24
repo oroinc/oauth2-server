@@ -35,6 +35,7 @@ class FrontendUserRepositoryTest extends \PHPUnit\Framework\TestCase
     /** @var FrontendUserRepository */
     private $repository;
 
+    #[\Override]
     protected function setUp(): void
     {
         if (!class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {

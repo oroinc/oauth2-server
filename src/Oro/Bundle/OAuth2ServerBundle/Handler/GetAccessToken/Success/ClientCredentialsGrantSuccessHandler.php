@@ -33,9 +33,7 @@ class ClientCredentialsGrantSuccessHandler implements SuccessHandlerInterface
         $this->frontendLogger = $frontendLogger;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function handle(ServerRequestInterface $request): void
     {
         $parameters = $request->getParsedBody();

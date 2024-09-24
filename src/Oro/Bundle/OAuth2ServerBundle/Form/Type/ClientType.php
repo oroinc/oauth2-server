@@ -7,9 +7,7 @@ namespace Oro\Bundle\OAuth2ServerBundle\Form\Type;
  */
 class ClientType extends AbstractClientType
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getBlockPrefix(): string
     {
         return 'oro_oauth2_client';

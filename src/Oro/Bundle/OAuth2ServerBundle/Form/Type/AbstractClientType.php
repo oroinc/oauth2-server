@@ -34,9 +34,7 @@ abstract class AbstractClientType extends AbstractType
         $this->organizationsProvider = $organizationsProvider;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
@@ -65,9 +63,7 @@ abstract class AbstractClientType extends AbstractType
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver

@@ -25,6 +25,7 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
     private OAuth2Authenticator|\PHPUnit\Framework\MockObject\MockObject $oAuth2Authenticator;
     private UserProviderInterface|\PHPUnit\Framework\MockObject\MockObject $userProvider;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->eventDispatcher = $this->createMock(EventDispatcherInterface::class);

@@ -49,9 +49,7 @@ class PasswordGrantSuccessHandler implements SuccessHandlerInterface
         $this->tokenStorage = $tokenStorage;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function handle(ServerRequestInterface $request): void
     {
         $parameters = $request->getParsedBody();
