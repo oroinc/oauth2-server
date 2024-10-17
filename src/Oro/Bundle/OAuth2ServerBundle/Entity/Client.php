@@ -29,6 +29,13 @@ use Oro\Bundle\OrganizationBundle\Entity\Organization;
 )]
 class Client
 {
+    // Grant types
+    public const string AUTHORIZATION_CODE = 'authorization_code';
+    public const string CLIENT_CREDENTIALS = 'client_credentials';
+    public const string PASSWORD           = 'password';
+    public const string REFRESH_TOKEN      = 'refresh_token';
+    public const string IMPLICIT           = 'implicit';
+
     #[ORM\Column(name: 'id', type: Types::INTEGER)]
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'AUTO')]
@@ -422,9 +429,11 @@ class Client
      * Sets the flag that indicates whether the client is a confidential or a public.
      * @link https://tools.ietf.org/html/rfc6749#section-2.1
      */
-    public function setConfidential(bool $confidential)
+    public function setConfidential(bool $confidential): self
     {
         $this->confidential = $confidential;
+
+        return $this;
     }
 
     /**
@@ -452,8 +461,10 @@ class Client
         return $this->skipAuthorizeClientAllowed;
     }
 
-    public function setSkipAuthorizeClientAllowed(bool $skipAuthorizeClientAllowed): void
+    public function setSkipAuthorizeClientAllowed(bool $skipAuthorizeClientAllowed): self
     {
         $this->skipAuthorizeClientAllowed = $skipAuthorizeClientAllowed;
+
+        return $this;
     }
 }

@@ -13,7 +13,7 @@ Feature: Manage Backoffice OAuth Applications
   Scenario: Applications grid
     When I go to System/User Management/OAuth Applications
     Then I should see following records in grid:
-      | test_app  |
+      | test_app |
 
   Scenario: Create Client Credentials grant OAuth application
     When I click "Create OAuth Application"
@@ -45,15 +45,15 @@ Feature: Manage Backoffice OAuth Applications
     Then I should see "OAuth Application deleted" flash message
     And I should see "Test OAuth Application" in grid with following data:
       | Application Name | Test OAuth Application |
-      | Grant Type       | Client Credentials |
-      | Active           | Yes               |
+      | Grant Type       | Client Credentials     |
+      | Active           | Yes                    |
 
   Scenario: New OAuth application name validation
     When I go to System/User Management/OAuth Applications
     And I click "Create OAuth Application"
     And I fill form with:
-      | Grant Type       | Client Credentials |
-      | User             | John Doe           |
+      | Grant Type | Client Credentials |
+      | User       | John Doe           |
     And click "Save"
     Then I should see validation errors:
       | Application Name | This value should not be blank. |
@@ -121,8 +121,9 @@ Feature: Manage Backoffice OAuth Applications
     When I click "Yes"
     Then I should see "Deleted successfully" flash message
     And I should see following grid:
-      | Application Name       | Active |
-      | Test OAuth Application | Yes    |
+      | Application Name           | Active |
+      | Sales Frontend Application | Yes    |
+      | Test OAuth Application     | Yes    |
 
   Scenario: New Auth Code grant OAuth application Redirect URLs validation
     When I go to System/User Management/OAuth Applications
@@ -161,9 +162,9 @@ Feature: Manage Backoffice OAuth Applications
     And click "Save and Close"
     Then I should see "OAuth application has been updated." flash message
     And I should see OAuth Application with:
-      | Application Name     | Auth Code App edited |
-      | Grant Type           | Authorization Code   |
-      | Confidential Client  | No                   |
-      | Skip User Consent    | Yes                  |
+      | Application Name    | Auth Code App edited |
+      | Grant Type          | Authorization Code   |
+      | Confidential Client | No                   |
+      | Skip User Consent   | Yes                  |
     And I should see "https://test.com"
     And I should see "https://another.com"

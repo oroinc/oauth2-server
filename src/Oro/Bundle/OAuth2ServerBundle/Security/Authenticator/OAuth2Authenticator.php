@@ -35,6 +35,8 @@ use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPasspor
  */
 class OAuth2Authenticator implements AuthenticatorInterface
 {
+    private array $authorizationCookies = [];
+
     public function __construct(
         private LoggerInterface $logger,
         private ClientManager $clientManager,
@@ -48,19 +50,37 @@ class OAuth2Authenticator implements AuthenticatorInterface
     ) {
     }
 
+    public function setAuthorizationCookies(array $authorizationCookies): void
+    {
+        $this->authorizationCookies = $authorizationCookies;
+    }
+
     #[\Override]
     public function supports(Request $request): ?bool
     {
         if (!$this->featureDependAuthenticatorChecker->isEnabled($this, $this->firewallName)) {
             return false;
         }
-        if (!$request->headers->has('Authorization') ||
-            !preg_match('/^(?:\s+)?Bearer\s/', $request->headers->get('Authorization'))
+        if ((!$request->headers->has('Authorization') ||
+            !preg_match('/^(?:\s+)?Bearer\s/', $request->headers->get('Authorization'))) &&
+            (!$this->authorizationCookies || !$this->getAuthorizationCookie($request))
         ) {
             return false;
         }
 
         return true;
+    }
+
+    private function getAuthorizationCookie(Request $request): ?string
+    {
+        foreach ($this->authorizationCookies as $authorizationCookie) {
+            $value = $request->cookies->get($authorizationCookie);
+            if (!empty($value)) {
+                return $value;
+            }
+        }
+
+        return null;
     }
 
     #[\Override]
@@ -164,7 +184,16 @@ class OAuth2Authenticator implements AuthenticatorInterface
 
     private function createServerRequest(Request $request): ServerRequestInterface
     {
-        return $this->httpMessageFactory->createRequest($request);
+        $serverRequest = $this->httpMessageFactory->createRequest($request);
+
+        if ($this->authorizationCookies) {
+            $authorizationCookie = $this->getAuthorizationCookie($request);
+            if ($authorizationCookie) {
+                $serverRequest = $serverRequest->withHeader('Authorization', 'Bearer ' . $authorizationCookie);
+            }
+        }
+
+        return $serverRequest;
     }
 
     private function validateAuthorization(ServerRequestInterface $serverRequest): ServerRequestInterface

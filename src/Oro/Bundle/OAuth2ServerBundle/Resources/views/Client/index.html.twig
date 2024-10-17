@@ -24,6 +24,9 @@
         {% if not encryptionKeysExist %}
             <div class="alert alert-warning">{{ 'oro.oauth2server.no_encryption_keys'|trans }}</div>
         {% endif %}
+        {% if privateKeySecure is same as(false) %}
+            <div class="alert alert-warning">{{ 'oro.oauth2server.command.generate_keys.private_key_permission'|trans }}</div>
+        {% endif %}
         {{ dataGrid.renderGrid(
             isFrontend ? 'oauth-client-frontend-grid' : 'oauth-client-backend-grid',
             { frontend: isFrontend, '_grid_view': {'_disabled': true} },

@@ -79,7 +79,8 @@ class ClientController extends AbstractController
 
         return [
             'isFrontend'          => self::SUPPORTED_CLIENT_TYPES[$type]['isFrontend'],
-            'encryptionKeysExist' => $this->isEncryptionKeysExist()
+            'encryptionKeysExist' => $this->isEncryptionKeysExist(),
+            'privateKeySecure'    => $this->isPrivateKeySecure(),
         ];
     }
 
@@ -115,7 +116,12 @@ class ClientController extends AbstractController
             );
         }
 
-        return ['entity' => $entity, 'user' => $user, 'encryptionKeysExist' => $this->isEncryptionKeysExist()];
+        return [
+            'entity'              => $entity,
+            'user'                => $user,
+            'encryptionKeysExist' => $this->isEncryptionKeysExist(),
+            'privateKeySecure'    => $this->isPrivateKeySecure(),
+        ];
     }
 
     /**
@@ -463,5 +469,10 @@ class ClientController extends AbstractController
         return
             $encryptionKeysExistenceChecker->isPrivateKeyExist()
             && $encryptionKeysExistenceChecker->isPublicKeyExist();
+    }
+
+    private function isPrivateKeySecure(): ?bool
+    {
+        return $this->container->get(EncryptionKeysExistenceChecker::class)->isPrivateKeySecure();
     }
 }

@@ -10,16 +10,12 @@ use Oro\Bundle\OAuth2ServerBundle\League\CryptKeyFile;
  */
 class EncryptionKeysExistenceChecker
 {
-    /** @var CryptKeyFile */
-    private $privateKey;
+    public const string PRIVATE_KEY_PERMISSION = '0600';
 
-    /** @var CryptKeyFile */
-    private $publicKey;
-
-    public function __construct(CryptKeyFile $privateKey, CryptKeyFile $publicKey)
-    {
-        $this->privateKey = $privateKey;
-        $this->publicKey = $publicKey;
+    public function __construct(
+        private CryptKeyFile $privateKey,
+        private CryptKeyFile $publicKey
+    ) {
     }
 
     /**
@@ -27,7 +23,7 @@ class EncryptionKeysExistenceChecker
      */
     public function isPrivateKeyExist(): bool
     {
-        return $this->isFileExistAndReadable($this->privateKey->getKeyPath());
+        return $this->isFileExistsAndReadable($this->privateKey->getKeyPath());
     }
 
     /**
@@ -35,10 +31,24 @@ class EncryptionKeysExistenceChecker
      */
     public function isPublicKeyExist(): bool
     {
-        return $this->isFileExistAndReadable($this->publicKey->getKeyPath());
+        return $this->isFileExistsAndReadable($this->publicKey->getKeyPath());
     }
 
-    private function isFileExistAndReadable(string $file): bool
+    /**
+     * Checks whether the permission for the private key is equal to 0600.
+     *
+     * @return bool|null True if mode is 0600, false otherwise. Returns null if private key does not exist.
+     */
+    public function isPrivateKeySecure(): ?bool
+    {
+        if (!file_exists($this->privateKey->getKeyPath())) {
+            return null;
+        }
+
+        return substr(decoct(fileperms($this->privateKey->getKeyPath())), -4) === static::PRIVATE_KEY_PERMISSION;
+    }
+
+    private function isFileExistsAndReadable(string $file): bool
     {
         return file_exists($file) && is_readable($file);
     }

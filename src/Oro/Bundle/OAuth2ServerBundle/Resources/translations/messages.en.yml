@@ -102,3 +102,9 @@ oro:
         login_source:
             oauth: OAuth token
             oauth_auth_code: OAuth auth code
+
+        command:
+            generate_keys:
+                private_key_permission: |
+                    Be aware that the locally generated private key may have permissions that allow access by other Linux users. 
+                    For production deployment, ensure that only the web server has read and write permissions for the private key.

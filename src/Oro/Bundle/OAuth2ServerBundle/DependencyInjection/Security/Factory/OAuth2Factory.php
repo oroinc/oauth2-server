@@ -39,6 +39,7 @@ class OAuth2Factory implements AuthenticatorFactoryInterface
             ->addArgument(
                 $this->isVisitorFirewall($config) ? $this->createAnonymousCustomerUserRolesProvider() : null
             )
+            ->addMethodCall('setAuthorizationCookies', [$config['authorization_cookies']]);
         ;
 
         return $authenticatorId;
@@ -62,6 +63,7 @@ class OAuth2Factory implements AuthenticatorFactoryInterface
         $builder
             ->children()
                 ->booleanNode('anonymous_customer_user')->defaultValue(false)->end()
+                ->arrayNode('authorization_cookies')->defaultValue([])->scalarPrototype()->end()
             ->end();
     }
 

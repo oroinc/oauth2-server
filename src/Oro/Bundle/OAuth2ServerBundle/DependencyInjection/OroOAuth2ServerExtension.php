@@ -24,6 +24,9 @@ use Symfony\Component\Yaml\Yaml;
 
 class OroOAuth2ServerExtension extends Extension implements PrependExtensionInterface
 {
+    public const AUTH_SERVER_REFRESH_TOKEN_LIFETIME = 'oro_oauth2_server.authorization_server.refresh_token_lifetime';
+    public const AUTH_SERVER_ACCESS_TOKEN_LIFETIME = 'oro_oauth2_server.authorization_server.access_token_lifetime';
+
     private const SUPPORTED_GRANT_TYPES_PARAM = 'oro_oauth2_server.supported_grant_types';
     private const SUPPORTED_CLIENT_OWNERS_PARAM = 'oro_oauth2_server.supported_client_owners';
     private const CORS_PREFLIGHT_MAX_AGE_PARAM = 'oro_oauth2_server.cors.preflight_max_age';
@@ -42,6 +45,7 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
     private const CUSTOMER_LOGIN_SOURCES = 'oro_customer_user.login_sources';
 
     private const AUTH_CODE_LOG_ATTEMPT_HELPER = 'oro_oauth2_server.auth_code_log_attempt.helper';
+    private const DECRYPTED_TOKEN_PROVIDER = 'oro_oauth2_server.provider.decrypted_token';
 
     #[\Override]
     public function load(array $configs, ContainerBuilder $container): void
@@ -68,6 +72,16 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
         $this->configureResourceServer($container, $config['resource_server']);
         $this->configureCustomerUserLoginAttempts($container);
         $this->configureAuthCodeLogAttemptHelper($container, $config['authorization_server']);
+        $this->configureDecryptedTokenProvider($container, $config['authorization_server']);
+
+        $container->setParameter(
+            self::AUTH_SERVER_REFRESH_TOKEN_LIFETIME,
+            $config['authorization_server']['refresh_token_lifetime']
+        );
+        $container->setParameter(
+            self::AUTH_SERVER_ACCESS_TOKEN_LIFETIME,
+            $config['authorization_server']['access_token_lifetime']
+        );
     }
 
     #[\Override]
@@ -367,6 +381,12 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
     private function configureAuthCodeLogAttemptHelper(ContainerBuilder $container, array $config): void
     {
         $container->getDefinition(self::AUTH_CODE_LOG_ATTEMPT_HELPER)
+            ->addMethodCall('setEncryptionKey', [$config['encryption_key']]);
+    }
+
+    private function configureDecryptedTokenProvider(ContainerBuilder $container, array $config): void
+    {
+        $container->getDefinition(self::DECRYPTED_TOKEN_PROVIDER)
             ->addMethodCall('setEncryptionKey', [$config['encryption_key']]);
     }
 }

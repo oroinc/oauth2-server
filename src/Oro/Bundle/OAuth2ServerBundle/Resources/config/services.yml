@@ -50,6 +50,25 @@ services:
             - '@oro_oauth2_server.auth_code_cleaner'
         tags: [console.command]
 
+    oro_oauth2_server.command.generate_keys:
+        class: Oro\Bundle\OAuth2ServerBundle\Command\GenerateKeysCommand
+        arguments:
+            - '@oro_oauth2_server.encryption_keys_existence_checker'
+            - '@oro_oauth2_server.league.private_key'
+            - '@oro_oauth2_server.league.public_key'
+        tags:
+            - { name: console.command }
+
+    oro_oauth2_server.command.check_keys_permissions:
+        class: Oro\Bundle\OAuth2ServerBundle\Command\CheckKeysPermissionsCommand
+        arguments:
+            - '@oro_oauth2_server.encryption_keys_existence_checker'
+            - '@oro_oauth2_server.oauth_notification_alert_manager'
+            - '@doctrine'
+            - '@translator'
+        tags:
+            - { name: console.command }
+
     oro_oauth2_server.client_cleaner:
         class: Oro\Bundle\OAuth2ServerBundle\Entity\Cleaner\ClientCleaner
         public: false
@@ -224,7 +243,7 @@ services:
         public: false
 
     oro_oauth2_server.league.authorization_server:
-        class: League\OAuth2\Server\AuthorizationServer
+        class: Oro\Bundle\OAuth2ServerBundle\Server\AuthorizationServer
         public: true
         arguments:
             - '@oro_oauth2_server.league.repository.client_repository'
@@ -434,3 +453,60 @@ services:
             - '@oro_user.logger.user_login_attempt'
             - '@?oro_customer.security.user_loader'
             - '@?oro_customer.logger.customer_user_login_attempt'
+
+    oro_oauth2_server.client.access_token:
+        class: Oro\Bundle\OAuth2ServerBundle\Client\AccessTokenClient
+        arguments:
+            - '@http_kernel'
+            - '@oro_oauth2_server.league.authorization_server'
+            - '@request_stack'
+
+    Oro\Bundle\OAuth2ServerBundle\Client\AccessTokenClient:
+        alias: oro_oauth2_server.client.access_token
+
+    oro_oauth2_server.client.authorization_code:
+        class: Oro\Bundle\OAuth2ServerBundle\Client\AuthorizationCodeClient
+        arguments:
+            - '@http_kernel'
+            - '@oro_oauth2_server.league.repository.client_repository'
+            - '@request_stack'
+
+    oro_oauth2_server.oauth_notification_alert_manager:
+        class: Oro\Bundle\NotificationBundle\NotificationAlert\NotificationAlertManager
+        arguments:
+            - !php/const \Oro\Bundle\OAuth2ServerBundle\NotificationAlert\OAuth2PrivateKeyNotificationAlert::SOURCE_TYPE
+            - !php/const \Oro\Bundle\OAuth2ServerBundle\NotificationAlert\OAuth2PrivateKeyNotificationAlert::RESOURCE_TYPE
+            - '@doctrine'
+            - '@oro_security.token_accessor'
+            - '@logger'
+        public: true
+
+    oro_oauth2_server.listener.check_keys_permissions:
+        class: Oro\Bundle\OAuth2ServerBundle\EventListener\CheckKeysPermissionsListener
+        arguments:
+            - '@doctrine'
+        tags:
+            - { name: kernel.event_listener, event: installer.finish, method: onFinishApplicationEvent }
+
+    oro_oauth2_server.provider.decrypted_access_token:
+        class: Oro\Bundle\OAuth2ServerBundle\Provider\DecryptedAccessTokenProvider
+        arguments:
+            - '@oro_oauth2_server.league.public_key'
+
+    oro_oauth2_server.provider.access_token_data:
+        class: Oro\Bundle\OAuth2ServerBundle\Provider\AccessTokenDataProvider
+        arguments:
+            - '@oro_oauth2_server.provider.decrypted_access_token'
+            - '@doctrine'
+
+    Oro\Bundle\OAuth2ServerBundle\Provider\AccessTokenDataProvider:
+        alias: oro_oauth2_server.provider.access_token_data
+
+    oro_oauth2_server.provider.decrypted_token:
+        class: Oro\Bundle\OAuth2ServerBundle\Provider\DecryptedTokenProvider
+
+    oro_oauth2_server.provider.refresh_token_data:
+        class: Oro\Bundle\OAuth2ServerBundle\Provider\RefreshTokenDataProvider
+        arguments:
+            - '@oro_oauth2_server.provider.decrypted_token'
+            - '@doctrine'

@@ -39,7 +39,7 @@ class Configuration implements ConfigurationInterface
             ->integerNode('refresh_token_lifetime')
                 ->info('The lifetime in seconds of the refresh token.')
                 ->min(0)
-                ->defaultValue(18144000) // 30 days
+                ->defaultValue(2592000) // 30 days
             ->end()
             ->integerNode('auth_code_lifetime')
                 ->info('The lifetime in seconds of the authorization code.')
