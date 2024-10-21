@@ -10,12 +10,14 @@ use League\OAuth2\Server\Entities\Traits\AccessTokenTrait;
 use Oro\Bundle\OAuth2ServerBundle\League\CryptKeyFile;
 use Oro\Bundle\OAuth2ServerBundle\League\Entity\ClientEntity;
 use Oro\Bundle\OAuth2ServerBundle\Provider\DecryptedAccessTokenProvider;
+use Oro\Component\Testing\TempDirExtension;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Process\Process;
 
 final class DecryptedAccessTokenProviderTest extends TestCase
 {
     use AccessTokenTrait;
+    use TempDirExtension;
 
     private DecryptedAccessTokenProvider $provider;
 
@@ -25,27 +27,22 @@ final class DecryptedAccessTokenProviderTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->privateKeyPath = tempnam(sys_get_temp_dir(), 'private_key') . '.key';
-        (new Process(['openssl', 'genrsa', '-out', $this->privateKeyPath, '2048']))->run();
+        $tempDir = $this->getTempDir('someDir');
+        $privateKeyPath = $tempDir . '/private_key.key';
+        (new Process(['openssl', 'genrsa', '-out', $privateKeyPath, '2048']))->run();
 
-        $this->publicKeyPath = tempnam(sys_get_temp_dir(), 'public_key') . '.key';
-        (new Process(['openssl', 'rsa', '-in', $this->privateKeyPath, '-pubout', '-out', $this->publicKeyPath]))->run();
+        $publicKeyPath = $tempDir . '/public_key.key';
+        (new Process(['openssl', 'rsa', '-in', $privateKeyPath, '-pubout', '-out', $publicKeyPath]))->run();
 
         $this->client = new ClientEntity();
         $this->client->setIdentifier('client_identifier');
-        $this->setPrivateKey(new CryptKey($this->privateKeyPath));
+        $this->setPrivateKey(new CryptKey($privateKeyPath));
 
-        $this->cryptKeyFile = new CryptKeyFile($this->publicKeyPath);
+        $this->cryptKeyFile = new CryptKeyFile($publicKeyPath);
         $this->provider = new DecryptedAccessTokenProvider($this->cryptKeyFile);
 
         $this->initJwtConfiguration();
         $this->accessToken = $this->convertToJWT()->toString();
-    }
-
-    protected function tearDown(): void
-    {
-        @unlink($this->privateKeyPath);
-        @unlink($this->publicKeyPath);
     }
 
     public function testGetDecryptedBearerToken(): void
