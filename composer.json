@@ -8,7 +8,7 @@
     "authors": [
         {
             "name": "Oro, Inc",
-            "homepage": "http://oroinc.com"
+            "homepage": "https://oroinc.com"
         }
     ],
     "autoload": {
@@ -24,7 +24,7 @@
     "repositories": {
         "oro": {
             "type": "composer",
-            "url": "https://packagist.orocrm.com"
+            "url": "https://packagist.oroinc.com"
         }
     },
     "minimum-stability": "dev",
