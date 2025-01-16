@@ -33,25 +33,19 @@ class OAuth2PrivateKeyNotificationAlert implements NotificationAlertInterface
         return $item;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getId(): string
     {
         return $this->id;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getSourceType(): string
     {
         return self::SOURCE_TYPE;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function toArray(): array
     {
         $data = [

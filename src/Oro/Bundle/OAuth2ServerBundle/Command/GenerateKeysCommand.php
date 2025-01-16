@@ -39,9 +39,7 @@ class GenerateKeysCommand extends Command
         $this->privateKeyPermission = $privateKeyPermission;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     protected function configure(): void
     {
         $this
@@ -55,9 +53,7 @@ HELP
             );
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);

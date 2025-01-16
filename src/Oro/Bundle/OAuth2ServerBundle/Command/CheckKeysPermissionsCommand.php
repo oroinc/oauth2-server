@@ -35,17 +35,13 @@ class CheckKeysPermissionsCommand extends Command implements CronCommandSchedule
         parent::__construct();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getDefaultDefinition(): string
     {
         return '0 0 * * *';
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     protected function configure(): void
     {
         $this
