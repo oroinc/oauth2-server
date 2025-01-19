@@ -6,6 +6,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use League\OAuth2\Server\Exception\OAuthServerException;
+use Oro\Bundle\CustomerBundle\Entity\CustomerVisitor;
 use Oro\Bundle\CustomerBundle\Entity\CustomerVisitorManager;
 use Oro\Bundle\OAuth2ServerBundle\Entity\AccessToken;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
@@ -104,7 +105,7 @@ class FrontendRefreshTokenRepositoryTest extends \PHPUnit\Framework\TestCase
         $this->customerVisitorManager->expects(self::once())
             ->method('find')
             ->with(123, 'test')
-            ->willReturn(new \stdClass());
+            ->willReturn(new CustomerVisitor());
         $this->userChecker->expects(self::never())
             ->method('checkUser');
 

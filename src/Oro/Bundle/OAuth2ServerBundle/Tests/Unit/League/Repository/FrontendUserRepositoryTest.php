@@ -213,7 +213,7 @@ class FrontendUserRepositoryTest extends \PHPUnit\Framework\TestCase
         $visitor->setSessionId('testSession');
 
         $this->customerVisitorManager->expects(self::once())
-            ->method('findOrCreate')
+            ->method('createUser')
             ->willReturn($visitor);
         $this->frontendUserLoader->expects(self::never())
             ->method('loadUser');
