@@ -14,7 +14,7 @@ class CryptKeyNotFoundException extends OAuthServerException
      *
      * @return CryptKeyNotFoundException
      */
-    public static function create(\Throwable $previous = null): CryptKeyNotFoundException
+    public static function create(?\Throwable $previous = null): CryptKeyNotFoundException
     {
         return new static('The encryption key does not exist.', 0, 'no_encryption_key', 401, null, null, $previous);
     }

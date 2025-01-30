@@ -23,7 +23,7 @@ class OAuth2Token extends AbstractToken implements OrganizationAwareTokenInterfa
     public const REQUEST_ATTRIBUTE      = 'request';
     public const PROVIDER_KEY_ATTRIBUTE = 'provider_key';
 
-    public function __construct(UserInterface $user = null, Organization $organization = null)
+    public function __construct(?UserInterface $user = null, ?Organization $organization = null)
     {
         if (null !== $user && null !== $organization) {
             $roles = $user->getUserRoles();

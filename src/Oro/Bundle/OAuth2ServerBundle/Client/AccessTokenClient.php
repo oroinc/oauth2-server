@@ -41,7 +41,7 @@ class AccessTokenClient
         string $clientIdentifier,
         string $authCode,
         string $codeVerifier,
-        \DateInterval $ttlDateInterval = null
+        ?\DateInterval $ttlDateInterval = null
     ): array {
         $requestBody = [
             'grant_type' => Client::AUTHORIZATION_CODE,
@@ -72,7 +72,7 @@ class AccessTokenClient
     public function getTokenByRefreshToken(
         string $clientIdentifier,
         string $refreshToken,
-        \DateInterval $ttlDateInterval = null
+        ?\DateInterval $ttlDateInterval = null
     ): array {
         $requestBody = [
             'grant_type' => Client::REFRESH_TOKEN,
@@ -87,7 +87,7 @@ class AccessTokenClient
 
     private function sendRequest(
         array $requestBody,
-        \DateInterval $ttlDateInterval = null
+        ?\DateInterval $ttlDateInterval = null
     ): Response {
         if ($ttlDateInterval !== null) {
             if (empty($requestBody['grant_type'])) {

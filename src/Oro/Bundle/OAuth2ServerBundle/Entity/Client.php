@@ -343,7 +343,7 @@ class Client
      *
      * @return $this
      */
-    public function setOrganization(Organization $organization = null)
+    public function setOrganization(?Organization $organization = null)
     {
         $this->organization = $organization;
 

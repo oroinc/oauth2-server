@@ -379,9 +379,9 @@ class ClientController extends AbstractController
     }
 
     private function getFormTemplateDataProvider(
-        bool $isSystemApp = false,
-        string $ownerClass = null,
-        int $ownerId = null
+        bool    $isSystemApp = false,
+        ?string $ownerClass = null,
+        ?int    $ownerId = null
     ): callable {
         return function (Client $entity, FormInterface $form) use ($isSystemApp, $ownerClass, $ownerId) {
             if ($isSystemApp) {

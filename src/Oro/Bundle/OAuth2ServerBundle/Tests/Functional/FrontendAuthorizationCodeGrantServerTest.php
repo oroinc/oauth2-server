@@ -33,10 +33,10 @@ class FrontendAuthorizationCodeGrantServerTest extends OAuthServerTestCase
     }
 
     private function sendAuthCodeRequest(
-        string $type,
-        string $clientId,
-        string $redirectUri = null,
-        bool $grant = true
+        string  $type,
+        string  $clientId,
+        ?string $redirectUri = null,
+        bool    $grant = true
     ): Response {
         $requestParameters = [
             'response_type' => 'code',
@@ -80,9 +80,9 @@ class FrontendAuthorizationCodeGrantServerTest extends OAuthServerTestCase
     }
 
     private function sendAccessTokenRequest(
-        string $code = null,
-        $redirectUri = 'http://test.com',
-        int $expectedStatusCode = Response::HTTP_OK
+        ?string $code = null,
+                $redirectUri = 'http://test.com',
+        int     $expectedStatusCode = Response::HTTP_OK
     ): array {
         if ($code === null) {
             $code = $this->getAuthCode(

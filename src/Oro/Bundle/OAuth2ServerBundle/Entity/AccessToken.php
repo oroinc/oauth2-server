@@ -52,7 +52,7 @@ class AccessToken
         \DateTime $expiresAt,
         array $scopes,
         Client $client,
-        string $userIdentifier = null
+        ?string $userIdentifier = null
     ) {
         $this->identifier = $identifier;
         $this->expiresAt = $expiresAt;

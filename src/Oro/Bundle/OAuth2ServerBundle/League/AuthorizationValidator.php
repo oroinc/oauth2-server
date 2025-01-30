@@ -34,7 +34,7 @@ class AuthorizationValidator implements AuthorizationValidatorInterface
     public function __construct(
         CryptKeyFile $publicKey,
         AccessTokenRepositoryInterface $accessTokenRepository,
-        AuthorizationValidatorInterface $authorizationValidator = null
+        ?AuthorizationValidatorInterface $authorizationValidator = null
     ) {
         $this->publicKey = $publicKey;
         $this->accessTokenRepository = $accessTokenRepository;

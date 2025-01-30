@@ -42,10 +42,10 @@ class AuthorizationCodeGrantServerTest extends OAuthServerTestCase
     }
 
     private function sendAuthCodeRequest(
-        string $clientId,
-        string $redirectUri = null,
-        bool $grant = true,
-        array $additionalParameters = []
+        string  $clientId,
+        ?string $redirectUri = null,
+        bool    $grant = true,
+        array   $additionalParameters = []
     ): Response {
         $requestParameters = [
             'response_type' => 'code',
@@ -87,9 +87,9 @@ class AuthorizationCodeGrantServerTest extends OAuthServerTestCase
     }
 
     private function sendAccessTokenRequest(
-        string $code = null,
-        $redirectUri = 'http://test.com',
-        int $expectedStatusCode = Response::HTTP_OK
+        ?string $code = null,
+                $redirectUri = 'http://test.com',
+        int     $expectedStatusCode = Response::HTTP_OK
     ): array {
         if ($code === null) {
             $code = $this->getAuthCode(LoadAuthorizationCodeGrantClient::OAUTH_CLIENT_ID, 'http://test.com');

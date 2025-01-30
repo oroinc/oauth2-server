@@ -23,7 +23,7 @@ class LoadClientCredentialsClient extends AbstractFixture implements ContainerAw
     private $clientManager;
 
     #[\Override]
-    public function setContainer(ContainerInterface $container = null)
+    public function setContainer(?ContainerInterface $container = null)
     {
         $this->clientManager = $container->get('oro_oauth2_server.client_manager');
     }

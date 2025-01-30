@@ -57,7 +57,7 @@ class ClientManager
     /**
      * Checks whether access to view of Client entity is granted.
      */
-    public function isViewGranted(Client $entity = null): bool
+    public function isViewGranted(?Client $entity = null): bool
     {
         return $this->authorizationChecker->isGranted('VIEW', $entity ?: 'entity:' . Client::class);
     }
