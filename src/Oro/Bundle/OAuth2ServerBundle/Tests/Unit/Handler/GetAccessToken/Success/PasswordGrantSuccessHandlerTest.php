@@ -48,8 +48,8 @@ class PasswordGrantSuccessHandlerTest extends \PHPUnit\Framework\TestCase
     }
 
     private function getHandler(
-        CustomerUserLoader $frontendUserLoader = null,
-        FrontendHelper $frontendHelper = null
+        ?CustomerUserLoader $frontendUserLoader = null,
+        ?FrontendHelper $frontendHelper = null
     ): PasswordGrantSuccessHandler {
         return new PasswordGrantSuccessHandler(
             $this->eventDispatcher,

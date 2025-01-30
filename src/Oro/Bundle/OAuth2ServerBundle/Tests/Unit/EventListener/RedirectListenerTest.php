@@ -78,7 +78,7 @@ class RedirectListenerTest extends TestCase
         $this->listener->onRequest($event);
     }
 
-    private function getEvent(Request $request, Response $response = null): RequestEvent
+    private function getEvent(Request $request, ?Response $response = null): RequestEvent
     {
         $event = new RequestEvent(
             $this->createMock(HttpKernelInterface::class),

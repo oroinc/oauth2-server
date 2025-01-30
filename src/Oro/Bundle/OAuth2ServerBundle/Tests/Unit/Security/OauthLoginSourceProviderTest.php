@@ -71,7 +71,7 @@ class OauthLoginSourceProviderTest extends \PHPUnit\Framework\TestCase
     }
 
 
-    private function getAuthenticatorMock(string $userName, string $firewallName = null)
+    private function getAuthenticatorMock(string $userName, ?string $firewallName = null)
     {
         $passport = $this->createMock(Passport::class);
         $passport->expects($this->any())
