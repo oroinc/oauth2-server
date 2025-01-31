@@ -81,8 +81,8 @@ class FrontendAuthorizationCodeGrantServerTest extends OAuthServerTestCase
 
     private function sendAccessTokenRequest(
         ?string $code = null,
-                $redirectUri = 'http://test.com',
-        int     $expectedStatusCode = Response::HTTP_OK
+        $redirectUri = 'http://test.com',
+        int $expectedStatusCode = Response::HTTP_OK
     ): array {
         if ($code === null) {
             $code = $this->getAuthCode(
