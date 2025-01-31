@@ -24,6 +24,11 @@ class RedirectListenerTest extends TestCase
     #[\Override]
     protected function setUp(): void
     {
+        if (!\class_exists('Oro\Bundle\WebsiteBundle\EventListener\RedirectListener')) {
+            static::markTestSkipped(
+                'This listener is used only if \Oro\Bundle\WebsiteBundle\EventListener\RedirectListener is available.'
+            );
+        }
         $this->innerRedirectListener = $this->createMock(RedirectListenerInterface::class);
         $this->router = $this->createMock(Router::class);
 

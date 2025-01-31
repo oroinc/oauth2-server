@@ -42,6 +42,9 @@ class OAuth2AuthenticatorTest extends TestCase
     #[\Override]
     protected function setUp(): void
     {
+        if (!\class_exists('Oro\Bundle\CustomerBundle\Security\AnonymousCustomerUserRolesProvider')) {
+            static::markTestSkipped('These tests can be run only if customer-portal package is present (BAP-22913).');
+        }
         $this->loggerMock = $this->createMock(LoggerInterface::class);
         $this->clientManagerMock = $this->createMock(ClientManager::class);
         $this->doctrineMock = $this->createMock(ManagerRegistry::class);
