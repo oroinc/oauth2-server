@@ -42,10 +42,10 @@ class AuthorizationCodeGrantServerTest extends OAuthServerTestCase
     }
 
     private function sendAuthCodeRequest(
-        string  $clientId,
+        string $clientId,
         ?string $redirectUri = null,
-        bool    $grant = true,
-        array   $additionalParameters = []
+        bool $grant = true,
+        array $additionalParameters = []
     ): Response {
         $requestParameters = [
             'response_type' => 'code',

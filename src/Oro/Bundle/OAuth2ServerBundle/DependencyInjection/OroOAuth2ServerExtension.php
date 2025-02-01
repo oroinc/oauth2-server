@@ -224,12 +224,12 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
 
     private function enableGrantType(
         ContainerBuilder $container,
-        Definition       $authorizationServer,
-        string           $grantTypeName,
-        Definition       $grantType,
-        string           $accessTokenLifetime,
-        ?string          $refreshTokenLifetime = null,
-        bool             $addToVisibleList = true
+        Definition $authorizationServer,
+        string $grantTypeName,
+        Definition $grantType,
+        string $accessTokenLifetime,
+        ?string $refreshTokenLifetime = null,
+        bool $addToVisibleList = true
     ): void {
         if ($refreshTokenLifetime) {
             $grantType->addMethodCall('setRefreshTokenTTL', [

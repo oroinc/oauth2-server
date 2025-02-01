@@ -33,10 +33,10 @@ class FrontendAuthorizationCodeGrantServerTest extends OAuthServerTestCase
     }
 
     private function sendAuthCodeRequest(
-        string  $type,
-        string  $clientId,
+        string $type,
+        string $clientId,
         ?string $redirectUri = null,
-        bool    $grant = true
+        bool $grant = true
     ): Response {
         $requestParameters = [
             'response_type' => 'code',
