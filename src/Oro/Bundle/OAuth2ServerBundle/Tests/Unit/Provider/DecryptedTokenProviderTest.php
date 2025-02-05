@@ -5,7 +5,7 @@ namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Provider;
 use Oro\Bundle\OAuth2ServerBundle\Provider\DecryptedTokenProvider;
 use PHPUnit\Framework\TestCase;
 
-final class DecryptedTokenProviderTest extends TestCase
+class DecryptedTokenProviderTest extends TestCase
 {
     private DecryptedTokenProvider $provider;
 

@@ -16,14 +16,11 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 
-final class AuthorizationCodeClientTest extends TestCase
+class AuthorizationCodeClientTest extends TestCase
 {
     private HttpKernelInterface|MockObject $httpKernel;
-
     private ClientRepository|MockObject $clientRepository;
-
     private RequestStack|MockObject $requestStack;
-
     private AuthorizationCodeClient $client;
 
     protected function setUp(): void
@@ -39,8 +36,7 @@ final class AuthorizationCodeClientTest extends TestCase
     {
         $clientIdentifier = 'invalid_client_id';
 
-        $this->clientRepository
-            ->expects(self::once())
+        $this->clientRepository->expects(self::once())
             ->method('getClientEntity')
             ->with($clientIdentifier)
             ->willReturn(null);
@@ -57,33 +53,28 @@ final class AuthorizationCodeClientTest extends TestCase
         $requestBody = [
             'response_type' => 'code',
             'client_id' => $clientIdentifier,
-            'code_challenge_method' => OAuth2CodeGenerator::CODE_CHALLENGE_METHOD,
+            'code_challenge_method' => OAuth2CodeGenerator::CODE_CHALLENGE_METHOD
         ];
 
-        $this->clientRepository
-            ->expects(self::once())
+        $this->clientRepository->expects(self::once())
             ->method('getClientEntity')
             ->with($clientIdentifier)
             ->willReturn($clientEntity);
 
-        $clientEntity
-            ->expects(self::once())
+        $clientEntity->expects(self::once())
             ->method('isFrontend')
             ->willReturn(false);
 
-        $this->requestStack
-            ->expects(self::once())
+        $this->requestStack->expects(self::once())
             ->method('getCurrentRequest')
             ->willReturn(Request::create('/'));
 
-        $this->requestStack
-            ->expects(self::once())
+        $this->requestStack->expects(self::once())
             ->method('getCurrentRequest')
             ->willReturn(Request::create('/'));
 
         $response = new Response();
-        $this->httpKernel
-            ->expects(self::once())
+        $this->httpKernel->expects(self::once())
             ->method('handle')
             ->willReturnCallback(static function ($request, $type) use ($requestBody) {
                 self::assertEquals(HttpKernelInterface::SUB_REQUEST, $type);
@@ -92,7 +83,7 @@ final class AuthorizationCodeClientTest extends TestCase
                 self::assertEquals(
                     [
                         '_controller' => AuthorizeClientController::class . '::authorizeAction',
-                        'type' => 'backoffice',
+                        'type' => 'backoffice'
                     ],
                     $request->attributes->all()
                 );
@@ -109,30 +100,25 @@ final class AuthorizationCodeClientTest extends TestCase
         $clientIdentifier = 'client_id';
         $clientEntity = $this->createMock(ClientEntity::class);
 
-        $this->clientRepository
-            ->expects(self::once())
+        $this->clientRepository->expects(self::once())
             ->method('getClientEntity')
             ->with($clientIdentifier)
             ->willReturn($clientEntity);
 
-        $clientEntity
-            ->expects(self::once())
+        $clientEntity->expects(self::once())
             ->method('isFrontend')
             ->willReturn(false);
 
-        $this->requestStack
-            ->expects(self::once())
+        $this->requestStack->expects(self::once())
             ->method('getCurrentRequest')
             ->willReturn(Request::create('/'));
 
-        $this->requestStack
-            ->expects(self::once())
+        $this->requestStack->expects(self::once())
             ->method('getCurrentRequest')
             ->willReturn(Request::create('/'));
 
         $response = new Response('', Response::HTTP_OK, ['Location' => 'http://example.com/']);
-        $this->httpKernel
-            ->expects(self::once())
+        $this->httpKernel->expects(self::once())
             ->method('handle')
             ->willReturnCallback(static function ($request, $type) use ($clientIdentifier) {
                 self::assertEquals(HttpKernelInterface::SUB_REQUEST, $type);
@@ -141,14 +127,14 @@ final class AuthorizationCodeClientTest extends TestCase
                     [
                         'response_type' => 'code',
                         'client_id' => $clientIdentifier,
-                        'code_challenge_method' => OAuth2CodeGenerator::CODE_CHALLENGE_METHOD,
+                        'code_challenge_method' => OAuth2CodeGenerator::CODE_CHALLENGE_METHOD
                     ],
                     $request->request->all()
                 );
                 self::assertEquals(
                     [
                         '_controller' => AuthorizeClientController::class . '::authorizeAction',
-                        'type' => 'backoffice',
+                        'type' => 'backoffice'
                     ],
                     $request->attributes->all()
                 );
@@ -165,26 +151,22 @@ final class AuthorizationCodeClientTest extends TestCase
         $clientIdentifier = 'client_id';
         $clientEntity = $this->createMock(ClientEntity::class);
 
-        $this->clientRepository
-            ->expects(self::once())
+        $this->clientRepository->expects(self::once())
             ->method('getClientEntity')
             ->with($clientIdentifier)
             ->willReturn($clientEntity);
 
-        $clientEntity
-            ->expects(self::once())
+        $clientEntity->expects(self::once())
             ->method('isFrontend')
             ->willReturn(false);
 
-        $this->requestStack
-            ->expects(self::once())
+        $this->requestStack->expects(self::once())
             ->method('getCurrentRequest')
             ->willReturn(Request::create('/'));
 
         $authCode = 'auth_code_value';
         $response = new Response('', Response::HTTP_OK, ['Location' => 'http://example.com/?code=' . $authCode]);
-        $this->httpKernel
-            ->expects(self::once())
+        $this->httpKernel->expects(self::once())
             ->method('handle')
             ->willReturnCallback(static function ($request, $type) use ($clientIdentifier, $response) {
                 self::assertEquals(HttpKernelInterface::SUB_REQUEST, $type);
@@ -199,7 +181,7 @@ final class AuthorizationCodeClientTest extends TestCase
                 self::assertEquals(
                     [
                         '_controller' => AuthorizeClientController::class . '::authorizeAction',
-                        'type' => 'backoffice',
+                        'type' => 'backoffice'
                     ],
                     $request->attributes->all()
                 );
@@ -221,26 +203,22 @@ final class AuthorizationCodeClientTest extends TestCase
         $clientIdentifier = 'client_id';
         $clientEntity = $this->createMock(ClientEntity::class);
 
-        $this->clientRepository
-            ->expects(self::once())
+        $this->clientRepository->expects(self::once())
             ->method('getClientEntity')
             ->with($clientIdentifier)
             ->willReturn($clientEntity);
 
-        $clientEntity
-            ->expects(self::once())
+        $clientEntity->expects(self::once())
             ->method('isFrontend')
             ->willReturn(false);
 
-        $this->requestStack
-            ->expects(self::once())
+        $this->requestStack->expects(self::once())
             ->method('getCurrentRequest')
             ->willReturn(Request::create('/', 'POST'));
 
         $authCode = 'auth_code_value';
         $response = new Response('', Response::HTTP_OK, ['Location' => 'http://example.com/?code=' . $authCode]);
-        $this->httpKernel
-            ->expects(self::once())
+        $this->httpKernel->expects(self::once())
             ->method('handle')
             ->willReturnCallback(static function ($request, $type) use ($clientIdentifier, $response) {
                 self::assertEquals(HttpKernelInterface::SUB_REQUEST, $type);
@@ -256,7 +234,7 @@ final class AuthorizationCodeClientTest extends TestCase
                 self::assertEquals(
                     [
                         '_controller' => AuthorizeClientController::class . '::authorizeAction',
-                        'type' => 'backoffice',
+                        'type' => 'backoffice'
                     ],
                     $request->attributes->all()
                 );
@@ -278,26 +256,22 @@ final class AuthorizationCodeClientTest extends TestCase
         $clientIdentifier = 'client_id';
         $clientEntity = $this->createMock(ClientEntity::class);
 
-        $this->clientRepository
-            ->expects(self::once())
+        $this->clientRepository->expects(self::once())
             ->method('getClientEntity')
             ->with($clientIdentifier)
             ->willReturn($clientEntity);
 
-        $clientEntity
-            ->expects(self::once())
+        $clientEntity->expects(self::once())
             ->method('isFrontend')
             ->willReturn(false);
 
-        $this->requestStack
-            ->expects(self::once())
+        $this->requestStack->expects(self::once())
             ->method('getCurrentRequest')
             ->willReturn(null);
 
         $authCode = 'auth_code_value';
         $response = new Response('', Response::HTTP_OK, ['Location' => 'http://example.com/?code=' . $authCode]);
-        $this->httpKernel
-            ->expects(self::once())
+        $this->httpKernel->expects(self::once())
             ->method('handle')
             ->willReturnCallback(static function ($request, $type) use ($clientIdentifier) {
                 self::assertEquals(HttpKernelInterface::SUB_REQUEST, $type);
@@ -306,14 +280,14 @@ final class AuthorizationCodeClientTest extends TestCase
                     [
                         'response_type' => 'code',
                         'client_id' => $clientIdentifier,
-                        'code_challenge_method' => OAuth2CodeGenerator::CODE_CHALLENGE_METHOD,
+                        'code_challenge_method' => OAuth2CodeGenerator::CODE_CHALLENGE_METHOD
                     ],
                     $request->request->all()
                 );
                 self::assertEquals(
                     [
                         '_controller' => AuthorizeClientController::class . '::authorizeAction',
-                        'type' => 'backoffice',
+                        'type' => 'backoffice'
                     ],
                     $request->attributes->all()
                 );
@@ -333,26 +307,22 @@ final class AuthorizationCodeClientTest extends TestCase
         $clientIdentifier = 'client_id';
         $clientEntity = $this->createMock(ClientEntity::class);
 
-        $this->clientRepository
-            ->expects(self::once())
+        $this->clientRepository->expects(self::once())
             ->method('getClientEntity')
             ->with($clientIdentifier)
             ->willReturn($clientEntity);
 
-        $clientEntity
-            ->expects(self::once())
+        $clientEntity->expects(self::once())
             ->method('isFrontend')
             ->willReturn(true);
 
-        $this->requestStack
-            ->expects(self::once())
+        $this->requestStack->expects(self::once())
             ->method('getCurrentRequest')
             ->willReturn(Request::create('/'));
 
         $authCode = 'auth_code_value';
         $response = new Response('', Response::HTTP_OK, ['Location' => 'http://example.com/?code=' . $authCode]);
-        $this->httpKernel
-            ->expects(self::once())
+        $this->httpKernel->expects(self::once())
             ->method('handle')
             ->willReturnCallback(static function ($request, $type) use ($clientIdentifier) {
                 self::assertEquals(HttpKernelInterface::SUB_REQUEST, $type);
@@ -361,14 +331,14 @@ final class AuthorizationCodeClientTest extends TestCase
                     [
                         'response_type' => 'code',
                         'client_id' => $clientIdentifier,
-                        'code_challenge_method' => OAuth2CodeGenerator::CODE_CHALLENGE_METHOD,
+                        'code_challenge_method' => OAuth2CodeGenerator::CODE_CHALLENGE_METHOD
                     ],
                     $request->request->all()
                 );
                 self::assertEquals(
                     [
                         '_controller' => AuthorizeClientController::class . '::authorizeAction',
-                        'type' => 'frontend',
+                        'type' => 'frontend'
                     ],
                     $request->attributes->all()
                 );

@@ -2,6 +2,7 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Security;
 
+use Oro\Bundle\CustomerBundle\Entity\CustomerVisitorManager;
 use Oro\Bundle\OAuth2ServerBundle\Security\VisitorUserProvider;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
@@ -12,7 +13,7 @@ class VisitorUserProviderTest extends \PHPUnit\Framework\TestCase
     private $innerUserProvider;
 
     /** @var \PHPUnit\Framework\MockObject\MockObject */
-    private $customerVisitorManager;
+    private $visitorManager;
 
     /** @var VisitorUserProvider */
     private $visitorUserProvider;
@@ -25,59 +26,58 @@ class VisitorUserProviderTest extends \PHPUnit\Framework\TestCase
         }
 
         $this->innerUserProvider = $this->createMock(UserProviderInterface::class);
-        $this->customerVisitorManager = $this->createMock('Oro\Bundle\CustomerBundle\Entity\CustomerVisitorManager');
+        $this->visitorManager = $this->createMock(CustomerVisitorManager::class);
 
-        $this->visitorUserProvider = new VisitorUserProvider($this->innerUserProvider, $this->customerVisitorManager);
+        $this->visitorUserProvider = new VisitorUserProvider($this->innerUserProvider, $this->visitorManager);
     }
 
-    public function testRefreshUser()
+    public function testRefreshUser(): void
     {
         $user = $this->createMock(UserInterface::class);
 
-        $this->innerUserProvider->expects($this->once())
+        $this->innerUserProvider->expects(self::once())
             ->method('refreshUser')
             ->with($user)
             ->willReturn($user);
 
-        $this->assertEquals($user, $this->visitorUserProvider->refreshUser($user));
+        self::assertEquals($user, $this->visitorUserProvider->refreshUser($user));
     }
 
-    public function testSupportsClass()
+    public function testSupportsClass(): void
     {
         $class = \stdClass::class;
-        $this->innerUserProvider->expects($this->once())
+        $this->innerUserProvider->expects(self::once())
             ->method('supportsClass')
             ->with($class)
             ->willReturn(true);
 
-        $this->assertTrue($this->visitorUserProvider->supportsClass($class));
+        self::assertTrue($this->visitorUserProvider->supportsClass($class));
     }
 
-    public function testLoadUserByUsernameOnNonVisitorIdentifier()
+    public function testLoadUserByUsernameOnNonVisitorIdentifier(): void
     {
         $identifier = 'testId';
         $user = $this->createMock(UserInterface::class);
 
-        $this->innerUserProvider->expects($this->once())
+        $this->innerUserProvider->expects(self::once())
             ->method('loadUserByIdentifier')
             ->with($identifier)
             ->willReturn($user);
 
-        $this->assertEquals($user, $this->visitorUserProvider->loadUserByIdentifier($identifier));
+        self::assertEquals($user, $this->visitorUserProvider->loadUserByIdentifier($identifier));
     }
 
-    public function testLoadUserByUsernameOnVisitorIdentifier()
+    public function testLoadUserByUsernameOnVisitorIdentifier(): void
     {
-        $identifier = 'visitor:345:test';
         $visitor = $this->createMock('Oro\Bundle\CustomerBundle\Entity\CustomerVisitor');
 
-        $this->innerUserProvider->expects($this->never())
+        $this->innerUserProvider->expects(self::never())
             ->method('loadUserByIdentifier');
-        $this->customerVisitorManager->expects($this->once())
-            ->method('find')
-            ->with(345, 'test')
+        $this->visitorManager->expects(self::once())
+            ->method('findOrCreate')
+            ->with('test')
             ->willReturn($visitor);
 
-        $this->assertEquals($visitor, $this->visitorUserProvider->loadUserByIdentifier($identifier));
+        self::assertEquals($visitor, $this->visitorUserProvider->loadUserByIdentifier('visitor:test'));
     }
 }

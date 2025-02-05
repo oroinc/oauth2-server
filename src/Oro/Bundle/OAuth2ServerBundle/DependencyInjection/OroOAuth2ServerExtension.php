@@ -134,12 +134,10 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
                 ->addArgument(new Reference(self::CUSTOMER_VISITOR_MANAGER_SERVICE));
             $container->getDefinition(self::REFRESH_TOKEN_REPOSITORY_SERVICE)
                 ->setClass(FrontendRefreshTokenRepository::class)
-                ->addArgument(new Reference(self::FRONTEND_USER_LOADER_SERVICE))
-                ->addArgument(new Reference(self::CUSTOMER_VISITOR_MANAGER_SERVICE));
+                ->addArgument(new Reference(self::FRONTEND_USER_LOADER_SERVICE));
             $container->getDefinition(self::AUTH_CODE_REPOSITORY_SERVICE)
                 ->setClass(FrontendAuthCodeRepository::class)
-                ->addArgument(new Reference(self::FRONTEND_USER_LOADER_SERVICE))
-                ->addArgument(new Reference(self::CUSTOMER_VISITOR_MANAGER_SERVICE));
+                ->addArgument(new Reference(self::FRONTEND_USER_LOADER_SERVICE));
         }
     }
 

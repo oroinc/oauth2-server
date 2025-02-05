@@ -3,8 +3,6 @@
 namespace Oro\Bundle\OAuth2ServerBundle\League\Repository;
 
 use Doctrine\Persistence\ManagerRegistry;
-use League\OAuth2\Server\Exception\OAuthServerException;
-use Oro\Bundle\CustomerBundle\Entity\CustomerVisitorManager;
 use Oro\Bundle\CustomerBundle\Security\VisitorIdentifierUtil;
 use Oro\Bundle\OAuth2ServerBundle\Entity\RefreshToken;
 use Oro\Bundle\OAuth2ServerBundle\Security\OAuthUserChecker;
@@ -15,22 +13,13 @@ use Oro\Bundle\UserBundle\Security\UserLoaderInterface;
  */
 class FrontendRefreshTokenRepository extends RefreshTokenRepository
 {
-    /** @var UserLoaderInterface */
-    private $frontendUserLoader;
-
-    /** @var CustomerVisitorManager */
-    private $customerVisitorManager;
-
     public function __construct(
         ManagerRegistry $doctrine,
         UserLoaderInterface $userLoader,
         OAuthUserChecker $userChecker,
-        UserLoaderInterface $frontendUserLoader,
-        CustomerVisitorManager $customerVisitorManager
+        private UserLoaderInterface $frontendUserLoader
     ) {
         parent::__construct($doctrine, $userLoader, $userChecker);
-        $this->frontendUserLoader = $frontendUserLoader;
-        $this->customerVisitorManager = $customerVisitorManager;
     }
 
     #[\Override]
@@ -46,13 +35,7 @@ class FrontendRefreshTokenRepository extends RefreshTokenRepository
     #[\Override]
     protected function checkUser(UserLoaderInterface $userLoader, string $userIdentifier): void
     {
-        if (VisitorIdentifierUtil::isVisitorIdentifier($userIdentifier)) {
-            [$visitorId, $visitorSessionId] = VisitorIdentifierUtil::decodeIdentifier($userIdentifier);
-            $visitor = $this->customerVisitorManager->find($visitorId, $visitorSessionId);
-            if (null === $visitor) {
-                throw OAuthServerException::invalidGrant();
-            }
-        } else {
+        if (!VisitorIdentifierUtil::isVisitorIdentifier($userIdentifier)) {
             parent::checkUser($userLoader, $userIdentifier);
         }
     }

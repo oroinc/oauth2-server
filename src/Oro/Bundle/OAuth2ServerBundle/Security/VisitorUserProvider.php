@@ -13,27 +13,17 @@ use Symfony\Component\Security\Core\User\UserProviderInterface;
  */
 class VisitorUserProvider implements UserProviderInterface
 {
-    /** @var UserProviderInterface */
-    private $innerUserProvider;
-
-    /** @var CustomerVisitorManager */
-    private $customerVisitorManager;
-
     public function __construct(
-        UserProviderInterface $innerUserProvider,
-        CustomerVisitorManager $customerVisitorManager
+        private UserProviderInterface $innerUserProvider,
+        private CustomerVisitorManager $visitorManager
     ) {
-        $this->innerUserProvider = $innerUserProvider;
-        $this->customerVisitorManager = $customerVisitorManager;
     }
 
     #[\Override]
     public function loadUserByIdentifier(string $identifier): UserInterface
     {
         if (VisitorIdentifierUtil::isVisitorIdentifier($identifier)) {
-            list($visitorId, $visitorSessionId) = VisitorIdentifierUtil::decodeIdentifier($identifier);
-
-            return $this->customerVisitorManager->find($visitorId, $visitorSessionId);
+            return $this->visitorManager->findOrCreate(VisitorIdentifierUtil::decodeIdentifier($identifier));
         }
 
         return $this->innerUserProvider->loadUserByIdentifier($identifier);

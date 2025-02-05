@@ -6,7 +6,7 @@ use Oro\Bundle\OAuth2ServerBundle\League\CryptKeyFile;
 use Oro\Bundle\OAuth2ServerBundle\Security\EncryptionKeysExistenceChecker;
 use PHPUnit\Framework\TestCase;
 
-final class EncryptionKeysExistenceCheckerTest extends TestCase
+class EncryptionKeysExistenceCheckerTest extends TestCase
 {
     public function testExistingPrivateKey(): void
     {

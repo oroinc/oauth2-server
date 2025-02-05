@@ -15,21 +15,19 @@ use Oro\Bundle\OAuth2ServerBundle\Provider\DecryptedAccessTokenProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
-final class AccessTokenDataProviderTest extends TestCase
+class AccessTokenDataProviderTest extends TestCase
 {
     private DecryptedAccessTokenProvider|MockObject $decryptedAccessTokenProvider;
-
     private ObjectRepository|MockObject $repository;
-
     private AccessTokenDataProvider $accessTokenDataProvider;
 
     protected function setUp(): void
     {
         $this->decryptedAccessTokenProvider = $this->createMock(DecryptedAccessTokenProvider::class);
-        $doctrine = $this->createMock(ManagerRegistry::class);
         $this->repository = $this->createMock(ObjectRepository::class);
 
-        $doctrine
+        $doctrine = $this->createMock(ManagerRegistry::class);
+        $doctrine->expects(self::any())
             ->method('getRepository')
             ->with(AccessTokenEntity::class)
             ->willReturn($this->repository);
@@ -50,18 +48,16 @@ final class AccessTokenDataProviderTest extends TestCase
             'scopes' => ['all'],
             'exp' => new DateTimeImmutable(),
             'iat' => new DateTimeImmutable(),
-            'nbf' => new DateTimeImmutable(),
+            'nbf' => new DateTimeImmutable()
         ];
 
         $decryptedToken = $this->createMock(UnencryptedToken::class);
         $dataSet = new DataSet($claims, '');
-        $decryptedToken
-            ->expects(self::once())
+        $decryptedToken->expects(self::once())
             ->method('claims')
             ->willReturn($dataSet);
 
-        $this->decryptedAccessTokenProvider
-            ->expects(self::once())
+        $this->decryptedAccessTokenProvider->expects(self::once())
             ->method('getDecryptedAccessToken')
             ->with($accessToken)
             ->willReturn($decryptedToken);
@@ -75,14 +71,12 @@ final class AccessTokenDataProviderTest extends TestCase
     {
         $accessToken = 'test_token';
 
-        $this->decryptedAccessTokenProvider
-            ->expects(self::once())
+        $this->decryptedAccessTokenProvider->expects(self::once())
             ->method('getDecryptedAccessToken')
             ->with($accessToken)
             ->willReturn(null);
 
-        $this->repository
-            ->expects(self::never())
+        $this->repository->expects(self::never())
             ->method('findOneBy');
 
         $result = $this->accessTokenDataProvider->getAccessTokenData($accessToken);
@@ -98,18 +92,15 @@ final class AccessTokenDataProviderTest extends TestCase
 
         $decryptedToken = $this->createMock(UnencryptedToken::class);
         $dataSet = new DataSet($claims, '');
-        $decryptedToken
-            ->expects(self::once())
+        $decryptedToken->expects(self::once())
             ->method('claims')
             ->willReturn($dataSet);
 
-        $this->decryptedAccessTokenProvider
-            ->expects(self::once())
+        $this->decryptedAccessTokenProvider->expects(self::once())
             ->method('getDecryptedAccessToken')
             ->willReturn($decryptedToken);
 
-        $this->repository
-            ->expects(self::once())
+        $this->repository->expects(self::once())
             ->method('findOneBy')
             ->with(['identifier' => $claims['jti']])
             ->willReturn($accessTokenEntity);
@@ -126,18 +117,15 @@ final class AccessTokenDataProviderTest extends TestCase
 
         $decryptedToken = $this->createMock(UnencryptedToken::class);
         $dataSet = new DataSet($claims, '');
-        $decryptedToken
-            ->expects(self::once())
+        $decryptedToken->expects(self::once())
             ->method('claims')
             ->willReturn($dataSet);
 
-        $this->decryptedAccessTokenProvider
-            ->expects(self::once())
+        $this->decryptedAccessTokenProvider->expects(self::once())
             ->method('getDecryptedAccessToken')
             ->willReturn($decryptedToken);
 
-        $this->repository
-            ->expects(self::never())
+        $this->repository->expects(self::never())
             ->method('findOneBy');
 
         $result = $this->accessTokenDataProvider->getAccessTokenEntity($accessToken);
@@ -152,18 +140,15 @@ final class AccessTokenDataProviderTest extends TestCase
 
         $decryptedToken = $this->createMock(UnencryptedToken::class);
         $dataSet = new DataSet($claims, '');
-        $decryptedToken
-            ->expects(self::once())
+        $decryptedToken->expects(self::once())
             ->method('claims')
             ->willReturn($dataSet);
 
-        $this->decryptedAccessTokenProvider
-            ->expects(self::once())
+        $this->decryptedAccessTokenProvider->expects(self::once())
             ->method('getDecryptedAccessToken')
             ->willReturn($decryptedToken);
 
-        $this->repository
-            ->expects(self::once())
+        $this->repository->expects(self::once())
             ->method('findOneBy')
             ->with(['identifier' => $claims['jti']])
             ->willReturn(null);

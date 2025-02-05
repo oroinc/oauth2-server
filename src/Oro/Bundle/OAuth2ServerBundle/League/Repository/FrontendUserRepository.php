@@ -20,22 +20,14 @@ class FrontendUserRepository extends UserRepository
     private const VISITOR_USERNAME = 'guest';
     private const VISITOR_PASSWORD = 'guest';
 
-    /** @var UserLoaderInterface */
-    private $frontendUserLoader;
-
-    /** @var CustomerVisitorManager */
-    private $customerVisitorManager;
-
     public function __construct(
         UserLoaderInterface $userLoader,
         PasswordHasherFactoryInterface $passwordHasherFactory,
         OAuthUserChecker $userChecker,
-        UserLoaderInterface $frontendUserLoader,
-        CustomerVisitorManager $customerVisitorManager
+        private UserLoaderInterface $frontendUserLoader,
+        private CustomerVisitorManager $visitorManager
     ) {
         parent::__construct($userLoader, $passwordHasherFactory, $userChecker);
-        $this->frontendUserLoader = $frontendUserLoader;
-        $this->customerVisitorManager = $customerVisitorManager;
     }
 
     #[\Override]
@@ -51,10 +43,8 @@ class FrontendUserRepository extends UserRepository
         ) {
             if ('password' === $grantType) {
                 $userEntity = new UserEntity();
-                $visitor = $this->customerVisitorManager->createUser();
-                $userEntity->setIdentifier(
-                    VisitorIdentifierUtil::encodeIdentifier($visitor->getId(), $visitor->getSessionId())
-                );
+                $visitor = $this->visitorManager->findOrCreate(null);
+                $userEntity->setIdentifier(VisitorIdentifierUtil::encodeIdentifier($visitor->getSessionId()));
 
                 return $userEntity;
             }

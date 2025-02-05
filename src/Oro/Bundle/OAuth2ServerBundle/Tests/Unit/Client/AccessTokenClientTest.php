@@ -15,14 +15,11 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 
-final class AccessTokenClientTest extends TestCase
+class AccessTokenClientTest extends TestCase
 {
     private HttpKernelInterface|MockObject $httpKernel;
-
     private AuthorizationServer|MockObject $authorizationServer;
-
     private RequestStack|MockObject $requestStack;
-
     private AccessTokenClient $client;
 
     protected function setUp(): void
@@ -43,27 +40,25 @@ final class AccessTokenClientTest extends TestCase
             'grant_type' => Client::AUTHORIZATION_CODE,
             'client_id' => $clientIdentifier,
             'code' => $authCode,
-            'code_verifier' => $codeVerifier,
+            'code_verifier' => $codeVerifier
         ];
         $expectedResponseContent = [
             'token_type' => 'Bearer',
             'expires_in' => 3600,
             'access_token' => 'access_token_value',
-            'refresh_token' => 'refresh_token_value',
+            'refresh_token' => 'refresh_token_value'
         ];
 
         $request = Request::create('/');
-        $this->requestStack
-            ->expects(self::once())
+        $this->requestStack->expects(self::once())
             ->method('getCurrentRequest')
             ->willReturn($request);
 
         $attributes = ['_controller' => AuthorizationTokenController::class . '::tokenAction'];
         $subRequest = $request->duplicate([], $requestBody, $attributes);
 
-        $response = new Response(json_encode($expectedResponseContent));
-        $this->httpKernel
-            ->expects(self::once())
+        $response = new Response(json_encode($expectedResponseContent, JSON_THROW_ON_ERROR));
+        $this->httpKernel->expects(self::once())
             ->method('handle')
             ->with($subRequest, HttpKernelInterface::SUB_REQUEST)
             ->willReturn($response);
@@ -83,44 +78,40 @@ final class AccessTokenClientTest extends TestCase
             'grant_type' => Client::AUTHORIZATION_CODE,
             'client_id' => $clientIdentifier,
             'code' => $authCode,
-            'code_verifier' => $codeVerifier,
+            'code_verifier' => $codeVerifier
         ];
         $expectedResponseContent = [
             'token_type' => 'Bearer',
             'expires_in' => 3600,
             'access_token' => 'access_token_value',
-            'refresh_token' => 'refresh_token_value',
+            'refresh_token' => 'refresh_token_value'
         ];
 
         $request = Request::create('/');
-        $this->requestStack
-            ->expects(self::once())
+        $this->requestStack->expects(self::once())
             ->method('getCurrentRequest')
             ->willReturn($request);
 
         $attributes = ['_controller' => AuthorizationTokenController::class . '::tokenAction'];
         $subRequest = $request->duplicate([], $requestBody, $attributes);
 
-        $response = new Response(json_encode($expectedResponseContent));
-        $this->httpKernel
-            ->expects(self::once())
+        $response = new Response(json_encode($expectedResponseContent, JSON_THROW_ON_ERROR));
+        $this->httpKernel->expects(self::once())
             ->method('handle')
             ->with($subRequest, HttpKernelInterface::SUB_REQUEST)
             ->willReturn($response);
 
         $originalTtlDateInterval = \DateInterval::createFromDateString('1 hour');
-        $this->authorizationServer
-            ->expects(self::once())
+        $this->authorizationServer->expects(self::once())
             ->method('getGrantTypeAccessTokenTTL')
             ->with(Client::AUTHORIZATION_CODE)
             ->willReturn($originalTtlDateInterval);
 
-        $this->authorizationServer
-            ->expects(self::exactly(2))
+        $this->authorizationServer->expects(self::exactly(2))
             ->method('setGrantTypeAccessTokenTTL')
             ->withConsecutive(
                 [Client::AUTHORIZATION_CODE, $ttlDateInterval],
-                [Client::AUTHORIZATION_CODE, $originalTtlDateInterval],
+                [Client::AUTHORIZATION_CODE, $originalTtlDateInterval]
             );
 
         $result = $this->client->getTokenByAuthorizationCode(
@@ -142,23 +133,21 @@ final class AccessTokenClientTest extends TestCase
             'grant_type' => Client::AUTHORIZATION_CODE,
             'client_id' => $clientIdentifier,
             'code' => $authCode,
-            'code_verifier' => $codeVerifier,
+            'code_verifier' => $codeVerifier
         ];
         $expectedResponseContent = [
             'token_type' => 'Bearer',
             'expires_in' => 3600,
             'access_token' => 'access_token_value',
-            'refresh_token' => 'refresh_token_value',
+            'refresh_token' => 'refresh_token_value'
         ];
 
-        $this->requestStack
-            ->expects(self::once())
+        $this->requestStack->expects(self::once())
             ->method('getCurrentRequest')
             ->willReturn(null);
 
-        $response = new Response(json_encode($expectedResponseContent));
-        $this->httpKernel
-            ->expects(self::once())
+        $response = new Response(json_encode($expectedResponseContent, JSON_THROW_ON_ERROR));
+        $this->httpKernel->expects(self::once())
             ->method('handle')
             ->willReturnCallback(static function ($request, $type) use ($requestBody) {
                 self::assertEquals(HttpKernelInterface::SUB_REQUEST, $type);
@@ -183,27 +172,25 @@ final class AccessTokenClientTest extends TestCase
         $requestBody = [
             'grant_type' => Client::REFRESH_TOKEN,
             'client_id' => $clientIdentifier,
-            'refresh_token' => $refreshToken,
+            'refresh_token' => $refreshToken
         ];
         $expectedResponseContent = [
             'token_type' => 'Bearer',
             'expires_in' => 3600,
             'access_token' => 'access_token_value',
-            'refresh_token' => 'refresh_token_value',
+            'refresh_token' => 'refresh_token_value'
         ];
 
         $request = Request::create('/');
-        $this->requestStack
-            ->expects(self::once())
+        $this->requestStack->expects(self::once())
             ->method('getCurrentRequest')
             ->willReturn($request);
 
         $attributes = ['_controller' => AuthorizationTokenController::class . '::tokenAction'];
         $subRequest = $request->duplicate([], $requestBody, $attributes);
 
-        $response = new Response(json_encode($expectedResponseContent));
-        $this->httpKernel
-            ->expects(self::once())
+        $response = new Response(json_encode($expectedResponseContent, JSON_THROW_ON_ERROR));
+        $this->httpKernel->expects(self::once())
             ->method('handle')
             ->with($subRequest, HttpKernelInterface::SUB_REQUEST)
             ->willReturn($response);
@@ -221,44 +208,40 @@ final class AccessTokenClientTest extends TestCase
         $requestBody = [
             'grant_type' => Client::REFRESH_TOKEN,
             'client_id' => $clientIdentifier,
-            'refresh_token' => $refreshToken,
+            'refresh_token' => $refreshToken
         ];
         $expectedResponseContent = [
             'token_type' => 'Bearer',
             'expires_in' => 3600,
             'access_token' => 'access_token_value',
-            'refresh_token' => 'refresh_token_value',
+            'refresh_token' => 'refresh_token_value'
         ];
 
         $request = Request::create('/');
-        $this->requestStack
-            ->expects(self::once())
+        $this->requestStack->expects(self::once())
             ->method('getCurrentRequest')
             ->willReturn($request);
 
         $attributes = ['_controller' => AuthorizationTokenController::class . '::tokenAction'];
         $subRequest = $request->duplicate([], $requestBody, $attributes);
 
-        $response = new Response(json_encode($expectedResponseContent));
-        $this->httpKernel
-            ->expects(self::once())
+        $response = new Response(json_encode($expectedResponseContent, JSON_THROW_ON_ERROR));
+        $this->httpKernel->expects(self::once())
             ->method('handle')
             ->with($subRequest, HttpKernelInterface::SUB_REQUEST)
             ->willReturn($response);
 
         $originalTtlDateInterval = \DateInterval::createFromDateString('1 hour');
-        $this->authorizationServer
-            ->expects(self::once())
+        $this->authorizationServer->expects(self::once())
             ->method('getGrantTypeAccessTokenTTL')
             ->with(Client::REFRESH_TOKEN)
             ->willReturn($originalTtlDateInterval);
 
-        $this->authorizationServer
-            ->expects(self::exactly(2))
+        $this->authorizationServer->expects(self::exactly(2))
             ->method('setGrantTypeAccessTokenTTL')
             ->withConsecutive(
                 [Client::REFRESH_TOKEN, $ttlDateInterval],
-                [Client::REFRESH_TOKEN, $originalTtlDateInterval],
+                [Client::REFRESH_TOKEN, $originalTtlDateInterval]
             );
 
         $result = $this->client->getTokenByRefreshToken($clientIdentifier, $refreshToken, $ttlDateInterval);
@@ -273,23 +256,21 @@ final class AccessTokenClientTest extends TestCase
         $requestBody = [
             'grant_type' => Client::REFRESH_TOKEN,
             'client_id' => $clientIdentifier,
-            'refresh_token' => $refreshToken,
+            'refresh_token' => $refreshToken
         ];
         $expectedResponseContent = [
             'token_type' => 'Bearer',
             'expires_in' => 3600,
             'access_token' => 'access_token_value',
-            'refresh_token' => 'refresh_token_value',
+            'refresh_token' => 'refresh_token_value'
         ];
 
-        $this->requestStack
-            ->expects(self::once())
+        $this->requestStack->expects(self::once())
             ->method('getCurrentRequest')
             ->willReturn(null);
 
-        $response = new Response(json_encode($expectedResponseContent));
-        $this->httpKernel
-            ->expects(self::once())
+        $response = new Response(json_encode($expectedResponseContent, JSON_THROW_ON_ERROR));
+        $this->httpKernel->expects(self::once())
             ->method('handle')
             ->willReturnCallback(static function ($request, $type) use ($requestBody) {
                 self::assertEquals(HttpKernelInterface::SUB_REQUEST, $type);

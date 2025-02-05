@@ -14,17 +14,16 @@ use Oro\Component\Testing\TempDirExtension;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Process\Process;
 
-final class DecryptedAccessTokenProviderTest extends TestCase
+class DecryptedAccessTokenProviderTest extends TestCase
 {
     use AccessTokenTrait;
     use TempDirExtension;
 
-    private DecryptedAccessTokenProvider $provider;
-
     private ClientEntity $client;
-
+    private DecryptedAccessTokenProvider $provider;
     private string $accessToken;
 
+    #[\Override]
     protected function setUp(): void
     {
         $tempDir = $this->getTempDir('someDir');
@@ -48,14 +47,12 @@ final class DecryptedAccessTokenProviderTest extends TestCase
     public function testGetDecryptedBearerToken(): void
     {
         $decryptedToken = $this->provider->getDecryptedAccessToken($this->accessToken);
-
         self::assertEquals(
             $this->jwtConfiguration->parser()->parse($this->accessToken),
             $decryptedToken
         );
 
         $decryptedTokenData = $decryptedToken->claims()->all();
-
         self::assertEquals([$this->getClient()->getIdentifier()], $decryptedTokenData['aud']);
         self::assertEquals($this->getIdentifier(), $decryptedTokenData['jti']);
         self::assertEquals($this->getUserIdentifier(), $decryptedTokenData['sub']);
@@ -68,26 +65,31 @@ final class DecryptedAccessTokenProviderTest extends TestCase
         self::assertNull($this->provider->getDecryptedAccessToken('invalid_token'));
     }
 
+    #[\Override]
     public function getClient(): ClientEntityInterface
     {
         return $this->client;
     }
 
+    #[\Override]
     public function getExpiryDateTime(): \DateTimeImmutable
     {
         return new \DateTimeImmutable('today +1 day');
     }
 
+    #[\Override]
     public function getUserIdentifier(): string
     {
         return 'sample_user';
     }
 
+    #[\Override]
     public function getScopes(): array
     {
         return ['sample_scope'];
     }
 
+    #[\Override]
     public function getIdentifier(): string
     {
         return 'sample_identifier';

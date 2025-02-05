@@ -20,11 +20,18 @@ use Symfony\Contracts\Service\ResetInterface;
 class DecryptedAccessTokenProvider implements ResetInterface
 {
     private ?CryptKey $publicKey = null;
-
     private ?Configuration $jwtConfiguration = null;
 
-    public function __construct(private CryptKeyFile $publicKeyFile)
+    public function __construct(
+        private CryptKeyFile $publicKeyFile
+    ) {
+    }
+
+    #[\Override]
+    public function reset(): void
     {
+        $this->jwtConfiguration = null;
+        $this->publicKey = null;
     }
 
     /**
@@ -36,7 +43,7 @@ class DecryptedAccessTokenProvider implements ResetInterface
 
         try {
             $decryptedToken = $jwtConfiguration->parser()->parse($accessToken);
-        } catch (\Lcobucci\JWT\Exception $exception) {
+        } catch (\Lcobucci\JWT\Exception $e) {
             // The token cannot be decrypted.
             return null;
         }
@@ -49,7 +56,7 @@ class DecryptedAccessTokenProvider implements ResetInterface
      */
     private function getJwtConfiguration(): Configuration
     {
-        if ($this->jwtConfiguration === null) {
+        if (null === $this->jwtConfiguration) {
             $this->jwtConfiguration = Configuration::forSymmetricSigner(
                 new Sha256(),
                 InMemory::plainText('empty', 'empty')
@@ -73,7 +80,7 @@ class DecryptedAccessTokenProvider implements ResetInterface
      */
     private function getPublicKey(): CryptKey
     {
-        if ($this->publicKey === null) {
+        if (null === $this->publicKey) {
             try {
                 $this->publicKey = new CryptKey($this->publicKeyFile->getKeyPath(), null, false);
             } catch (\LogicException $e) {
@@ -82,11 +89,5 @@ class DecryptedAccessTokenProvider implements ResetInterface
         }
 
         return $this->publicKey;
-    }
-
-    public function reset(): void
-    {
-        $this->jwtConfiguration = null;
-        $this->publicKey = null;
     }
 }

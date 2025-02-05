@@ -30,7 +30,7 @@ class FrontendUserRepositoryTest extends \PHPUnit\Framework\TestCase
     private $userChecker;
 
     /** @var CustomerVisitorManager|\PHPUnit\Framework\MockObject\MockObject */
-    private $customerVisitorManager;
+    private $visitorManager;
 
     /** @var FrontendUserRepository */
     private $repository;
@@ -46,18 +46,18 @@ class FrontendUserRepositoryTest extends \PHPUnit\Framework\TestCase
         $this->frontendUserLoader = $this->createMock(UserLoaderInterface::class);
         $this->passwordHasherFactory = $this->createMock(PasswordHasherFactoryInterface::class);
         $this->userChecker = $this->createMock(OAuthUserChecker::class);
-        $this->customerVisitorManager = $this->createMock(CustomerVisitorManager::class);
+        $this->visitorManager = $this->createMock(CustomerVisitorManager::class);
 
         $this->repository = new FrontendUserRepository(
             $this->userLoader,
             $this->passwordHasherFactory,
             $this->userChecker,
             $this->frontendUserLoader,
-            $this->customerVisitorManager
+            $this->visitorManager
         );
     }
 
-    public function testNotFrontendUser()
+    public function testNotFrontendUser(): void
     {
         $client = new ClientEntity();
 
@@ -82,7 +82,7 @@ class FrontendUserRepositoryTest extends \PHPUnit\Framework\TestCase
         self::assertNull($userEntity);
     }
 
-    public function testFrontendUserNotFound()
+    public function testFrontendUserNotFound(): void
     {
         $client = new ClientEntity();
         $client->setFrontend(true);
@@ -108,7 +108,7 @@ class FrontendUserRepositoryTest extends \PHPUnit\Framework\TestCase
         self::assertNull($userEntity);
     }
 
-    public function testInvalidPasswordForFrontendUser()
+    public function testInvalidPasswordForFrontendUser(): void
     {
         $client = new ClientEntity();
         $client->setFrontend(true);
@@ -154,7 +154,7 @@ class FrontendUserRepositoryTest extends \PHPUnit\Framework\TestCase
         self::assertNull($userEntity);
     }
 
-    public function testValidPasswordForFrontendUser()
+    public function testValidPasswordForFrontendUser(): void
     {
         $client = new ClientEntity();
         $client->setFrontend(true);
@@ -203,7 +203,7 @@ class FrontendUserRepositoryTest extends \PHPUnit\Framework\TestCase
         self::assertEquals($userIdentifier, $userEntity->getIdentifier());
     }
 
-    public function testCustomerVisitor()
+    public function testCustomerVisitor(): void
     {
         $client = new ClientEntity();
         $client->setFrontend(true);
@@ -212,8 +212,9 @@ class FrontendUserRepositoryTest extends \PHPUnit\Framework\TestCase
         ReflectionUtil::setId($visitor, 234);
         $visitor->setSessionId('testSession');
 
-        $this->customerVisitorManager->expects(self::once())
-            ->method('createUser')
+        $this->visitorManager->expects(self::once())
+            ->method('findOrCreate')
+            ->with(self::isNull())
             ->willReturn($visitor);
         $this->frontendUserLoader->expects(self::never())
             ->method('loadUser');
@@ -221,7 +222,7 @@ class FrontendUserRepositoryTest extends \PHPUnit\Framework\TestCase
             ->method('loadUser');
 
         $expectedEntity = new UserEntity();
-        $expectedEntity->setIdentifier('visitor:234:testSession');
+        $expectedEntity->setIdentifier('visitor:testSession');
 
         $this->assertEquals(
             $expectedEntity,
@@ -229,7 +230,7 @@ class FrontendUserRepositoryTest extends \PHPUnit\Framework\TestCase
         );
     }
 
-    public function testCustomerVisitorOnNotPasswordGrantType()
+    public function testCustomerVisitorOnNotPasswordGrantType(): void
     {
         $client = new ClientEntity();
         $client->setFrontend(true);

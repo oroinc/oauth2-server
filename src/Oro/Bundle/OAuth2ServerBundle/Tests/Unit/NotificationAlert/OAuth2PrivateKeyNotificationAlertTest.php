@@ -6,7 +6,7 @@ use Oro\Bundle\NotificationBundle\NotificationAlert\NotificationAlertManager;
 use Oro\Bundle\OAuth2ServerBundle\NotificationAlert\OAuth2PrivateKeyNotificationAlert;
 use PHPUnit\Framework\TestCase;
 
-final class OAuth2PrivateKeyNotificationAlertTest extends TestCase
+class OAuth2PrivateKeyNotificationAlertTest extends TestCase
 {
     public function testGetSourceType(): void
     {
@@ -31,7 +31,7 @@ final class OAuth2PrivateKeyNotificationAlertTest extends TestCase
             NotificationAlertManager::MESSAGE       => 'Wrong permission',
             NotificationAlertManager::ORGANIZATION  => 1,
             NotificationAlertManager::ALERT_TYPE    =>
-                OAuth2PrivateKeyNotificationAlert::ALERT_TYPE_PRIVATE_KEY_PERMISSIONS,
+                OAuth2PrivateKeyNotificationAlert::ALERT_TYPE_PRIVATE_KEY_PERMISSIONS
         ];
 
         self::assertInstanceOf(OAuth2PrivateKeyNotificationAlert::class, $alert);
@@ -48,7 +48,7 @@ final class OAuth2PrivateKeyNotificationAlertTest extends TestCase
             NotificationAlertManager::RESOURCE_TYPE => OAuth2PrivateKeyNotificationAlert::RESOURCE_TYPE,
             NotificationAlertManager::MESSAGE       => 'Wrong permission',
             NotificationAlertManager::ALERT_TYPE    =>
-                OAuth2PrivateKeyNotificationAlert::ALERT_TYPE_PRIVATE_KEY_PERMISSIONS,
+                OAuth2PrivateKeyNotificationAlert::ALERT_TYPE_PRIVATE_KEY_PERMISSIONS
         ];
 
         self::assertInstanceOf(OAuth2PrivateKeyNotificationAlert::class, $alert);
