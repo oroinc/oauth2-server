@@ -360,7 +360,7 @@ services:
         arguments:
             - '@event_dispatcher'
             - '@oro_oauth2_server.client_manager'
-            - '@oro_oauth2_server.security.authenticator.api_wsse_secured'
+            - '@oro_oauth2_server.security.authenticator.api_secured'
             - '@oro_user.security.provider'
             - '@?oro_frontend.request.frontend_helper'
         tags:
@@ -510,3 +510,7 @@ services:
         arguments:
             - '@oro_oauth2_server.provider.decrypted_token'
             - '@doctrine'
+
+    oro_oauth2_server.security.http.entry_point.oauth:
+        class:  Oro\Bundle\OAuth2ServerBundle\Security\Http\EntryPoint\OAuthEntryPoint
+        decorates: oro_api.security.http.entry_point.api

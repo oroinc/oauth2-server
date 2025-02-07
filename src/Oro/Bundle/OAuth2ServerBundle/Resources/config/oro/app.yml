@@ -1,12 +1,12 @@
 oro_api:
     api_firewalls:
-        api_wsse_secured:
+        api_secured:
             feature_firewall_authenticators: # FeatureDependAuthenticatorChecker
                 - Oro\Bundle\OAuth2ServerBundle\Security\Authenticator\OAuth2Authenticator
-        wsse_secured:
+        old_api_secured:
             feature_firewall_authenticators: # FeatureDependAuthenticatorChecker
                 - Oro\Bundle\OAuth2ServerBundle\Security\Authenticator\OAuth2Authenticator
-        frontend_api_wsse_secured:
+        frontend_api_secured:
             feature_firewall_authenticators: # FeatureDependAuthenticatorChecker
                 - Oro\Bundle\OAuth2ServerBundle\Security\Authenticator\OAuth2Authenticator
 
@@ -44,9 +44,9 @@ security:
 oro_oauth2_server:
     resource_server:
         oauth_firewalls:
-            - api_wsse_secured
-            - frontend_api_wsse_secured
-            - wsse_secured
+            - api_secured
+            - frontend_api_secured
+            - old_api_secured
 
 oro_user:
     login_sources:

@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 class OAuthServerTestCase extends RestJsonApiTestCase
 {
     #[\Override]
-    protected function checkWsseAuthHeader(array &$server): void
+    protected function checkApiAuthHeader(array &$server): void
     {
     }
 
