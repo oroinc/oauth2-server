@@ -13,7 +13,7 @@
     ],
     "autoload": {
         "psr-4": {"Oro\\Bundle\\OAuth2ServerBundle\\": "src/Oro/Bundle/OAuth2ServerBundle"},
-        "exclude-from-classmap": ["/Tests/"]
+        "exclude-from-classmap": ["**/Tests/"]
     },
     "require": {
         "ext-sodium": "*",
