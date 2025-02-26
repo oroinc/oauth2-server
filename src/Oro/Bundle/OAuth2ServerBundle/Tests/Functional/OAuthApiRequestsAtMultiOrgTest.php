@@ -11,7 +11,7 @@ class OAuthApiRequestsAtMultiOrgTest extends OAuthServerTestCase
     protected function setUp(): void
     {
         if (!class_exists('Oro\Bundle\OrganizationProBundle\OroOrganizationProBundle')) {
-            self::markTestSkipped('The tests can be executed only with enterprise OrganizationProBundle bundle.');
+            self::markTestSkipped('can be tested only with OroOrganizationProBundle');
         }
 
         $this->initClient();

@@ -52,7 +52,7 @@ class NavigationListenerTest extends \PHPUnit\Framework\TestCase
     public function testOnNavigationConfigureWithSystemTab()
     {
         if (!class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {
-            $this->markTestSkipped('can be tested only with installed customer portal');
+            self::markTestSkipped('can be tested only with CustomerBundle');
         }
 
         $this->tokenAccessor->expects($this->once())
@@ -81,7 +81,7 @@ class NavigationListenerTest extends \PHPUnit\Framework\TestCase
     public function testOnNavigationConfigureWithSystemTabWhenUserIsNotGrantedToSeeOauthClients()
     {
         if (!class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {
-            $this->markTestSkipped('can be tested only with installed customer portal');
+            self::markTestSkipped('can be tested only with CustomerBundle');
         }
 
         $this->tokenAccessor->expects($this->once())
@@ -109,7 +109,7 @@ class NavigationListenerTest extends \PHPUnit\Framework\TestCase
     public function testOnNavigationConfigureWithSystemTabWothoutUserInToken()
     {
         if (!class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {
-            $this->markTestSkipped('can be tested only with installed customer portal');
+            self::markTestSkipped('can be tested only with CustomerBundle');
         }
 
         $this->tokenAccessor->expects($this->once())
@@ -131,7 +131,7 @@ class NavigationListenerTest extends \PHPUnit\Framework\TestCase
     public function testOnNavigationConfigureWithoutCustomerPortal()
     {
         if (class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {
-            $this->markTestSkipped('can be tested only without installed customer portal');
+            self::markTestSkipped('can be tested only without CustomerBundle');
         }
 
         $menu = new MenuItem('test', new MenuFactory());

@@ -34,7 +34,7 @@ class FrontendRefreshTokenRepositoryTest extends \PHPUnit\Framework\TestCase
     protected function setUp(): void
     {
         if (!class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {
-            self::markTestSkipped('Could be tested only with Customer bundle');
+            self::markTestSkipped('can be tested only with CustomerBundle');
         }
 
         $this->doctrine = $this->createMock(ManagerRegistry::class);

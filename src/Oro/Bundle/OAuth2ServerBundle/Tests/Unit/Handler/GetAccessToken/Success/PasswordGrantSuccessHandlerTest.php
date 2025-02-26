@@ -128,8 +128,8 @@ class PasswordGrantSuccessHandlerTest extends \PHPUnit\Framework\TestCase
 
     public function testHandleOnFrontendRequest(): void
     {
-        if (!class_exists('Oro\Bundle\FrontendBundle\Request\FrontendHelper')) {
-            self::markTestSkipped('Could be tested only with FrontendBundle');
+        if (!class_exists('Oro\Bundle\FrontendBundle\OroFrontendBundle')) {
+            self::markTestSkipped('can be tested only with FrontendBundle');
         }
 
         $requestParameters = [
@@ -181,8 +181,8 @@ class PasswordGrantSuccessHandlerTest extends \PHPUnit\Framework\TestCase
 
     public function testHandleOnBackendRequest(): void
     {
-        if (!class_exists('Oro\Bundle\FrontendBundle\Request\FrontendHelper')) {
-            self::markTestSkipped('Could be tested only with FrontendBundle');
+        if (!class_exists('Oro\Bundle\FrontendBundle\OroFrontendBundle')) {
+            self::markTestSkipped('can be tested only with FrontendBundle');
         }
 
         $requestParameters = [
@@ -233,8 +233,8 @@ class PasswordGrantSuccessHandlerTest extends \PHPUnit\Framework\TestCase
 
     public function testHandleOldTokenAndFrontendHelperShouldBeRestoredOnExceptionDuringDispatch(): void
     {
-        if (!class_exists('Oro\Bundle\FrontendBundle\Request\FrontendHelper')) {
-            self::markTestSkipped('Could be tested only with FrontendBundle');
+        if (!class_exists('Oro\Bundle\FrontendBundle\OroFrontendBundle')) {
+            self::markTestSkipped('can be tested only with FrontendBundle');
         }
 
         $exception = new \Exception('some error');

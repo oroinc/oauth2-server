@@ -15,19 +15,14 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 class RedirectListenerTest extends TestCase
 {
     private RedirectListenerInterface|MockObject $innerRedirectListener;
-
     private Router|MockObject $router;
-
-    /** @var  */
     private RedirectListener $listener;
 
     #[\Override]
     protected function setUp(): void
     {
-        if (!\class_exists('Oro\Bundle\WebsiteBundle\EventListener\RedirectListener')) {
-            static::markTestSkipped(
-                'This listener is used only if \Oro\Bundle\WebsiteBundle\EventListener\RedirectListener is available.'
-            );
+        if (!\class_exists('Oro\Bundle\WebsiteBundle\OroWebsiteBundle')) {
+            self::markTestSkipped('can be tested only with WebsiteBundle');
         }
         $this->innerRedirectListener = $this->createMock(RedirectListenerInterface::class);
         $this->router = $this->createMock(Router::class);
@@ -36,6 +31,20 @@ class RedirectListenerTest extends TestCase
             $this->innerRedirectListener,
             $this->router
         );
+    }
+
+    private function getEvent(Request $request, ?Response $response = null): RequestEvent
+    {
+        $event = new RequestEvent(
+            $this->createMock(HttpKernelInterface::class),
+            $request,
+            HttpKernelInterface::MAIN_REQUEST
+        );
+        if (null !== $response) {
+            $event->setResponse($response);
+        }
+
+        return $event;
     }
 
     public function testOnRequest(): void
@@ -81,20 +90,5 @@ class RedirectListenerTest extends TestCase
             ->with(self::identicalTo($event));
 
         $this->listener->onRequest($event);
-    }
-
-    private function getEvent(Request $request, ?Response $response = null): RequestEvent
-    {
-        $event = new RequestEvent(
-            $this->createMock(HttpKernelInterface::class),
-            $request,
-            HttpKernelInterface::MAIN_REQUEST
-        );
-
-        if (null !== $response) {
-            $event->setResponse($response);
-        }
-
-        return $event;
     }
 }

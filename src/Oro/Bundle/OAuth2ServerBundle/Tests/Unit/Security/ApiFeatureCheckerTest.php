@@ -48,7 +48,7 @@ class ApiFeatureCheckerTest extends \PHPUnit\Framework\TestCase
     public function testIsEnabledByClientOwnerClassForFrontendEnabled()
     {
         if (!class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {
-            $this->markTestSkipped('can be tested only with installed customer portal');
+            self::markTestSkipped('can be tested only with CustomerBundle');
         }
 
         $this->featureChecker->expects(self::once())
@@ -61,7 +61,7 @@ class ApiFeatureCheckerTest extends \PHPUnit\Framework\TestCase
     public function testIsEnabledByClientOwnerClassForFrontendDisabled()
     {
         if (!class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {
-            $this->markTestSkipped('can be tested only with installed customer portal');
+            self::markTestSkipped('can be tested only with CustomerBundle');
         }
 
         $this->featureChecker->expects(self::once())

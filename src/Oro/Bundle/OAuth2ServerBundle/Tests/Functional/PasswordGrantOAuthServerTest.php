@@ -56,7 +56,7 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
     public function testLockUserOnAttemptsLimit()
     {
         if (!class_exists('Oro\Bundle\UserProBundle\OroUserProBundle')) {
-            self::markTestSkipped('Could be tested only with UserPro bundle');
+            self::markTestSkipped('can be tested only with UserProBundle');
         }
 
         $configManager = $this->getConfigManager();
@@ -122,7 +122,7 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
     public function testResetFailedLoginCounters()
     {
         if (!class_exists('Oro\Bundle\UserProBundle\OroUserProBundle')) {
-            self::markTestSkipped('Could be tested only with UserPro bundle');
+            self::markTestSkipped('can be tested only with UserProBundle');
         }
 
         $configManager = $this->getConfigManager();

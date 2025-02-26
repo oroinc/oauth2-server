@@ -3,7 +3,6 @@
 namespace Oro\Bundle\OAuth2ServerBundle\Controller;
 
 use Doctrine\Persistence\ManagerRegistry;
-use Oro\Bundle\CustomerBundle\OroCustomerBundle;
 use Oro\Bundle\EntityBundle\Tools\EntityRoutingHelper;
 use Oro\Bundle\FormBundle\Model\UpdateHandlerFacade;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
@@ -444,7 +443,7 @@ class ClientController extends AbstractController
     private function checkTypeEnabled(string $type): void
     {
         if ($type === 'frontend') {
-            if (!class_exists(OroCustomerBundle::class)
+            if (!class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')
                 || !$this->featureChecker->isFrontendApiEnabled()
             ) {
                 throw $this->createNotFoundException();

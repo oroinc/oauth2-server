@@ -17,7 +17,7 @@ class FrontendPasswordGrantVisitorOAuthServerTest extends OAuthServerTestCase
     protected function setUp(): void
     {
         if (!class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {
-            self::markTestSkipped('Could be tested only with Customer bundle');
+            self::markTestSkipped('can be tested only with CustomerBundle');
         }
 
         $this->initClient();
@@ -106,7 +106,7 @@ class FrontendPasswordGrantVisitorOAuthServerTest extends OAuthServerTestCase
     public function testShoppingListWithGuestOauthToken()
     {
         if (!class_exists('Oro\Bundle\ShoppingListBundle\OroShoppingListBundle')) {
-            self::markTestSkipped('Could be tested only with ShoppingList bundle');
+            self::markTestSkipped('can be tested only with ShoppingListBundle');
         }
 
         $accessToken = $this->sendFrontendPasswordAccessTokenRequest();

@@ -8,8 +8,8 @@ class GuestAccessAllowedUrlsProviderTest extends \PHPUnit\Framework\TestCase
 {
     public function testGetAllowedUrlsPatterns()
     {
-        if (!\class_exists('Oro\Bundle\FrontendBundle\GuestAccess\Provider\GuestAccessAllowedUrlsProviderInterface')) {
-            static::markTestSkipped('These tests can be run only if customer-portal package is present (BAP-22913).');
+        if (!\class_exists('Oro\Bundle\FrontendBundle\OroFrontendBundle')) {
+            self::markTestSkipped('can be tested only with FrontendBundle');
         }
         $provider = new GuestAccessAllowedUrlsProvider();
 

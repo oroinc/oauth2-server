@@ -192,8 +192,8 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
 
     public function testHandleWithOAuthBadCredentialsExceptionAndFronendRequest()
     {
-        if (!class_exists('Oro\Bundle\FrontendBundle\Request\FrontendHelper')) {
-            self::markTestSkipped('Could be tested only with Frontend bundle');
+        if (!class_exists('Oro\Bundle\FrontendBundle\OroFrontendBundle')) {
+            self::markTestSkipped('can be tested only with FrontendBundle');
         }
 
         $client = new Client();
@@ -245,8 +245,8 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
 
     public function testHandleWithOAuthBadCredentialsExceptionAndBackendRequest()
     {
-        if (!class_exists('Oro\Bundle\FrontendBundle\Request\FrontendHelper')) {
-            self::markTestSkipped('Could be tested only with Frontend bundle');
+        if (!class_exists('Oro\Bundle\FrontendBundle\OroFrontendBundle')) {
+            self::markTestSkipped('can be tested only with FrontendBundle');
         }
 
         $client = new Client();
@@ -299,8 +299,8 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
 
     public function testHandleShouldRestoreFrontendHelperStateOnExceptionDuringEventDispatching()
     {
-        if (!class_exists('Oro\Bundle\FrontendBundle\Request\FrontendHelper')) {
-            self::markTestSkipped('Could be tested only with Frontend bundle');
+        if (!class_exists('Oro\Bundle\FrontendBundle\OroFrontendBundle')) {
+            self::markTestSkipped('can be tested only with FrontendBundle');
         }
 
         $exception = new \Exception('some error');
@@ -343,8 +343,8 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
 
     public function testWithWrongClientId()
     {
-        if (!class_exists('Oro\Bundle\FrontendBundle\Request\FrontendHelper')) {
-            self::markTestSkipped('Could be tested only with Frontend bundle');
+        if (!class_exists('Oro\Bundle\FrontendBundle\OroFrontendBundle')) {
+            self::markTestSkipped('can be tested only with FrontendBundle');
         }
 
         $tokenParameters = ['grant_type' => 'password', 'username' => 'user', 'client_id' => 'test_client'];

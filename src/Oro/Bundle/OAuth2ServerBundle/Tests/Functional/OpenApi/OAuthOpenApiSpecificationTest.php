@@ -37,7 +37,7 @@ class OAuthOpenApiSpecificationTest extends OpenApiSpecificationTestCase
     public function testValidateGeneratedOpenApiForOAuthTokenEndpointAndSecurityForFrontendApi(): void
     {
         if (!class_exists('Oro\Bundle\FrontendBundle\OroFrontendBundle')) {
-            self::markTestSkipped('Could be tested only with Frontend bundle');
+            self::markTestSkipped('can be tested only with FrontendBundle');
         }
 
         $result = self::runCommand(
