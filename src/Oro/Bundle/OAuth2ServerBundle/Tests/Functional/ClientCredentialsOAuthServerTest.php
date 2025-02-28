@@ -52,7 +52,7 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
         return sprintf('Bearer %s', $responseData['access_token']);
     }
 
-    public function testGetAuthToken()
+    public function testGetAuthToken(): void
     {
         $startDateTime = new \DateTime('now', new \DateTimeZone('UTC'));
 
@@ -75,7 +75,7 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
         self::assertClientLastUsedValueIsCorrect($startDateTime, $client);
     }
 
-    public function testGetAuthTokenWhenCredentialsProvidedViaBasicAuthorization()
+    public function testGetAuthTokenWhenCredentialsProvidedViaBasicAuthorization(): void
     {
         $startDateTime = new \DateTime('now', new \DateTimeZone('UTC'));
 
@@ -123,7 +123,7 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
         self::assertClientLastUsedValueIsCorrect($startDateTime, $client);
     }
 
-    public function testGetAuthTokenForDeactivatedClient()
+    public function testGetAuthTokenForDeactivatedClient(): void
     {
         /** @var Client $client */
         $client = $this->getReference(LoadClientCredentialsClient::OAUTH_CLIENT_REFERENCE);
@@ -148,7 +148,7 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
         self::assertNull($client->getLastUsedAt());
     }
 
-    public function testGetAuthTokenWhenCredentialsAreNotProvided()
+    public function testGetAuthTokenWhenCredentialsAreNotProvided(): void
     {
         $response = $this->sendRequest(
             'POST',
@@ -177,7 +177,7 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
         );
     }
 
-    public function testGetAuthTokenWhenProvidedCredentialsAreEmpty()
+    public function testGetAuthTokenWhenProvidedCredentialsAreEmpty(): void
     {
         $response = $this->sendRequest(
             'POST',
@@ -201,7 +201,7 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
         );
     }
 
-    public function testGetAuthTokenForCorsRequest()
+    public function testGetAuthTokenForCorsRequest(): void
     {
         $startDateTime = new \DateTime('now', new \DateTimeZone('UTC'));
         $origin = 'https://oauth.test.com';
@@ -225,7 +225,7 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
         self::assertClientLastUsedValueIsCorrect($startDateTime, $client);
     }
 
-    public function testGetAuthTokenForDeactivatedClientForCorsRequest()
+    public function testGetAuthTokenForDeactivatedClientForCorsRequest(): void
     {
         /** @var Client $client */
         $client = $this->getReference(LoadClientCredentialsClient::OAUTH_CLIENT_REFERENCE);
@@ -251,7 +251,7 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
         self::assertNull($client->getLastUsedAt());
     }
 
-    public function testApiRequestWithCorrectAccessTokenShouldReturnRequestedData()
+    public function testApiRequestWithCorrectAccessTokenShouldReturnRequestedData(): void
     {
         $authorizationHeader = $this->getBearerAuthHeaderValue();
         $expectedData = [
@@ -277,7 +277,114 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
         $this->assertResponseContains($expectedData, $response);
     }
 
-    public function testApiRequestWithWrongAccessTokenShouldReturnUnauthorizedStatusCode()
+    public function testTryToSendApiRequestWithAccessTokenInURI(): void
+    {
+        $response = $this->sendAccessTokenRequest();
+        self::assertFalse($response->headers->has('Access-Control-Allow-Origin'));
+
+        $responseData = self::jsonToArray($response->getContent());
+
+        $response = $this->get(
+            ['entity' => 'users', 'id' => '<toString(@user->id)>', 'access_token' => $responseData['access_token']],
+            [],
+            [],
+            false
+        );
+
+        $this->assertResponseStatusCodeEquals($response, Response::HTTP_UNAUTHORIZED);
+    }
+
+    public function testApiRequestWithCorrectAccessTokenInBody(): void
+    {
+        $response = $this->sendAccessTokenRequest();
+        self::assertFalse($response->headers->has('Access-Control-Allow-Origin'));
+        $keyData = self::jsonToArray($response->getContent());
+
+        $response = $this->patch(
+            ['entity' => 'users', 'id' => '<toString(@user->id)>'],
+            [
+                'access_token' => $keyData['access_token'],
+                'data' => [
+                    'type' => 'users',
+                    'id'   => '<toString(@user->id)>',
+                    'attributes' => [
+                        'firstName' => 'first_request'
+                    ]
+                ]
+            ]
+        );
+        $this->assertResponseContains(
+            [
+                'data' => [
+                    'type' => 'users',
+                    'id'   => '<toString(@user->id)>',
+                    'attributes' => [
+                        'firstName' => 'first_request'
+                    ]
+                ]
+            ],
+            $response
+        );
+        self::assertArrayNotHasKey('access_token', self::jsonToArray($response->getContent()));
+
+        // test that the same access token can be used several times (until it will not be expired)
+        $response = $this->patch(
+            ['entity' => 'users', 'id' => '<toString(@user->id)>'],
+            [
+                'access_token' => $keyData['access_token'],
+                'data' => [
+                    'type' => 'users',
+                    'id'   => '<toString(@user->id)>',
+                    'attributes' => [
+                        'firstName' => 'second_request'
+                    ]
+                ]
+            ]
+        );
+        $this->assertResponseContains(
+            [
+                'data' => [
+                    'type' => 'users',
+                    'id'   => '<toString(@user->id)>',
+                    'attributes' => [
+                        'firstName' => 'second_request'
+                    ]
+                ]
+            ],
+            $response
+        );
+        self::assertArrayNotHasKey('access_token', self::jsonToArray($response->getContent()));
+
+        // test that the same access token can be used in header
+        $response = $this->patch(
+            ['entity' => 'users', 'id' => '<toString(@user->id)>'],
+            [
+                'data' => [
+                    'type' => 'users',
+                    'id'   => '<toString(@user->id)>',
+                    'attributes' => [
+                        'firstName' => 'third_request'
+                    ]
+                ]
+            ],
+            ['HTTP_AUTHORIZATION' => 'Bearer ' . $keyData['access_token']]
+        );
+        $this->assertResponseContains(
+            [
+                'data' => [
+                    'type' => 'users',
+                    'id'   => '<toString(@user->id)>',
+                    'attributes' => [
+                        'firstName' => 'third_request'
+                    ]
+                ]
+            ],
+            $response
+        );
+        self::assertArrayNotHasKey('access_token', self::jsonToArray($response->getContent()));
+    }
+
+    public function testApiRequestWithWrongAccessTokenShouldReturnUnauthorizedStatusCode(): void
     {
         $response = $this->get(
             ['entity' => 'users', 'id' => '<toString(@user->id)>'],
@@ -290,7 +397,7 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
         self::assertSame('', $response->getContent());
     }
 
-    public function testApiRequestWithCorrectAccessTokenButForDeactivatedClientShouldReturnUnauthorizedStatusCode()
+    public function testApiRequestWithCorrectAccessTokenButForDeactivatedClientShouldReturnUnauthorizedStatus(): void
     {
         $authorizationHeader = $this->getBearerAuthHeaderValue();
 
@@ -310,7 +417,7 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
         self::assertSame('', $response->getContent());
     }
 
-    public function testOptionsRequest()
+    public function testOptionsRequest(): void
     {
         $response = $this->sendRequest(
             'OPTIONS',
@@ -342,7 +449,7 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
     /**
      * @dataProvider methodsProvider
      */
-    public function testOptionsPreflightRequest(string $requestMethod)
+    public function testOptionsPreflightRequest(string $requestMethod): void
     {
         $response = $this->sendRequest(
             'OPTIONS',
@@ -365,7 +472,7 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
         self::assertResponseHeaderNotExists($response, 'Allow');
     }
 
-    public function testOptionsAsCorsButNotPreflightRequest()
+    public function testOptionsAsCorsButNotPreflightRequest(): void
     {
         $response = $this->sendRequest(
             'OPTIONS',

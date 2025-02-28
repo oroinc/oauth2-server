@@ -35,6 +35,8 @@ use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPasspor
  */
 class OAuth2Authenticator implements AuthenticatorInterface
 {
+    private const string ACCESS_TOKEN_PARAMETER = 'access_token';
+
     private array $authorizationCookies = [];
 
     public function __construct(
@@ -61,14 +63,16 @@ class OAuth2Authenticator implements AuthenticatorInterface
         if (!$this->featureDependAuthenticatorChecker->isEnabled($this, $this->firewallName)) {
             return false;
         }
-        if ((!$request->headers->has('Authorization') ||
-            !preg_match('/^(?:\s+)?Bearer\s/', $request->headers->get('Authorization'))) &&
-            (!$this->authorizationCookies || !$this->getAuthorizationCookie($request))
+        if (($request->headers->has('Authorization')
+                && preg_match('/^(?:\s+)?Bearer\s/', $request->headers->get('Authorization')))
+            || ($this->authorizationCookies && $this->getAuthorizationCookie($request))
+            || ($request->request->has(self::ACCESS_TOKEN_PARAMETER)
+                && $request->headers->contains('Content-type', 'application/vnd.api+json'))
         ) {
-            return false;
+            return true;
         }
 
-        return true;
+        return false;
     }
 
     private function getAuthorizationCookie(Request $request): ?string
@@ -191,6 +195,14 @@ class OAuth2Authenticator implements AuthenticatorInterface
             if ($authorizationCookie) {
                 $serverRequest = $serverRequest->withHeader('Authorization', 'Bearer ' . $authorizationCookie);
             }
+        }
+
+        if ($request->request->has(self::ACCESS_TOKEN_PARAMETER)) {
+            $serverRequest = $serverRequest->withHeader(
+                'Authorization',
+                'Bearer ' . $request->request->get(self::ACCESS_TOKEN_PARAMETER)
+            );
+            $request->request->remove(self::ACCESS_TOKEN_PARAMETER);
         }
 
         return $serverRequest;

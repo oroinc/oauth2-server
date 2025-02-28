@@ -8,7 +8,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 /**
  * Adds the OAuth authorization firewall as skipped to not log the login attempts.
  */
-class AddSkippedLogAttemptsFirewalls implements CompilerPassInterface
+class AddSkippedLogAttemptsFirewallsPass implements CompilerPassInterface
 {
     #[\Override]
     public function process(ContainerBuilder $container): void
