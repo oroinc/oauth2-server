@@ -35,6 +35,10 @@ use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPasspor
  */
 class OAuth2Authenticator implements AuthenticatorInterface
 {
+    private const ACCESS_TOKEN_PARAMETER = 'access_token';
+
+    private array $authorizationCookies = [];
+
     public function __construct(
         private LoggerInterface $logger,
         private ClientManager $clientManager,
@@ -48,20 +52,29 @@ class OAuth2Authenticator implements AuthenticatorInterface
     ) {
     }
 
+    public function setAuthorizationCookies(array $authorizationCookies): void
+    {
+        $this->authorizationCookies = $authorizationCookies;
+    }
+
+    #[\Override]
     public function supports(Request $request): ?bool
     {
         if (!$this->featureDependAuthenticatorChecker->isEnabled($this, $this->firewallName)) {
             return false;
         }
-        if (!$request->headers->has('Authorization') ||
-            !preg_match('/^(?:\s+)?Bearer\s/', $request->headers->get('Authorization'))
+        if (($request->headers->has('Authorization')
+                && preg_match('/^(?:\s+)?Bearer\s/', $request->headers->get('Authorization')))
+            || ($request->request->has(self::ACCESS_TOKEN_PARAMETER)
+                && $request->headers->contains('Content-type', 'application/vnd.api+json'))
         ) {
-            return false;
+            return true;
         }
 
-        return true;
+        return false;
     }
 
+    #[\Override]
     public function authenticate(Request $request): Passport
     {
         $serverRequest = $this->validateAuthorization($this->createServerRequest($request));
@@ -77,6 +90,7 @@ class OAuth2Authenticator implements AuthenticatorInterface
         return $passport;
     }
 
+    #[\Override]
     public function createToken(Passport $passport, string $firewallName): TokenInterface
     {
         $user = $passport->getUser();
@@ -93,11 +107,13 @@ class OAuth2Authenticator implements AuthenticatorInterface
         );
     }
 
+    #[\Override]
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
         return null;
     }
 
+    #[\Override]
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
     {
         return new Response('', 401, []);
@@ -159,7 +175,17 @@ class OAuth2Authenticator implements AuthenticatorInterface
 
     private function createServerRequest(Request $request): ServerRequestInterface
     {
-        return $this->httpMessageFactory->createRequest($request);
+        $serverRequest = $this->httpMessageFactory->createRequest($request);
+
+        if ($request->request->has(self::ACCESS_TOKEN_PARAMETER)) {
+            $serverRequest = $serverRequest->withHeader(
+                'Authorization',
+                'Bearer ' . $request->request->get(self::ACCESS_TOKEN_PARAMETER)
+            );
+            $request->request->remove(self::ACCESS_TOKEN_PARAMETER);
+        }
+
+        return $serverRequest;
     }
 
     private function validateAuthorization(ServerRequestInterface $serverRequest): ServerRequestInterface
