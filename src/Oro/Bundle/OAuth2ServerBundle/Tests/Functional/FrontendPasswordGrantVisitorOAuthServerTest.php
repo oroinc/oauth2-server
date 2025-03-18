@@ -117,11 +117,13 @@ class FrontendPasswordGrantVisitorOAuthServerTest extends OAuthServerTestCase
         $configManager->flush();
 
         // assert that visitor has no shoppingLists
-        $response = $this->cget(
-            ['entity' => 'shoppinglists'],
+        $response = $this->request(
+            'GET',
+            $this->getUrl($this->getListRouteName(), self::processTemplateData(['entity' => 'shoppinglists'])),
             [],
             ['HTTP_AUTHORIZATION' => sprintf('Bearer %s', $accessToken['access_token'])]
         );
+        self::assertResponseStatusCodeEquals($response, Response::HTTP_OK);
         $this->assertResponseContains(['data' => []], $response);
 
         // assert the visitor security token has correct roles

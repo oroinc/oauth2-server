@@ -55,7 +55,7 @@ class FrontendUserRepository extends UserRepository
                 $userEntity = new UserEntity();
                 $visitor = $this->customerVisitorManager->findOrCreate();
                 $userEntity->setIdentifier(
-                    VisitorIdentifierUtil::encodeIdentifier($visitor->getId(), $visitor->getSessionId())
+                    VisitorIdentifierUtil::encodeIdentifier(0, $visitor->getSessionId())
                 );
 
                 return $userEntity;

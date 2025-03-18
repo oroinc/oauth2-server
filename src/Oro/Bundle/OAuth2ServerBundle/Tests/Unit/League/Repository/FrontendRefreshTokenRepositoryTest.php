@@ -5,7 +5,6 @@ namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\League\Repository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use League\OAuth2\Server\Exception\OAuthServerException;
 use Oro\Bundle\CustomerBundle\Entity\CustomerVisitorManager;
 use Oro\Bundle\OAuth2ServerBundle\Entity\AccessToken;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
@@ -98,12 +97,8 @@ class FrontendRefreshTokenRepositoryTest extends \PHPUnit\Framework\TestCase
     {
         $client = new Client();
         $client->setFrontend(true);
-        $accessToken = new AccessToken('at_test_id', new \DateTime(), ['test_scope'], $client, 'visitor:123:test');
+        $accessToken = new AccessToken('at_test_id', new \DateTime(), ['test_scope'], $client, 'visitor:test');
         $existingToken = new RefreshToken('test_id', new \DateTime(), $accessToken);
-        $this->customerVisitorManager->expects(self::once())
-            ->method('find')
-            ->with(123, 'test')
-            ->willReturn(new \stdClass());
         $this->userChecker->expects(self::never())
             ->method('checkUser');
 
@@ -130,43 +125,5 @@ class FrontendRefreshTokenRepositoryTest extends \PHPUnit\Framework\TestCase
 
         $this->repository->revokeRefreshToken('test_id');
         self::assertTrue($existingToken->isRevoked());
-    }
-
-    public function testRevokeRefreshTokenOnExistTokenAndFrontendClientWithWrongVisitorIdentifier()
-    {
-        $client = new Client();
-        $client->setFrontend(true);
-        $accessToken = new AccessToken('at_test_id', new \DateTime(), ['test_scope'], $client, 'visitor:123:test');
-        $existingToken = new RefreshToken('test_id', new \DateTime(), $accessToken);
-        $this->customerVisitorManager->expects(self::once())
-            ->method('find')
-            ->with(123, 'test')
-            ->willReturn(null);
-        $this->userChecker->expects(self::never())
-            ->method('checkUser');
-
-        $em = $this->createMock(EntityManagerInterface::class);
-        $this->doctrine->expects(self::atLeast(1))
-            ->method('getManagerForClass')
-            ->with(RefreshToken::class)
-            ->willReturn($em);
-
-        $repository = $this->createMock(EntityRepository::class);
-        $em->expects(self::once())
-            ->method('getRepository')
-            ->with(RefreshToken::class)
-            ->willReturn($repository);
-        $repository->expects(self::once())
-            ->method('findOneBy')
-            ->with(['identifier' => 'test_id'])
-            ->willReturn($existingToken);
-        $em->expects(self::never())
-            ->method('persist');
-        $em->expects(self::never())
-            ->method('flush');
-
-        $this->expectException(OAuthServerException::class);
-
-        $this->repository->revokeRefreshToken('test_id');
     }
 }
