@@ -32,9 +32,9 @@ class VisitorUserProvider implements UserProviderInterface
     public function loadUserByUsername($username)
     {
         if (VisitorIdentifierUtil::isVisitorIdentifier($username)) {
-            list($visitorId, $visitorSessionId) = VisitorIdentifierUtil::decodeIdentifier($username);
+            [, $visitorSessionId] = VisitorIdentifierUtil::decodeIdentifier($username);
 
-            return $this->customerVisitorManager->find($visitorId, $visitorSessionId);
+            return $this->customerVisitorManager->findOrCreate(null, $visitorSessionId);
         }
 
         return $this->innerUserProvider->loadUserByUsername($username);

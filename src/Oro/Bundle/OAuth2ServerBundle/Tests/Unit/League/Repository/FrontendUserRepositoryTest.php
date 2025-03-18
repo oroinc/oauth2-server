@@ -221,7 +221,7 @@ class FrontendUserRepositoryTest extends \PHPUnit\Framework\TestCase
             ->method('loadUser');
 
         $expectedEntity = new UserEntity();
-        $expectedEntity->setIdentifier('visitor:234:testSession');
+        $expectedEntity->setIdentifier('visitor:testSession');
 
         $this->assertEquals(
             $expectedEntity,

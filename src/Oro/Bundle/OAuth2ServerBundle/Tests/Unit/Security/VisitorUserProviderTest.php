@@ -67,16 +67,15 @@ class VisitorUserProviderTest extends \PHPUnit\Framework\TestCase
 
     public function testLoadUserByUsernameOnVisitorIdentifier()
     {
-        $identifier = 'visitor:345:test';
         $visitor = $this->createMock('Oro\Bundle\CustomerBundle\Entity\CustomerVisitor');
 
-        $this->innerUserProvider->expects($this->never())
+        $this->innerUserProvider->expects(self::never())
             ->method('loadUserByUsername');
-        $this->customerVisitorManager->expects($this->once())
-            ->method('find')
-            ->with(345, 'test')
+        $this->customerVisitorManager->expects(self::once())
+            ->method('findOrCreate')
+            ->with(null, 'test')
             ->willReturn($visitor);
 
-        $this->assertEquals($visitor, $this->visitorUserProvider->loadUserByUsername($identifier));
+        $this->assertEquals($visitor, $this->visitorUserProvider->loadUserByUsername('visitor:test'));
     }
 }
