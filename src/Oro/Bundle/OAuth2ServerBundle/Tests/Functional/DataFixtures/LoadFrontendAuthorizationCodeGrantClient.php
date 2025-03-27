@@ -38,7 +38,7 @@ class LoadFrontendAuthorizationCodeGrantClient extends AbstractFixture implement
     public function load(ObjectManager $manager)
     {
         $client = new Client();
-        $client->setOrganization($this->getReference('organization'));
+        $client->setOrganization($this->getReference(LoadOrganization::ORGANIZATION));
         $client->setName('test Authorization Code Grant backend');
         $client->setGrants(['authorization_code']);
         $client->setIdentifier(self::OAUTH_CLIENT_ID);

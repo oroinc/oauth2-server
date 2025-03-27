@@ -41,10 +41,10 @@ class LoadClientCredentialsClient extends AbstractFixture implements ContainerAw
     public function load(ObjectManager $manager)
     {
         /** @var User $owner */
-        $owner = $this->getReference('user');
+        $owner = $this->getReference(LoadUser::USER);
 
         $client = new Client();
-        $client->setOrganization($this->getReference('organization'));
+        $client->setOrganization($this->getReference(LoadOrganization::ORGANIZATION));
         $client->setName('test application');
         $client->setGrants(['client_credentials']);
         $client->setOwnerEntity(get_class($owner), $owner->getId());

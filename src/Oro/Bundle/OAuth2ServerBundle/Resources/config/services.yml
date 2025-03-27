@@ -386,15 +386,10 @@ services:
 
     oro_oauth2_server.handler.get_access_token.password_grant_success_handler:
         class: Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Success\PasswordGrantSuccessHandler
-        public: false
         arguments:
-            - '@event_dispatcher'
             - '@request_stack'
-            - '@oro_oauth2_server.client_manager'
-            - '@security.token_storage'
-            - '@oro_user.security.user_loader'
-            - '@?oro_customer.security.user_loader'
-            - '@?oro_frontend.request.frontend_helper'
+            - '@oro_oauth2_server.handler.get_access_token.interactive_login_event_dispatcher'
+            - '@oro_oauth2_server.visitor_access_token_parser'
         tags:
             - { name: oro_oauth2_server.get_access_token_success_handler }
 
@@ -412,8 +407,20 @@ services:
         class: Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Success\AuthCodeGrantSuccessHandler
         arguments:
             - '@oro_oauth2_server.auth_code_log_attempt.helper'
+            - '@request_stack'
+            - '@oro_oauth2_server.handler.get_access_token.interactive_login_event_dispatcher'
         tags:
             - { name: oro_oauth2_server.get_access_token_success_handler }
+
+    oro_oauth2_server.handler.get_access_token.interactive_login_event_dispatcher:
+        class: Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Success\InteractiveLoginEventDispatcher
+        arguments:
+            - '@event_dispatcher'
+            - '@oro_oauth2_server.client_manager'
+            - '@security.token_storage'
+            - '@oro_user.security.user_loader'
+            - '@?oro_customer.security.user_loader'
+            - '@?oro_frontend.request.frontend_helper'
 
     oro_oauth2_server.handler.authorize_client.handler:
         class: Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\AuthorizeClientHandler
@@ -438,6 +445,13 @@ services:
             - '@oro_oauth2_server.auth_code_log_attempt.helper'
         tags:
             - { name: oro_oauth2_server.authorize_client_exception_handler }
+
+    oro_oauth2_server.visitor_access_token_parser:
+        class: Oro\Bundle\OAuth2ServerBundle\Security\VisitorAccessTokenParser
+        arguments:
+            - '@oro_oauth2_server.league.authorization_validator'
+            - '@Psr\Http\Message\ServerRequestFactoryInterface'
+            - '@logger'
 
     oro_oauth2_server.security.oauth_login_source_provider:
         class: Oro\Bundle\OAuth2ServerBundle\Security\OauthLoginSourceProvider

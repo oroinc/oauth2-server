@@ -46,7 +46,7 @@ class LoadAuthorizationCodeGrantClient extends AbstractFixture implements
     #[\Override]
     public function load(ObjectManager $manager)
     {
-        $organization = $this->getReference('organization');
+        $organization = $this->getReference(LoadOrganization::ORGANIZATION);
 
         $client = new Client();
         $client->setOrganization($organization);

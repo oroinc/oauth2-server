@@ -4,6 +4,7 @@ namespace Oro\Bundle\OAuth2ServerBundle\Tests\Functional;
 
 use Oro\Bundle\OAuth2ServerBundle\Tests\Functional\DataFixtures\LoadClientCredentialsClient;
 use Oro\Bundle\OAuth2ServerBundle\Tests\Functional\DataFixtures\LoadSecondOrgData;
+use Oro\Bundle\TestFrameworkBundle\Tests\Functional\DataFixtures\LoadUser;
 
 class OAuthApiRequestsAtMultiOrgTest extends OAuthServerTestCase
 {
@@ -15,7 +16,11 @@ class OAuthApiRequestsAtMultiOrgTest extends OAuthServerTestCase
         }
 
         $this->initClient();
-        $this->loadFixtures([LoadClientCredentialsClient::class, LoadSecondOrgData::class]);
+        $this->loadFixtures([
+            LoadClientCredentialsClient::class,
+            LoadSecondOrgData::class,
+            LoadUser::class
+        ]);
     }
 
     private function getBearerAuthHeaderValue(string $clientId, string $clientSecret): string
@@ -24,13 +29,14 @@ class OAuthApiRequestsAtMultiOrgTest extends OAuthServerTestCase
             'POST',
             $this->getUrl('oro_oauth2_server_auth_token'),
             [
-                'grant_type'    => 'client_credentials',
-                'client_id'     => $clientId,
+                'grant_type' => 'client_credentials',
+                'client_id' => $clientId,
                 'client_secret' => $clientSecret
             ]
         );
 
         $response = self::jsonToArray($response->getContent());
+
         return sprintf('Bearer %s', $response['access_token']);
     }
 
@@ -43,7 +49,7 @@ class OAuthApiRequestsAtMultiOrgTest extends OAuthServerTestCase
 
         $response = $this->cget(['entity' => 'users'], [], ['HTTP_AUTHORIZATION' => $authorizationHeader]);
         $this->assertResponseContains(
-            ['data' => [['type' => 'users', 'id'   => '<toString(@user->id)>']]],
+            ['data' => [['type' => 'users', 'id' => '<toString(@user->id)>']]],
             $response
         );
     }
@@ -57,7 +63,7 @@ class OAuthApiRequestsAtMultiOrgTest extends OAuthServerTestCase
 
         $response = $this->cget(['entity' => 'users'], [], ['HTTP_AUTHORIZATION' => $authorizationHeader]);
         $this->assertResponseContains(
-            ['data' => [['type' => 'users', 'id'   => '<toString(@second_user->id)>']]],
+            ['data' => [['type' => 'users', 'id' => '<toString(@second_user->id)>']]],
             $response
         );
     }

@@ -5,16 +5,16 @@ namespace Oro\Bundle\OAuth2ServerBundle\Tests\Functional\Command;
 use Oro\Bundle\OAuth2ServerBundle\League\CryptKeyFile;
 use Oro\Bundle\TestFrameworkBundle\Test\WebTestCase;
 use Oro\Component\Testing\ReflectionUtil;
+use Oro\Component\Testing\TempDirExtension;
 use Symfony\Component\Filesystem\Filesystem;
 
 class GenerateKeysCommandTest extends WebTestCase
 {
+    use TempDirExtension;
+
     private CryptKeyFile $oAuth2PrivateKey;
-
     private CryptKeyFile $oAuth2PublicKey;
-
     private string $originalOAuth2PrivateKeyPath;
-
     private string $originalOAuth2PublicKeyPath;
 
     protected function setUp(): void
@@ -29,26 +29,38 @@ class GenerateKeysCommandTest extends WebTestCase
 
     protected function tearDown(): void
     {
-        $this->setOAuth2PrivateKeyPath($this->originalOAuth2PrivateKeyPath);
-        $this->setOAuth2PublicKeyPath($this->originalOAuth2PublicKeyPath);
+        $this->setOAuth2KeyPath($this->oAuth2PrivateKey, $this->originalOAuth2PrivateKeyPath);
+        $this->setOAuth2KeyPath($this->oAuth2PublicKey, $this->originalOAuth2PublicKeyPath);
+    }
+
+    private function setOAuth2KeyPath(CryptKeyFile $key, string $path): void
+    {
+        ReflectionUtil::setPropertyValue($key, 'keyPath', $path);
+    }
+
+    private function createOAuth2KeyFile(string $path): string
+    {
+        $filesystem = new Filesystem();
+        $filesystem->dumpFile($path, 'sample_key');
+        clearstatcache();
+
+        return $path;
+    }
+
+    private function getRandomPath(): string
+    {
+        return $this->getTempFile('oauth_generate_keys', 'key', '.key');
     }
 
     public function testExecuteReturnsSuccess(): void
     {
-        $privateKeyPath = $this->getRandomPath();
-        $this->setOAuth2PrivateKeyPath($privateKeyPath);
-        $publicKeyPath = $this->getRandomPath();
-        $this->setOAuth2PublicKeyPath($publicKeyPath);
+        $this->setOAuth2KeyPath($this->oAuth2PrivateKey, $this->getRandomPath());
+        $this->setOAuth2KeyPath($this->oAuth2PublicKey, $this->getRandomPath());
 
-        try {
-            $result = self::runCommand('oro:oauth-server:generate-keys');
-        } finally {
-            $filesystem = new Filesystem();
-            $filesystem->remove([$privateKeyPath, $publicKeyPath]);
-        }
+        $result = self::runCommand('oro:oauth-server:generate-keys');
 
-        $this->assertStringContainsString('The private and public keys are generated successfully', $result);
-        $this->assertStringContainsString(
+        self::assertStringContainsString('The private and public keys are generated successfully', $result);
+        self::assertStringContainsString(
             'Be aware that the locally generated private key may have permissions that allow access by'
             . ' other Linux users. For production deployment, ensure that only the web server has read and'
             . ' write permissions for the private key.',
@@ -58,39 +70,11 @@ class GenerateKeysCommandTest extends WebTestCase
 
     public function testExecuteReturnsFailureWhenAlreadyExists(): void
     {
-        $privateKeyPath = $this->getRandomPath();
-        $this->setOAuth2PrivateKeyPath($privateKeyPath);
-        $publicKeyPath = $this->getRandomPath();
-        $this->setOAuth2PublicKeyPath($publicKeyPath);
+        $this->setOAuth2KeyPath($this->oAuth2PrivateKey, $this->createOAuth2KeyFile($this->getRandomPath()));
+        $this->setOAuth2KeyPath($this->oAuth2PublicKey, $this->createOAuth2KeyFile($this->getRandomPath()));
 
-        $filesystem = new Filesystem();
-        $filesystem->dumpFile($privateKeyPath, 'sample_key');
-        $filesystem->dumpFile($publicKeyPath, 'sample_key');
+        $result = self::runCommand('oro:oauth-server:generate-keys');
 
-        try {
-            $result = self::runCommand('oro:oauth-server:generate-keys');
-        } finally {
-            $filesystem = new Filesystem();
-            $filesystem->remove([$privateKeyPath, $publicKeyPath]);
-        }
-
-        $this->assertStringContainsString('The oAuth 2.0 private and public keys already exist', $result);
-    }
-
-    private function setOAuth2PrivateKeyPath(string $path): void
-    {
-        ReflectionUtil::setPropertyValue($this->oAuth2PrivateKey, 'keyPath', $path);
-    }
-
-    private function setOAuth2PublicKeyPath(string $path): void
-    {
-        ReflectionUtil::setPropertyValue($this->oAuth2PublicKey, 'keyPath', $path);
-    }
-
-    private function getRandomPath(): string
-    {
-        $cachePath = self::getContainer()->getParameter('kernel.cache_dir');
-
-        return $cachePath . DIRECTORY_SEPARATOR . uniqid('key_', true) . '.key';
+        self::assertStringContainsString('The oAuth 2.0 private and public keys already exist', $result);
     }
 }

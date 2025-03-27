@@ -135,7 +135,7 @@ class LoadCleanupCommandData extends AbstractFixture implements ContainerAwareIn
     private function createUser(string $key): User
     {
         $user = new User();
-        $user->setOrganization($this->getReference('organization'));
+        $user->setOrganization($this->getReference(LoadOrganization::ORGANIZATION));
         $user->setOwner($this->getReference('business_unit'));
         $user->setFirstName('fn' . $key);
         $user->setLastName('ln' . $key);
@@ -150,7 +150,7 @@ class LoadCleanupCommandData extends AbstractFixture implements ContainerAwareIn
     private function createClient(string $identifier, string $ownerEntityClass, int $ownerEntityId): Client
     {
         $client = new Client();
-        $client->setOrganization($this->getReference('organization'));
+        $client->setOrganization($this->getReference(LoadOrganization::ORGANIZATION));
         $client->setName($identifier);
         $client->setIdentifier($identifier);
         $client->setGrants(['client_credentials']);

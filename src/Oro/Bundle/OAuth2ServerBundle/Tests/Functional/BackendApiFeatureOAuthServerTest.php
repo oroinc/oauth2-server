@@ -20,28 +20,27 @@ class BackendApiFeatureOAuthServerTest extends OAuthServerTestCase
         $this->loadFixtures([LoadClientCredentialsClient::class]);
     }
 
-    public function testGetAuthTokenOnEnabledFeature()
+    public function testGetAuthTokenOnEnabledFeature(): void
     {
         $accessToken = $this->sendTokenRequest(
             [
-                'grant_type'    => 'client_credentials',
-                'client_id'     => LoadClientCredentialsClient::OAUTH_CLIENT_ID,
+                'grant_type' => 'client_credentials',
+                'client_id' => LoadClientCredentialsClient::OAUTH_CLIENT_ID,
                 'client_secret' => LoadClientCredentialsClient::OAUTH_CLIENT_SECRET
-            ],
-            Response::HTTP_OK
+            ]
         );
 
         self::assertEquals('Bearer', $accessToken['token_type']);
     }
 
-    public function testGetAuthTokenOnDisabledFeature()
+    public function testGetAuthTokenOnDisabledFeature(): void
     {
         $this->disableApiFeature();
         try {
             $response = $this->sendTokenRequest(
                 [
-                    'grant_type'    => 'client_credentials',
-                    'client_id'     => LoadClientCredentialsClient::OAUTH_CLIENT_ID,
+                    'grant_type' => 'client_credentials',
+                    'client_id' => LoadClientCredentialsClient::OAUTH_CLIENT_ID,
                     'client_secret' => LoadClientCredentialsClient::OAUTH_CLIENT_SECRET
                 ],
                 Response::HTTP_UNAUTHORIZED
@@ -52,9 +51,9 @@ class BackendApiFeatureOAuthServerTest extends OAuthServerTestCase
 
         self::assertEquals(
             [
-                'error'             => 'invalid_client',
+                'error' => 'invalid_client',
                 'error_description' => 'Client authentication failed',
-                'message'           => 'Client authentication failed'
+                'message' => 'Client authentication failed'
             ],
             $response
         );

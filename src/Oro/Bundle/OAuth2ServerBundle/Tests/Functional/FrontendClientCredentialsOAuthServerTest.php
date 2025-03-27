@@ -35,8 +35,8 @@ class FrontendClientCredentialsOAuthServerTest extends OAuthServerTestCase
             'POST',
             $this->getUrl('oro_oauth2_server_auth_token'),
             [
-                'grant_type'    => 'client_credentials',
-                'client_id'     => $clientId,
+                'grant_type' => 'client_credentials',
+                'client_id' => $clientId,
                 'client_secret' => $clientSecret
             ],
             $server
@@ -98,7 +98,7 @@ class FrontendClientCredentialsOAuthServerTest extends OAuthServerTestCase
         $expectedData = [
             'data' => [
                 'type' => 'customerusers',
-                'id'   => '<toString(@grzegorz.brzeczyszczykiewicz@example.com->id)>'
+                'id' => '<toString(@grzegorz.brzeczyszczykiewicz@example.com->id)>'
             ]
         ];
 
@@ -139,7 +139,7 @@ class FrontendClientCredentialsOAuthServerTest extends OAuthServerTestCase
         $expectedData = [
             'data' => [
                 'type' => 'users',
-                'id'   => '<toString(@user->id)>'
+                'id' => '<toString(@user->id)>'
             ]
         ];
 
@@ -148,7 +148,7 @@ class FrontendClientCredentialsOAuthServerTest extends OAuthServerTestCase
             LoadClientCredentialsClient::OAUTH_CLIENT_SECRET
         );
 
-        $userId = $this->getReference('user')->getId();
+        $userId = $this->getReference(LoadUser::USER)->getId();
         $response = $this->get(
             ['entity' => 'users', 'id' => $userId],
             [],
@@ -164,7 +164,7 @@ class FrontendClientCredentialsOAuthServerTest extends OAuthServerTestCase
             LoadFrontendClientCredentialsClient::OAUTH_CLIENT_SECRET
         );
 
-        $customerUserId = $this->getReference('user')->getId();
+        $customerUserId = $this->getReference(LoadUser::USER)->getId();
         $response = $this->get(
             ['entity' => 'users', 'id' => $customerUserId],
             [],

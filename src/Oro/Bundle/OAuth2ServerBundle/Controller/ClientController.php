@@ -29,26 +29,16 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 class ClientController extends AbstractController
 {
     private const SUPPORTED_CLIENT_TYPES = [
-        'frontend'   => ['isFrontend' => true],
+        'frontend' => ['isFrontend' => true],
         'backoffice' => ['isFrontend' => false]
     ];
 
     private const CLIENT_CREDENTIALS_GRANT_TYPES = ['client_credentials'];
 
-    /** @var array */
-    private $supportedGrantTypes;
-
-    /** @var ApiFeatureChecker */
-    private $featureChecker;
-
-    /**
-     * @param string[]          $supportedGrantTypes
-     * @param ApiFeatureChecker $featureChecker
-     */
-    public function __construct(array $supportedGrantTypes, ApiFeatureChecker $featureChecker)
-    {
-        $this->supportedGrantTypes = $supportedGrantTypes;
-        $this->featureChecker = $featureChecker;
+    public function __construct(
+        private array $supportedGrantTypes,
+        private ApiFeatureChecker $featureChecker
+    ) {
     }
 
     #[\Override]
@@ -61,7 +51,7 @@ class ClientController extends AbstractController
             FormFactoryInterface::class,
             TranslatorInterface::class,
             EncryptionKeysExistenceChecker::class,
-            'doctrine' => ManagerRegistry::class
+            ManagerRegistry::class
         ]);
     }
 
@@ -77,20 +67,12 @@ class ClientController extends AbstractController
         }
 
         return [
-            'isFrontend'          => self::SUPPORTED_CLIENT_TYPES[$type]['isFrontend'],
+            'isFrontend' => self::SUPPORTED_CLIENT_TYPES[$type]['isFrontend'],
             'encryptionKeysExist' => $this->isEncryptionKeysExist(),
-            'privateKeySecure'    => $this->isPrivateKeySecure(),
+            'privateKeySecure' => $this->isPrivateKeySecure()
         ];
     }
 
-    /**
-     *
-     *
-     * @param Client $entity
-     * @param string $type
-     *
-     * @return mixed
-     */
     #[Route(path: '/{id}', name: 'oro_oauth2_view', requirements: ['id' => '\d+'], defaults: ['type' => 'backoffice'])]
     #[Route(
         path: '/frontend/{id}',
@@ -110,27 +92,19 @@ class ClientController extends AbstractController
 
         $user = null;
         if ($entity->getOwnerEntityId()) {
-            $user = $this->container->get('doctrine')->getRepository($entity->getOwnerEntityClass())->find(
-                $entity->getOwnerEntityId()
-            );
+            $user = $this->container->get(ManagerRegistry::class)
+                ->getRepository($entity->getOwnerEntityClass())
+                ->find($entity->getOwnerEntityId());
         }
 
         return [
-            'entity'              => $entity,
-            'user'                => $user,
+            'entity' => $entity,
+            'user' => $user,
             'encryptionKeysExist' => $this->isEncryptionKeysExist(),
-            'privateKeySecure'    => $this->isPrivateKeySecure(),
+            'privateKeySecure' => $this->isPrivateKeySecure()
         ];
     }
 
-    /**
-     *
-     *
-     * @param Request $request
-     * @param string  $type
-     *
-     * @return mixed
-     */
     #[Route(path: '/create', name: 'oro_oauth2_create', defaults: ['type' => 'backoffice'], methods: ['GET', 'POST'])]
     #[Route(
         path: '/create/frontend',
@@ -139,7 +113,7 @@ class ClientController extends AbstractController
         methods: ['GET', 'POST']
     )]
     #[Template('@OroOAuth2Server/Client/create.html.twig')]
-    public function createAction(Request $request, string $type)
+    public function createAction(Request $request, string $type): array|Response
     {
         $this->checkTypeEnabled($type);
         if (!$this->getClientManager()->isCreationGranted()) {
@@ -161,25 +135,13 @@ class ClientController extends AbstractController
         if ($response instanceof RedirectResponse) {
             $response = $this->render(
                 '@OroOAuth2Server/Client/createResult.html.twig',
-                [
-                    'entity' => $entity,
-                    'type'   => $type
-                ]
+                ['entity' => $entity, 'type' => $type]
             );
         }
 
         return $response;
     }
 
-    /**
-     *
-     *
-     * @param Request $request
-     * @param Client  $entity
-     * @param string  $type
-     *
-     * @return mixed
-     */
     #[Route(
         path: '/update/{id}',
         name: 'oro_oauth2_update',
@@ -195,7 +157,7 @@ class ClientController extends AbstractController
         methods: ['GET', 'POST']
     )]
     #[Template('@OroOAuth2Server/Client/update.html.twig')]
-    public function updateAction(Request $request, Client $entity, string $type)
+    public function updateAction(Request $request, Client $entity, string $type): array|RedirectResponse
     {
         $this->checkTypeEnabled($type);
         $this->checkClientApplicableForType($entity, $type);
@@ -210,15 +172,9 @@ class ClientController extends AbstractController
         );
     }
 
-    /**
-     *
-     * @param Request $request
-     *
-     * @return array
-     */
     #[Route(path: '/create/client', name: 'oro_oauth2_server_client_create', methods: ['GET', 'POST'])]
     #[Template('@OroOAuth2Server/Client/create.html.twig')]
-    public function createClientAction(Request $request)
+    public function createClientAction(Request $request): array|RedirectResponse
     {
         if (!$this->getClientManager()->isCreationGranted()) {
             throw $this->createAccessDeniedException();
@@ -246,13 +202,6 @@ class ClientController extends AbstractController
         );
     }
 
-    /**
-     *
-     * @param Request $request
-     * @param Client  $entity
-     *
-     * @return array
-     */
     #[Route(
         path: '/update/client/{id}',
         name: 'oro_oauth2_server_client_update',
@@ -260,7 +209,7 @@ class ClientController extends AbstractController
         methods: ['GET', 'POST']
     )]
     #[Template('@OroOAuth2Server/Client/update.html.twig')]
-    public function updateClientAction(Request $request, Client $entity)
+    public function updateClientAction(Request $request, Client $entity): array|RedirectResponse
     {
         $this->checkClientEnabled($entity);
         $this->checkModificationAccess($entity);
@@ -279,7 +228,7 @@ class ClientController extends AbstractController
         requirements: ['id' => '\d+'],
         methods: ['DELETE']
     )]
-    #[CsrfProtection()]
+    #[CsrfProtection]
     public function deleteAction(Client $entity): Response
     {
         $this->checkClientEnabled($entity);
@@ -298,7 +247,7 @@ class ClientController extends AbstractController
         requirements: ['id' => '\d+'],
         methods: ['POST']
     )]
-    #[CsrfProtection()]
+    #[CsrfProtection]
     public function activateAction(Client $entity): Response
     {
         $this->checkClientEnabled($entity);
@@ -315,7 +264,7 @@ class ClientController extends AbstractController
         requirements: ['id' => '\d+'],
         methods: ['POST']
     )]
-    #[CsrfProtection()]
+    #[CsrfProtection]
     public function deactivateAction(Client $entity): Response
     {
         $this->checkClientEnabled($entity);
@@ -326,26 +275,15 @@ class ClientController extends AbstractController
         return new JsonResponse(['successful' => true]);
     }
 
-    /**
-     * @param Request  $request
-     * @param Client   $entity
-     * @param bool     $isSystemOAuthApplication
-     * @param string[] $grantTypes
-     * @param string   $message
-     * @param string   $ownerEntityClass
-     * @param int      $ownerEntityId
-     *
-     * @return array
-     */
     private function update(
         Request $request,
         Client $entity,
-        $isSystemOAuthApplication,
-        $grantTypes,
-        $message = null,
-        $ownerEntityClass = null,
-        $ownerEntityId = null
-    ) {
+        bool $isSystemOAuthApplication,
+        array $grantTypes,
+        ?string $message = null,
+        ?string $ownerEntityClass = null,
+        ?int $ownerEntityId = null
+    ): array|RedirectResponse {
         return $this->container->get(UpdateHandlerFacade::class)->update(
             $entity,
             $this->getForm($entity, $isSystemOAuthApplication, $grantTypes),
@@ -356,14 +294,7 @@ class ClientController extends AbstractController
         );
     }
 
-    /**
-     * @param Client   $entity
-     * @param bool     $isSystemOAuthApplication
-     * @param string[] $grantTypes
-     *
-     * @return FormInterface
-     */
-    private function getForm(Client $entity, $isSystemOAuthApplication, $grantTypes): FormInterface
+    private function getForm(Client $entity, bool $isSystemOAuthApplication, array $grantTypes): FormInterface
     {
         return $this->container->get(FormFactoryInterface::class)
             ->createNamed(
@@ -409,8 +340,8 @@ class ClientController extends AbstractController
             }
 
             return [
-                'entity'     => $entity,
-                'form'       => $form->createView(),
+                'entity' => $entity,
+                'form' => $form->createView(),
                 'formAction' => $formAction
             ];
         };

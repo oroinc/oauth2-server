@@ -30,7 +30,8 @@ class OauthLoginSourceProvider implements
             && \in_array(
                 $authenticator->getFirewallName(),
                 ['oauth2_authorization_authenticate', 'oauth2_frontend_authorization_authenticate']
-            )) {
+            )
+        ) {
             return 'OAuthCode';
         }
 

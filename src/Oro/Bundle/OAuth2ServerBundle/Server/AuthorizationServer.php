@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Oro\Bundle\OAuth2ServerBundle\Server;
 
-use League\OAuth2\Server\AuthorizationServer as LeageAuthorizationServer;
+use League\OAuth2\Server\AuthorizationServer as LeagueAuthorizationServer;
 
 /**
- * Overrides {@see LeageAuthorizationServer} to add the ability to specify custom TTL for an access token.
+ * Overrides {@see LeagueAuthorizationServer} to add the ability to specify custom TTL for an access token.
  */
-class AuthorizationServer extends LeageAuthorizationServer
+class AuthorizationServer extends LeagueAuthorizationServer
 {
     public function setGrantTypeAccessTokenTTL(string $grantType, \DateInterval $dateInterval): void
     {

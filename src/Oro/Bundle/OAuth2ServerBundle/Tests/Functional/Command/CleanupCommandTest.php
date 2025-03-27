@@ -19,7 +19,7 @@ class CleanupCommandTest extends WebTestCase
         $this->loadFixtures([LoadCleanupCommandData::class]);
     }
 
-    public function testCleanup()
+    public function testCleanup(): void
     {
         $result = self::runCommand('oro:cron:oauth-server:cleanup');
         self::assertStringContainsString('Completed', $result);

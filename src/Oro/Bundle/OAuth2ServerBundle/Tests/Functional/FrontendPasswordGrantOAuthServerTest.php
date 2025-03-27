@@ -33,7 +33,7 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
     private function getBackendBearerAuthHeaderValue(): string
     {
         /** @var User $user */
-        $user = $this->getReference('user');
+        $user = $this->getReference(LoadUser::USER);
         $userName = $user->getUserIdentifier();
         $responseData = $this->sendBackendPasswordAccessTokenRequest($userName, $userName);
 
@@ -47,11 +47,11 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
     ): array {
         return $this->sendTokenRequest(
             [
-                'grant_type'    => 'password',
-                'client_id'     => LoadFrontendPasswordGrantClient::OAUTH_CLIENT_ID,
+                'grant_type' => 'password',
+                'client_id' => LoadFrontendPasswordGrantClient::OAUTH_CLIENT_ID,
                 'client_secret' => LoadFrontendPasswordGrantClient::OAUTH_CLIENT_SECRET,
-                'username'      => $userName,
-                'password'      => $password
+                'username' => $userName,
+                'password' => $password
             ],
             $expectedStatusCode
         );
@@ -64,11 +64,11 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
     ): array {
         return $this->sendTokenRequest(
             [
-                'grant_type'    => 'password',
-                'client_id'     => LoadPasswordGrantClient::OAUTH_CLIENT_ID,
+                'grant_type' => 'password',
+                'client_id' => LoadPasswordGrantClient::OAUTH_CLIENT_ID,
                 'client_secret' => LoadPasswordGrantClient::OAUTH_CLIENT_SECRET,
-                'username'      => $userName,
-                'password'      => $password
+                'username' => $userName,
+                'password' => $password
             ],
             $expectedStatusCode
         );
@@ -86,20 +86,13 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
 
     /**
      * Sends GET request for a single entity to Frontend API.
-     *
-     * @param array $routeParameters
-     * @param array $parameters
-     * @param array $server
-     * @param bool  $assertValid
-     *
-     * @return Response
      */
     private function frontendGet(
         array $routeParameters,
         array $parameters,
         array $server,
-        $assertValid = true
-    ) {
+        bool $assertValid = true
+    ): Response {
         $server['HTTP_ACCEPT'] = self::JSON_API_MEDIA_TYPE;
         $this->client->request(
             'GET',
@@ -125,7 +118,7 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
         return $response;
     }
 
-    public function testFrontendGetAuthTokenWithFrontendCredentialsShouldReturnAccessAndRefreshTokens()
+    public function testFrontendGetAuthTokenWithFrontendCredentialsShouldReturnAccessAndRefreshTokens(): void
     {
         $startDateTime = new \DateTime('now', new \DateTimeZone('UTC'));
         $accessToken = $this->sendFrontendPasswordAccessTokenRequest(
@@ -143,9 +136,9 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
         self::assertClientLastUsedValueIsCorrect($startDateTime, $client);
     }
 
-    public function testFrontendGetAuthTokenWithBackendCredentialsShouldReturnBadRequestStatusCode()
+    public function testFrontendGetAuthTokenWithBackendCredentialsShouldReturnBadRequestStatusCode(): void
     {
-        $user = $this->getReference('user');
+        $user = $this->getReference(LoadUser::USER);
         $responseContent = $this->sendFrontendPasswordAccessTokenRequest(
             $user->getUserIdentifier(),
             $user->getUserIdentifier(),
@@ -154,15 +147,15 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
 
         self::assertEquals(
             [
-                'error'             => 'invalid_grant',
-                'message'           => 'The user credentials were incorrect.',
+                'error' => 'invalid_grant',
+                'message' => 'The user credentials were incorrect.',
                 'error_description' => 'The user credentials were incorrect.'
             ],
             $responseContent
         );
     }
 
-    public function testBackendGetAuthTokenWithFrontendCredentialsShouldReturnBadRequestStatusCode()
+    public function testBackendGetAuthTokenWithFrontendCredentialsShouldReturnBadRequestStatusCode(): void
     {
         $responseContent = $this->sendBackendPasswordAccessTokenRequest(
             'grzegorz.brzeczyszczykiewicz@example.com',
@@ -172,15 +165,15 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
 
         self::assertEquals(
             [
-                'error'             => 'invalid_grant',
-                'message'           => 'The user credentials were incorrect.',
+                'error' => 'invalid_grant',
+                'message' => 'The user credentials were incorrect.',
                 'error_description' => 'The user credentials were incorrect.'
             ],
             $responseContent
         );
     }
 
-    public function testGetFrontendAuthTokenForDeactivatedCustomerUserShouldReturnUnauthorizedStatusCode()
+    public function testGetFrontendAuthTokenForDeactivatedCustomerUserShouldReturnUnauthorizedStatusCode(): void
     {
         $user = $this->getReference('grzegorz.brzeczyszczykiewicz@example.com');
         $user->setEnabled(false);
@@ -194,8 +187,8 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
 
         self::assertEquals(
             [
-                'error'             => 'invalid_grant',
-                'message'           => 'The provided authorization grant (e.g., authorization code,'
+                'error' => 'invalid_grant',
+                'message' => 'The provided authorization grant (e.g., authorization code,'
                     . ' resource owner credentials) or refresh token is invalid, expired, revoked,'
                     . ' does not match the redirection URI used in the authorization request,'
                     . ' or was issued to another client.',
@@ -203,13 +196,13 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
                     . ' resource owner credentials) or refresh token is invalid, expired, revoked,'
                     . ' does not match the redirection URI used in the authorization request,'
                     . ' or was issued to another client.',
-                'hint'              => 'Account is disabled.'
+                'hint' => 'Account is disabled.'
             ],
             $responseContent
         );
     }
 
-    public function testApiFrontendRequestWithCorrectAccessTokenShouldReturnRequestedData()
+    public function testApiFrontendRequestWithCorrectAccessTokenShouldReturnRequestedData(): void
     {
         $authorizationHeader = $this->getFrontendBearerAuthHeaderValue();
         $customerUserId = $this->getReference('grzegorz.brzeczyszczykiewicz@example.com')->getId();
@@ -217,7 +210,7 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
         $expectedData = [
             'data' => [
                 'type' => 'customerusers',
-                'id'   => (string)$customerUserId
+                'id' => (string)$customerUserId
             ]
         ];
 
@@ -229,7 +222,7 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
         $this->assertResponseContains($expectedData, $response);
     }
 
-    public function testApiFrontendRequestWithBackendAccessTokenShouldReturnUnauthorizedStatusCode()
+    public function testApiFrontendRequestWithBackendAccessTokenShouldReturnUnauthorizedStatusCode(): void
     {
         $authorizationHeader = $this->getBackendBearerAuthHeaderValue();
         $customerUserId = $this->getReference('grzegorz.brzeczyszczykiewicz@example.com')->getId();
@@ -244,7 +237,7 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
         self::assertSame('', $response->getContent());
     }
 
-    public function testApiBackendRequestWithFrontendAccessTokenShouldReturnUnauthorizedStatusCode()
+    public function testApiBackendRequestWithFrontendAccessTokenShouldReturnUnauthorizedStatusCode(): void
     {
         $authorizationHeader = $this->getFrontendBearerAuthHeaderValue();
 
@@ -258,7 +251,7 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
         self::assertSame('', $response->getContent());
     }
 
-    public function testGetFrontendRefreshedTokenByFrontendRefreshToken()
+    public function testGetFrontendRefreshedTokenByFrontendRefreshToken(): void
     {
         $accessToken = $this->sendFrontendPasswordAccessTokenRequest(
             'grzegorz.brzeczyszczykiewicz@example.com',
@@ -267,8 +260,8 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
 
         $refreshedToken = $this->sendTokenRequest(
             [
-                'grant_type'    => 'refresh_token',
-                'client_id'     => LoadFrontendPasswordGrantClient::OAUTH_CLIENT_ID,
+                'grant_type' => 'refresh_token',
+                'client_id' => LoadFrontendPasswordGrantClient::OAUTH_CLIENT_ID,
                 'client_secret' => LoadFrontendPasswordGrantClient::OAUTH_CLIENT_SECRET,
                 'refresh_token' => $accessToken['refresh_token']
             ]
@@ -278,17 +271,17 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
         self::assertNotEquals($accessToken['refresh_token'], $refreshedToken['refresh_token']);
     }
 
-    public function testGetFrontendRefreshedTokenByBackendRefreshTokenShouldReturnUnauthorizedStatusCode()
+    public function testGetFrontendRefreshedTokenByBackendRefreshTokenShouldReturnUnauthorizedStatusCode(): void
     {
         /** @var User $user */
-        $user = $this->getReference('user');
+        $user = $this->getReference(LoadUser::USER);
         $userName = $user->getUserIdentifier();
         $accessToken = $this->sendBackendPasswordAccessTokenRequest($userName, $userName);
 
         $responseContent = $this->sendTokenRequest(
             [
-                'grant_type'    => 'refresh_token',
-                'client_id'     => LoadFrontendPasswordGrantClient::OAUTH_CLIENT_ID,
+                'grant_type' => 'refresh_token',
+                'client_id' => LoadFrontendPasswordGrantClient::OAUTH_CLIENT_ID,
                 'client_secret' => LoadFrontendPasswordGrantClient::OAUTH_CLIENT_SECRET,
                 'refresh_token' => $accessToken['refresh_token']
             ],
@@ -297,16 +290,16 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
 
         self::assertEquals(
             [
-                'error'             => 'invalid_request',
+                'error' => 'invalid_request',
                 'error_description' => 'The refresh token is invalid.',
-                'hint'              => 'Token is not linked to client',
-                'message'           => 'The refresh token is invalid.'
+                'hint' => 'Token is not linked to client',
+                'message' => 'The refresh token is invalid.'
             ],
             $responseContent
         );
     }
 
-    public function testGetBackendRefreshedTokenByFronendRefreshTokenShouldReturnUnauthorizedStatusCode()
+    public function testGetBackendRefreshedTokenByFronendRefreshTokenShouldReturnUnauthorizedStatusCode(): void
     {
         $accessToken = $this->sendFrontendPasswordAccessTokenRequest(
             'grzegorz.brzeczyszczykiewicz@example.com',
@@ -315,8 +308,8 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
 
         $responseContent = $this->sendTokenRequest(
             [
-                'grant_type'    => 'refresh_token',
-                'client_id'     => LoadPasswordGrantClient::OAUTH_CLIENT_ID,
+                'grant_type' => 'refresh_token',
+                'client_id' => LoadPasswordGrantClient::OAUTH_CLIENT_ID,
                 'client_secret' => LoadPasswordGrantClient::OAUTH_CLIENT_SECRET,
                 'refresh_token' => $accessToken['refresh_token']
             ],
@@ -325,16 +318,16 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
 
         self::assertEquals(
             [
-                'error'             => 'invalid_request',
+                'error' => 'invalid_request',
                 'error_description' => 'The refresh token is invalid.',
-                'hint'              => 'Token is not linked to client',
-                'message'           => 'The refresh token is invalid.'
+                'hint' => 'Token is not linked to client',
+                'message' => 'The refresh token is invalid.'
             ],
             $responseContent
         );
     }
 
-    public function testApiFrontendRequestWithCorrectRefreshedAccessTokenShouldReturnRequestedData()
+    public function testApiFrontendRequestWithCorrectRefreshedAccessTokenShouldReturnRequestedData(): void
     {
         $accessToken = $this->sendFrontendPasswordAccessTokenRequest(
             'grzegorz.brzeczyszczykiewicz@example.com',
@@ -342,8 +335,8 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
         );
         $refreshedToken = $this->sendTokenRequest(
             [
-                'grant_type'    => 'refresh_token',
-                'client_id'     => LoadFrontendPasswordGrantClient::OAUTH_CLIENT_ID,
+                'grant_type' => 'refresh_token',
+                'client_id' => LoadFrontendPasswordGrantClient::OAUTH_CLIENT_ID,
                 'client_secret' => LoadFrontendPasswordGrantClient::OAUTH_CLIENT_SECRET,
                 'refresh_token' => $accessToken['refresh_token']
             ]
@@ -354,7 +347,7 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
         $expectedData = [
             'data' => [
                 'type' => 'customerusers',
-                'id'   => (string)$customerUserId
+                'id' => (string)$customerUserId
             ]
         ];
 

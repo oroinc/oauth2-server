@@ -3,10 +3,10 @@
 namespace Oro\Bundle\OAuth2ServerBundle\Tests\Functional;
 
 use Oro\Bundle\ConfigBundle\Tests\Functional\Traits\ConfigManagerAwareTestTrait;
+use Oro\Bundle\CustomerBundle\Entity\CustomerUser;
 use Oro\Bundle\CustomerBundle\Security\Token\AnonymousCustomerUserToken;
 use Oro\Bundle\OAuth2ServerBundle\Tests\Functional\DataFixtures\LoadFrontendPasswordGrantClient;
 use Oro\Bundle\OAuth2ServerBundle\Tests\Functional\DataFixtures\LoadPasswordGrantClient;
-use Oro\Bundle\TestFrameworkBundle\Tests\Functional\DataFixtures\LoadUser;
 use Symfony\Component\HttpFoundation\Response;
 
 class FrontendPasswordGrantVisitorOAuthServerTest extends OAuthServerTestCase
@@ -24,7 +24,6 @@ class FrontendPasswordGrantVisitorOAuthServerTest extends OAuthServerTestCase
         $this->loadFixtures([
             LoadPasswordGrantClient::class,
             LoadFrontendPasswordGrantClient::class,
-            LoadUser::class,
             'Oro\Bundle\CustomerBundle\Tests\Functional\DataFixtures\LoadCustomerUserData'
         ]);
     }
@@ -38,21 +37,22 @@ class FrontendPasswordGrantVisitorOAuthServerTest extends OAuthServerTestCase
     private function sendFrontendPasswordAccessTokenRequest(
         string $userName = 'guest',
         string $password = 'guest',
-        int $expectedStatusCode = Response::HTTP_OK
+        int $expectedStatusCode = Response::HTTP_OK,
+        array $additionalRequestData = []
     ): array {
         return $this->sendTokenRequest(
-            [
-                'grant_type'    => 'password',
-                'client_id'     => LoadFrontendPasswordGrantClient::OAUTH_CLIENT_ID,
+            array_merge([
+                'grant_type' => 'password',
+                'client_id' => LoadFrontendPasswordGrantClient::OAUTH_CLIENT_ID,
                 'client_secret' => LoadFrontendPasswordGrantClient::OAUTH_CLIENT_SECRET,
-                'username'      => $userName,
-                'password'      => $password
-            ],
+                'username' => $userName,
+                'password' => $password
+            ], $additionalRequestData),
             $expectedStatusCode
         );
     }
 
-    public function testGetAuthToken()
+    public function testGetAuthToken(): void
     {
         $accessToken = $this->sendFrontendPasswordAccessTokenRequest();
 
@@ -63,37 +63,37 @@ class FrontendPasswordGrantVisitorOAuthServerTest extends OAuthServerTestCase
         self::assertArrayHasKey('access_token', $accessToken);
     }
 
-    public function testTryToGetGetAuthTokenForBackendApplication()
+    public function testTryToGetGetVisitorAuthTokenForBackendApplication(): void
     {
         $responseContent = $this->sendTokenRequest(
             [
-                'grant_type'    => 'password',
-                'client_id'     => LoadPasswordGrantClient::OAUTH_CLIENT_ID,
+                'grant_type' => 'password',
+                'client_id' => LoadPasswordGrantClient::OAUTH_CLIENT_ID,
                 'client_secret' => LoadPasswordGrantClient::OAUTH_CLIENT_SECRET,
-                'username'      => 'guest',
-                'password'      => 'guest'
+                'username' => 'guest',
+                'password' => 'guest'
             ],
             Response::HTTP_BAD_REQUEST
         );
 
         self::assertEquals(
             [
-                'error'             => 'invalid_grant',
-                'message'           => 'The user credentials were incorrect.',
+                'error' => 'invalid_grant',
+                'message' => 'The user credentials were incorrect.',
                 'error_description' => 'The user credentials were incorrect.'
             ],
             $responseContent
         );
     }
 
-    public function testGetRefreshedTokenByVisitorRefreshToken()
+    public function testGetRefreshedTokenByVisitorRefreshToken(): void
     {
         $accessToken = $this->sendFrontendPasswordAccessTokenRequest();
 
         $refreshedToken = $this->sendTokenRequest(
             [
-                'grant_type'    => 'refresh_token',
-                'client_id'     => LoadFrontendPasswordGrantClient::OAUTH_CLIENT_ID,
+                'grant_type' => 'refresh_token',
+                'client_id' => LoadFrontendPasswordGrantClient::OAUTH_CLIENT_ID,
                 'client_secret' => LoadFrontendPasswordGrantClient::OAUTH_CLIENT_SECRET,
                 'refresh_token' => $accessToken['refresh_token']
             ]
@@ -103,7 +103,32 @@ class FrontendPasswordGrantVisitorOAuthServerTest extends OAuthServerTestCase
         self::assertNotEquals($accessToken['refresh_token'], $refreshedToken['refresh_token']);
     }
 
-    public function testShoppingListWithGuestOauthToken()
+    public function testShoppingListWithGuestOauthTokenWhenShoppingListsForGuestsAreDisabled(): void
+    {
+        if (!class_exists('Oro\Bundle\ShoppingListBundle\OroShoppingListBundle')) {
+            self::markTestSkipped('can be tested only with ShoppingListBundle');
+        }
+
+        $accessToken = $this->sendFrontendPasswordAccessTokenRequest();
+
+        $response = $this->request(
+            'GET',
+            $this->getUrl($this->getListRouteName(), self::processTemplateData(['entity' => 'shoppinglists'])),
+            [],
+            ['HTTP_AUTHORIZATION' => sprintf('Bearer %s', $accessToken['access_token'])]
+        );
+        self::assertResponseStatusCodeEquals($response, Response::HTTP_FORBIDDEN);
+
+        $response = $this->post(
+            ['entity' => 'shoppinglists'],
+            'create_shopping_list.yml',
+            ['HTTP_AUTHORIZATION' => sprintf('Bearer %s', $accessToken['access_token'])],
+            false
+        );
+        self::assertResponseStatusCodeEquals($response, Response::HTTP_FORBIDDEN);
+    }
+
+    public function testShoppingListWithGuestOauthToken(): void
     {
         if (!class_exists('Oro\Bundle\ShoppingListBundle\OroShoppingListBundle')) {
             self::markTestSkipped('can be tested only with ShoppingListBundle');
@@ -115,7 +140,7 @@ class FrontendPasswordGrantVisitorOAuthServerTest extends OAuthServerTestCase
         $configManager->set('oro_shopping_list.availability_for_guests', true);
         $configManager->flush();
 
-        // assert that visitor has no shoppingLists
+        // assert that visitor has no shopping lists
         $response = $this->request(
             'GET',
             $this->getUrl($this->getListRouteName(), self::processTemplateData(['entity' => 'shoppinglists'])),
@@ -133,7 +158,7 @@ class FrontendPasswordGrantVisitorOAuthServerTest extends OAuthServerTestCase
             $token->getRoleNames()
         );
 
-        // create one list
+        // create a shopping list
         $response = $this->post(
             ['entity' => 'shoppinglists'],
             'create_shopping_list.yml',
@@ -142,7 +167,7 @@ class FrontendPasswordGrantVisitorOAuthServerTest extends OAuthServerTestCase
         $responseContent = $this->updateResponseContent('create_shopping_list.yml', $response);
         $this->assertResponseContains($responseContent, $response);
 
-        // assert that visitor has list
+        // assert that visitor has a shopping list
         $response = $this->cget(
             ['entity' => 'shoppinglists'],
             [],
@@ -151,11 +176,11 @@ class FrontendPasswordGrantVisitorOAuthServerTest extends OAuthServerTestCase
         $responseContent = $this->updateResponseContent('cget_shopping_list.yml', $response);
         $this->assertResponseContains($responseContent, $response);
 
-        //refresh the token
+        // refresh the token
         $newAccessToken = $this->sendTokenRequest(
             [
-                'grant_type'    => 'refresh_token',
-                'client_id'     => LoadFrontendPasswordGrantClient::OAUTH_CLIENT_ID,
+                'grant_type' => 'refresh_token',
+                'client_id' => LoadFrontendPasswordGrantClient::OAUTH_CLIENT_ID,
                 'client_secret' => LoadFrontendPasswordGrantClient::OAUTH_CLIENT_SECRET,
                 'refresh_token' => $accessToken['refresh_token']
             ]
@@ -170,5 +195,32 @@ class FrontendPasswordGrantVisitorOAuthServerTest extends OAuthServerTestCase
         );
         $responseContent = $this->updateResponseContent('cget_shopping_list.yml', $response);
         $this->assertResponseContains($responseContent, $response);
+
+        // assert that the visitor shopping lists are copied to the customer user
+        $accessToken = $this->sendFrontendPasswordAccessTokenRequest(
+            'grzegorz.brzeczyszczykiewicz@example.com',
+            'test',
+            Response::HTTP_OK,
+            ['visitor_access_token' => $newAccessToken['access_token']]
+        );
+        $response = $this->cget(
+            ['entity' => 'shoppinglists'],
+            [],
+            ['HTTP_AUTHORIZATION' => sprintf('Bearer %s', $accessToken['access_token'])]
+        );
+        /** @var CustomerUser $customerUser */
+        $customerUser = $this->getReference('grzegorz.brzeczyszczykiewicz@example.com');
+        $responseContent['data'][0]['relationships']['customerUser']['data'] = [
+            'type' => 'customerusers',
+            'id' => (string)$customerUser->getId()
+        ];
+        $responseContent['data'][0]['relationships']['customer']['data'] = [
+            'type' => 'customers',
+            'id' => (string)$customerUser->getCustomer()->getId()
+        ];
+        $this->assertResponseContains($responseContent, $response);
+
+        $configManager->set('oro_shopping_list.availability_for_guests', false);
+        $configManager->flush();
     }
 }

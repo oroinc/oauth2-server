@@ -3,286 +3,148 @@
 namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Handler\GetAccessToken\Success;
 
 use GuzzleHttp\Psr7\ServerRequest;
-use Oro\Bundle\CustomerBundle\Security\CustomerUserLoader;
-use Oro\Bundle\FrontendBundle\Request\FrontendHelper;
-use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
-use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
+use Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Success\InteractiveLoginEventDispatcher;
 use Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Success\PasswordGrantSuccessHandler;
-use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\OAuth2Token;
-use Oro\Bundle\OrganizationBundle\Entity\Organization;
-use Oro\Bundle\UserBundle\Entity\User;
-use Oro\Bundle\UserBundle\Entity\UserInterface;
-use Oro\Bundle\UserBundle\Security\UserLoader;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Oro\Bundle\OAuth2ServerBundle\Security\VisitorAccessTokenParser;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
-use Symfony\Component\Security\Http\SecurityEvents;
 
-class PasswordGrantSuccessHandlerTest extends \PHPUnit\Framework\TestCase
+class PasswordGrantSuccessHandlerTest extends TestCase
 {
-    /** @var EventDispatcherInterface|\PHPUnit\Framework\MockObject\MockObject */
-    private $eventDispatcher;
-
-    /** @var RequestStack|\PHPUnit\Framework\MockObject\MockObject */
-    private $requestStack;
-
-    /** @var ClientManager|\PHPUnit\Framework\MockObject\MockObject */
-    private $clientManager;
-
-    /** @var TokenStorageInterface|\PHPUnit\Framework\MockObject\MockObject */
-    private $tokenStorage;
-
-    /** @var UserLoader|\PHPUnit\Framework\MockObject\MockObject */
-    private $backendUserLoader;
+    private RequestStack&MockObject $requestStack;
+    private InteractiveLoginEventDispatcher&MockObject $interactiveLoginEventDispatcher;
+    private VisitorAccessTokenParser&MockObject $visitorAccessTokenParser;
+    private PasswordGrantSuccessHandler $handler;
 
     #[\Override]
     protected function setUp(): void
     {
-        $this->eventDispatcher = $this->createMock(EventDispatcherInterface::class);
-        $this->clientManager = $this->createMock(ClientManager::class);
         $this->requestStack = $this->createMock(RequestStack::class);
-        $this->tokenStorage = $this->createMock(TokenStorageInterface::class);
-        $this->backendUserLoader = $this->createMock(UserLoader::class);
-    }
+        $this->interactiveLoginEventDispatcher = $this->createMock(InteractiveLoginEventDispatcher::class);
+        $this->visitorAccessTokenParser = $this->createMock(VisitorAccessTokenParser::class);
 
-    private function getHandler(
-        ?CustomerUserLoader $frontendUserLoader = null,
-        ?FrontendHelper $frontendHelper = null
-    ): PasswordGrantSuccessHandler {
-        return new PasswordGrantSuccessHandler(
-            $this->eventDispatcher,
+        $this->handler = new PasswordGrantSuccessHandler(
             $this->requestStack,
-            $this->clientManager,
-            $this->tokenStorage,
-            $this->backendUserLoader,
-            $frontendUserLoader,
-            $frontendHelper
+            $this->interactiveLoginEventDispatcher,
+            $this->visitorAccessTokenParser
         );
     }
 
-    public function testHandleOnNonPasswordGrant(): void
+    public function testHandleForNonPasswordGrant(): void
     {
-        $request = (new ServerRequest('GET', ''))->withParsedBody(['grant_type' => 'client']);
+        $request = (new ServerRequest('GET', ''))
+            ->withParsedBody(['grant_type' => 'other']);
 
-        $this->eventDispatcher->expects(self::never())
+        $this->requestStack->expects(self::never())
+            ->method('getMainRequest');
+        $this->visitorAccessTokenParser->expects(self::never())
+            ->method('getVisitorSessionId');
+        $this->interactiveLoginEventDispatcher->expects(self::never())
             ->method('dispatch');
 
-        $handler = $this->getHandler();
-        $handler->handle($request);
+        $this->handler->handle($request);
     }
 
     public function testHandle(): void
     {
-        $requestParameters = [
-            'grant_type' => 'password',
-            'client_id'  => 'test',
-            'username'   => 'testUser',
-        ];
-        $request = (new ServerRequest('GET', ''))->withParsedBody($requestParameters);
+        $request = (new ServerRequest('GET', ''))
+            ->withParsedBody([
+                'grant_type' => 'password',
+                'client_id' => 'test_client',
+                'username' => 'test_user'
+            ]);
 
-        $organization = new Organization();
-        $user = new User();
         $symfonyRequest = $this->createMock(Request::class);
 
-        $expectedToken = new OAuth2Token($user, $organization);
-        $oldToken = null;
-
-        $this->mockClient('test', $organization);
-        $this->backendUserLoader->expects(self::once())
-            ->method('loadUser')
-            ->with('testUser')
-            ->willReturn($user);
         $this->requestStack->expects(self::once())
             ->method('getMainRequest')
             ->willReturn($symfonyRequest);
-        $this->tokenStorage->expects(self::once())
-            ->method('getToken')
-            ->willReturn($oldToken);
-        $this->tokenStorage->expects(self::exactly(2))
-            ->method('setToken')
-            ->withConsecutive(
-                [$expectedToken],
-                [$oldToken]
-            );
-        $this->eventDispatcher->expects(self::once())
+        $this->visitorAccessTokenParser->expects(self::never())
+            ->method('getVisitorSessionId');
+        $this->interactiveLoginEventDispatcher->expects(self::once())
             ->method('dispatch')
-            ->with(new InteractiveLoginEvent($symfonyRequest, $expectedToken), SecurityEvents::INTERACTIVE_LOGIN);
+            ->with(self::identicalTo($symfonyRequest), 'test_client', 'test_user');
 
-        $handler = $this->getHandler();
-        $handler->handle($request);
+        $this->handler->handle($request);
     }
 
-    private function mockClient(string $identifier, Organization $organization, bool $isFrontend = false): void
+    public function testHandleWhenNoMainRequest(): void
     {
-        $client = new Client();
-        $client->setFrontend($isFrontend);
-        $client->setOrganization($organization);
+        $request = (new ServerRequest('GET', ''))
+            ->withParsedBody([
+                'grant_type' => 'password',
+                'client_id' => 'test_client',
+                'username' => 'test_user'
+            ]);
 
-        $this->clientManager->expects(self::once())
-            ->method('getClient')
-            ->with($identifier)
-            ->willReturn($client);
+        $this->requestStack->expects(self::once())
+            ->method('getMainRequest')
+            ->willReturn(null);
+        $this->visitorAccessTokenParser->expects(self::never())
+            ->method('getVisitorSessionId');
+        $this->interactiveLoginEventDispatcher->expects(self::never())
+            ->method('dispatch');
+
+        $this->handler->handle($request);
     }
 
-    public function testHandleOnFrontendRequest(): void
+    public function testHandleWithVisitorAccessToken(): void
     {
-        if (!class_exists('Oro\Bundle\FrontendBundle\OroFrontendBundle')) {
-            self::markTestSkipped('can be tested only with FrontendBundle');
-        }
+        $request = (new ServerRequest('GET', ''))
+            ->withParsedBody([
+                'grant_type' => 'password',
+                'client_id' => 'test_client',
+                'username' => 'test_user',
+                'visitor_access_token' => 'test_visitor_access_token'
+            ]);
 
-        $requestParameters = [
-            'grant_type' => 'password',
-            'client_id'  => 'test',
-            'username'   => 'testUser',
-        ];
-        $request = (new ServerRequest('GET', ''))->withParsedBody($requestParameters);
+        $symfonyRequest = Request::create('/');
 
-        $organization = new Organization();
-        $user = $this->createMock(UserInterface::class);
-        $user->method('getUserRoles')->willReturn([]);
-        $symfonyRequest = $this->createMock(Request::class);
-
-        $expectedToken = new OAuth2Token($user, $organization);
-        $oldToken = null;
-
-        $this->mockClient('test', $organization, true);
-        $frontendUserLoader = $this->createMock(CustomerUserLoader::class);
-        $frontendUserLoader->expects(self::once())
-            ->method('loadUser')
-            ->with('testUser')
-            ->willReturn($user);
         $this->requestStack->expects(self::once())
             ->method('getMainRequest')
             ->willReturn($symfonyRequest);
-        $this->tokenStorage->expects(self::once())
-            ->method('getToken')
-            ->willReturn($oldToken);
-        $this->tokenStorage->expects(self::exactly(2))
-            ->method('setToken')
-            ->withConsecutive(
-                [$expectedToken],
-                [$oldToken]
-            );
-        $this->eventDispatcher->expects(self::once())
+        $this->visitorAccessTokenParser->expects(self::once())
+            ->method('getVisitorSessionId')
+            ->with('test_visitor_access_token')
+            ->willReturn('test_visitor_session_id');
+        $this->interactiveLoginEventDispatcher->expects(self::once())
             ->method('dispatch')
-            ->with(new InteractiveLoginEvent($symfonyRequest, $expectedToken), SecurityEvents::INTERACTIVE_LOGIN);
+            ->with(self::identicalTo($symfonyRequest), 'test_client', 'test_user')
+            ->willReturnCallback(function (Request $symfonyRequest) {
+                self::assertEquals('test_visitor_session_id', $symfonyRequest->attributes->get('visitor_session_id'));
+            });
 
-        $frontendHelper = $this->createMock(FrontendHelper::class);
-        $frontendHelper->expects(self::once())
-            ->method('emulateFrontendRequest');
-        $frontendHelper->expects(self::once())
-            ->method('resetRequestEmulation');
-
-        $handler = $this->getHandler($frontendUserLoader, $frontendHelper);
-        $handler->handle($request);
+        $this->handler->handle($request);
     }
 
-    public function testHandleOnBackendRequest(): void
+    public function testHandleWithInvalidVisitorAccessToken(): void
     {
-        if (!class_exists('Oro\Bundle\FrontendBundle\OroFrontendBundle')) {
-            self::markTestSkipped('can be tested only with FrontendBundle');
-        }
+        $request = (new ServerRequest('GET', ''))
+            ->withParsedBody([
+                'grant_type' => 'password',
+                'client_id' => 'test_client',
+                'username' => 'test_user',
+                'visitor_access_token' => 'test_visitor_access_token'
+            ]);
 
-        $requestParameters = [
-            'grant_type' => 'password',
-            'client_id'  => 'test',
-            'username'   => 'testUser',
-        ];
-        $request = (new ServerRequest('GET', ''))->withParsedBody($requestParameters);
+        $symfonyRequest = Request::create('/');
 
-        $organization = new Organization();
-        $user = new User();
-        $symfonyRequest = $this->createMock(Request::class);
-
-        $expectedToken = new OAuth2Token($user, $organization);
-        $oldToken = null;
-
-        $this->mockClient('test', $organization, false);
-        $frontendUserLoader = $this->createMock(CustomerUserLoader::class);
-        $this->backendUserLoader->expects(self::once())
-            ->method('loadUser')
-            ->with('testUser')
-            ->willReturn($user);
         $this->requestStack->expects(self::once())
             ->method('getMainRequest')
             ->willReturn($symfonyRequest);
-        $this->tokenStorage->expects(self::once())
-            ->method('getToken')
-            ->willReturn($oldToken);
-        $this->tokenStorage->expects(self::exactly(2))
-            ->method('setToken')
-            ->withConsecutive(
-                [$expectedToken],
-                [$oldToken]
-            );
-        $this->eventDispatcher->expects(self::once())
+        $this->visitorAccessTokenParser->expects(self::once())
+            ->method('getVisitorSessionId')
+            ->with('test_visitor_access_token')
+            ->willReturn(null);
+        $this->interactiveLoginEventDispatcher->expects(self::once())
             ->method('dispatch')
-            ->with(new InteractiveLoginEvent($symfonyRequest, $expectedToken), SecurityEvents::INTERACTIVE_LOGIN);
+            ->with(self::identicalTo($symfonyRequest), 'test_client', 'test_user')
+            ->willReturnCallback(function (Request $symfonyRequest) {
+                self::assertFalse($symfonyRequest->attributes->has('visitor_session_id'));
+            });
 
-        $frontendHelper = $this->createMock(FrontendHelper::class);
-        $frontendHelper->expects(self::once())
-            ->method('emulateBackendRequest');
-        $frontendHelper->expects(self::once())
-            ->method('resetRequestEmulation');
-
-        $handler = $this->getHandler($frontendUserLoader, $frontendHelper);
-        $handler->handle($request);
-    }
-
-    public function testHandleOldTokenAndFrontendHelperShouldBeRestoredOnExceptionDuringDispatch(): void
-    {
-        if (!class_exists('Oro\Bundle\FrontendBundle\OroFrontendBundle')) {
-            self::markTestSkipped('can be tested only with FrontendBundle');
-        }
-
-        $exception = new \Exception('some error');
-        $this->expectException(get_class($exception));
-
-        $requestParameters = [
-            'grant_type' => 'password',
-            'client_id'  => 'test',
-            'username'   => 'testUser',
-        ];
-        $request = (new ServerRequest('GET', ''))->withParsedBody($requestParameters);
-
-        $organization = new Organization();
-        $user = new User();
-        $symfonyRequest = $this->createMock(Request::class);
-
-        $expectedToken = new OAuth2Token($user, $organization);
-        $oldToken = null;
-
-        $this->mockClient('test', $organization);
-        $this->backendUserLoader->expects(self::once())
-            ->method('loadUser')
-            ->with('testUser')
-            ->willReturn($user);
-        $this->requestStack->expects(self::once())
-            ->method('getMainRequest')
-            ->willReturn($symfonyRequest);
-        $this->tokenStorage->expects(self::once())
-            ->method('getToken')
-            ->willReturn($oldToken);
-        $this->tokenStorage->expects(self::exactly(2))
-            ->method('setToken')
-            ->withConsecutive(
-                [$expectedToken],
-                [$oldToken]
-            );
-
-        $frontendHelper = $this->createMock(FrontendHelper::class);
-        $frontendHelper->expects(self::once())
-            ->method('emulateBackendRequest');
-        $frontendHelper->expects(self::once())
-            ->method('resetRequestEmulation');
-
-        $this->eventDispatcher->expects(self::once())
-            ->method('dispatch')
-            ->willThrowException($exception);
-
-        $handler = $this->getHandler($this->createMock(CustomerUserLoader::class), $frontendHelper);
-        $handler->handle($request);
+        $this->handler->handle($request);
     }
 }

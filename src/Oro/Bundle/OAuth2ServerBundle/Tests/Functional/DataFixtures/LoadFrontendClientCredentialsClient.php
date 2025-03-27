@@ -46,7 +46,7 @@ class LoadFrontendClientCredentialsClient extends AbstractFixture implements
         $owner = $this->getReference(LoadCustomerUserData::EMAIL);
 
         $client = new Client();
-        $client->setOrganization($this->getReference('organization'));
+        $client->setOrganization($this->getReference(LoadOrganization::ORGANIZATION));
         $client->setName('test front application');
         $client->setGrants(['client_credentials']);
         $client->setOwnerEntity(get_class($owner), $owner->getId());

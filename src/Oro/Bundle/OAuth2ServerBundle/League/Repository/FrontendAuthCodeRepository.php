@@ -6,6 +6,7 @@ use Doctrine\Persistence\ManagerRegistry;
 use Oro\Bundle\CustomerBundle\Security\VisitorIdentifierUtil;
 use Oro\Bundle\OAuth2ServerBundle\Entity\AuthCode;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
+use Oro\Bundle\OAuth2ServerBundle\League\AuthCodeGrantUserIdentifierUtil;
 use Oro\Bundle\OAuth2ServerBundle\Security\OAuthUserChecker;
 use Oro\Bundle\UserBundle\Security\UserLoaderInterface;
 
@@ -37,8 +38,11 @@ class FrontendAuthCodeRepository extends AuthCodeRepository
     #[\Override]
     protected function checkUser(UserLoaderInterface $userLoader, string $userIdentifier): void
     {
-        if (!VisitorIdentifierUtil::isVisitorIdentifier($userIdentifier)) {
-            parent::checkUser($userLoader, $userIdentifier);
+        if (VisitorIdentifierUtil::isVisitorIdentifier($userIdentifier)) {
+            return;
         }
+
+        [$userIdentifier] = AuthCodeGrantUserIdentifierUtil::decodeIdentifier($userIdentifier);
+        parent::checkUser($userLoader, $userIdentifier);
     }
 }
