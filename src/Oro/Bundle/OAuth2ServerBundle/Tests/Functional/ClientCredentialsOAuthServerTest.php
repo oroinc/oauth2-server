@@ -4,6 +4,7 @@ namespace Oro\Bundle\OAuth2ServerBundle\Tests\Functional;
 
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Tests\Functional\DataFixtures\LoadClientCredentialsClient;
+use Oro\Bundle\TestFrameworkBundle\Tests\Functional\DataFixtures\LoadUser;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -16,7 +17,7 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
     protected function setUp(): void
     {
         $this->initClient();
-        $this->loadFixtures([LoadClientCredentialsClient::class]);
+        $this->loadFixtures([LoadClientCredentialsClient::class, LoadUser::class]);
     }
 
     private function sendAccessTokenRequest(int $expectedStatusCode = Response::HTTP_OK, array $server = []): Response
@@ -25,8 +26,8 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
             'POST',
             $this->getUrl('oro_oauth2_server_auth_token'),
             [
-                'grant_type'    => 'client_credentials',
-                'client_id'     => LoadClientCredentialsClient::OAUTH_CLIENT_ID,
+                'grant_type' => 'client_credentials',
+                'client_id' => LoadClientCredentialsClient::OAUTH_CLIENT_ID,
                 'client_secret' => LoadClientCredentialsClient::OAUTH_CLIENT_SECRET
             ],
             $server
@@ -82,13 +83,14 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
         $method = 'POST';
         $uri = $this->getUrl('oro_oauth2_server_auth_token');
         $server = [
-            'CONTENT_TYPE'       => 'application/x-www-form-urlencoded',
-            'HTTP_ACCEPT'        => 'application/json,text/plain,*/*',
-            'HTTP_AUTHORIZATION' => 'Basic ' . base64_encode(
-                LoadClientCredentialsClient::OAUTH_CLIENT_ID
-                . ':'
-                . LoadClientCredentialsClient::OAUTH_CLIENT_SECRET
-            )
+            'CONTENT_TYPE' => 'application/x-www-form-urlencoded',
+            'HTTP_ACCEPT' => 'application/json,text/plain,*/*',
+            'HTTP_AUTHORIZATION' => 'Basic '
+                . base64_encode(
+                    LoadClientCredentialsClient::OAUTH_CLIENT_ID
+                    . ':'
+                    . LoadClientCredentialsClient::OAUTH_CLIENT_SECRET
+                )
         ];
         $this->client->request(
             $method,
@@ -137,8 +139,8 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
 
         self::assertEquals(
             [
-                'error'             => 'invalid_client',
-                'message'           => 'Client authentication failed',
+                'error' => 'invalid_client',
+                'message' => 'Client authentication failed',
                 'error_description' => 'Client authentication failed'
             ],
             $responseContent
@@ -164,14 +166,14 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
 
         self::assertEquals(
             [
-                'error'             => 'invalid_request',
-                'message'           => 'The request is missing a required parameter,'
+                'error' => 'invalid_request',
+                'message' => 'The request is missing a required parameter,'
                     . ' includes an invalid parameter value, includes a parameter more than once,'
                     . ' or is otherwise malformed.',
                 'error_description' => 'The request is missing a required parameter,'
                     . ' includes an invalid parameter value, includes a parameter more than once,'
                     . ' or is otherwise malformed.',
-                'hint'              => 'Check the `client_id` parameter'
+                'hint' => 'Check the `client_id` parameter'
             ],
             $responseContent
         );
@@ -193,8 +195,8 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
 
         self::assertEquals(
             [
-                'error'             => 'invalid_client',
-                'message'           => 'Client authentication failed',
+                'error' => 'invalid_client',
+                'message' => 'Client authentication failed',
                 'error_description' => 'Client authentication failed'
             ],
             $responseContent
@@ -240,8 +242,8 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
 
         self::assertEquals(
             [
-                'error'             => 'invalid_client',
-                'message'           => 'Client authentication failed',
+                'error' => 'invalid_client',
+                'message' => 'Client authentication failed',
                 'error_description' => 'Client authentication failed'
             ],
             $responseContent
@@ -257,7 +259,7 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
         $expectedData = [
             'data' => [
                 'type' => 'users',
-                'id'   => '<toString(@user->id)>'
+                'id' => '<toString(@user->id)>'
             ]
         ];
 
@@ -306,7 +308,7 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
                 'access_token' => $keyData['access_token'],
                 'data' => [
                     'type' => 'users',
-                    'id'   => '<toString(@user->id)>',
+                    'id' => '<toString(@user->id)>',
                     'attributes' => [
                         'firstName' => 'first_request'
                     ]
@@ -317,7 +319,7 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
             [
                 'data' => [
                     'type' => 'users',
-                    'id'   => '<toString(@user->id)>',
+                    'id' => '<toString(@user->id)>',
                     'attributes' => [
                         'firstName' => 'first_request'
                     ]
@@ -334,7 +336,7 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
                 'access_token' => $keyData['access_token'],
                 'data' => [
                     'type' => 'users',
-                    'id'   => '<toString(@user->id)>',
+                    'id' => '<toString(@user->id)>',
                     'attributes' => [
                         'firstName' => 'second_request'
                     ]
@@ -345,7 +347,7 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
             [
                 'data' => [
                     'type' => 'users',
-                    'id'   => '<toString(@user->id)>',
+                    'id' => '<toString(@user->id)>',
                     'attributes' => [
                         'firstName' => 'second_request'
                     ]
@@ -361,7 +363,7 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
             [
                 'data' => [
                     'type' => 'users',
-                    'id'   => '<toString(@user->id)>',
+                    'id' => '<toString(@user->id)>',
                     'attributes' => [
                         'firstName' => 'third_request'
                     ]
@@ -373,7 +375,7 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
             [
                 'data' => [
                     'type' => 'users',
-                    'id'   => '<toString(@user->id)>',
+                    'id' => '<toString(@user->id)>',
                     'attributes' => [
                         'firstName' => 'third_request'
                     ]
@@ -456,7 +458,7 @@ class ClientCredentialsOAuthServerTest extends OAuthServerTestCase
             $this->getUrl('oro_oauth2_server_auth_token_options'),
             [],
             [
-                'HTTP_Origin'                        => 'https://oauth.test.com',
+                'HTTP_Origin' => 'https://oauth.test.com',
                 'HTTP_Access-Control-Request-Method' => $requestMethod
             ]
         );

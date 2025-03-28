@@ -48,7 +48,7 @@ class OAuth2Authenticator implements AuthenticatorInterface
         private HttpMessageFactoryInterface $httpMessageFactory,
         private FeatureDependAuthenticatorChecker $featureDependAuthenticatorChecker,
         private string $firewallName,
-        private ?AnonymousCustomerUserRolesProvider $rolesProvider = null,
+        private ?AnonymousCustomerUserRolesProvider $rolesProvider = null
     ) {
     }
 
@@ -63,16 +63,17 @@ class OAuth2Authenticator implements AuthenticatorInterface
         if (!$this->featureDependAuthenticatorChecker->isEnabled($this, $this->firewallName)) {
             return false;
         }
-        if (($request->headers->has('Authorization')
-                && preg_match('/^(?:\s+)?Bearer\s/', $request->headers->get('Authorization')))
-            || ($this->authorizationCookies && $this->getAuthorizationCookie($request))
-            || ($request->request->has(self::ACCESS_TOKEN_PARAMETER)
-                && $request->headers->contains('Content-type', 'application/vnd.api+json'))
-        ) {
-            return true;
-        }
 
-        return false;
+        return
+            (
+                $request->headers->has('Authorization')
+                && preg_match('/^(?:\s+)?Bearer\s/', $request->headers->get('Authorization'))
+            )
+            || ($this->authorizationCookies && $this->getAuthorizationCookie($request))
+            || (
+                $request->request->has(self::ACCESS_TOKEN_PARAMETER)
+                && $request->headers->contains('Content-type', 'application/vnd.api+json')
+            );
     }
 
     private function getAuthorizationCookie(Request $request): ?string
@@ -98,9 +99,7 @@ class OAuth2Authenticator implements AuthenticatorInterface
         $user = $this->getUser($client, $serverRequest);
         $this->validateUser($user, $organization);
 
-        $passport = $this->createPassport($user, $organization);
-
-        return $passport;
+        return $this->createPassport($user, $organization);
     }
 
     #[\Override]
@@ -154,7 +153,6 @@ class OAuth2Authenticator implements AuthenticatorInterface
     {
         $ownerClass = $client->getOwnerEntityClass();
         $ownerId = $client->getOwnerEntityId();
-
         if (null !== $ownerClass && null !== $ownerId) {
             $this->validateOwnerClass($ownerClass);
             $user = $this->doctrine->getRepository($ownerClass)->find($ownerId);

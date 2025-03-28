@@ -49,7 +49,7 @@ class LoadSecondOrgData extends AbstractFixture implements ContainerAwareInterfa
         $organization = new Organization();
         $organization->setEnabled(true);
         $organization->setName('TestOrg2');
-        $organization->addUser($this->getReference('user'));
+        $organization->addUser($this->getReference(LoadUser::USER));
 
         $manager->persist($organization);
         $manager->flush();
@@ -77,7 +77,7 @@ class LoadSecondOrgData extends AbstractFixture implements ContainerAwareInterfa
     private function createSecondOrgOauthApplication()
     {
         /** @var User $owner */
-        $owner = $this->getReference('user');
+        $owner = $this->getReference(LoadUser::USER);
 
         $client = new Client();
         $client->setOrganization($this->getReference(self::SECOND_ORGANIZATION));

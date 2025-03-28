@@ -16,6 +16,7 @@ use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\OAuth2Token;
 use Oro\Bundle\OAuth2ServerBundle\Security\Authenticator\OAuth2Authenticator;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Oro\Bundle\UserBundle\Entity\User;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
@@ -33,14 +34,15 @@ use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPasspor
  */
 class OAuth2AuthenticatorTest extends TestCase
 {
-    private LoggerInterface $loggerMock;
-    private ClientManager $clientManagerMock;
-    private ManagerRegistry $doctrineMock;
-    private UserProviderInterface $userProviderMock;
-    private AuthorizationValidatorInterface $authorizationValidatorMock;
-    private HttpMessageFactoryInterface $httpMessageFactoryMock;
-    private AnonymousCustomerUserRolesProvider $rolesProviderMock;
-    private FeatureDependAuthenticatorChecker $featureDependAuthenticationChecker;
+    private LoggerInterface&MockObject $logger;
+    private ClientManager&MockObject $clientManager;
+    private ManagerRegistry&MockObject $doctrine;
+    private UserProviderInterface&MockObject $userProvider;
+    private AuthorizationValidatorInterface&MockObject $authorizationValidator;
+    private HttpMessageFactoryInterface&MockObject $httpMessageFactory;
+    private FeatureDependAuthenticatorChecker&MockObject $featureDependAuthenticationChecker;
+    private AnonymousCustomerUserRolesProvider&MockObject $rolesProvider;
+    private OAuth2Authenticator $authenticator;
 
     #[\Override]
     protected function setUp(): void
@@ -48,493 +50,382 @@ class OAuth2AuthenticatorTest extends TestCase
         if (!class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {
             self::markTestSkipped('can be tested only with CustomerBundle');
         }
-        $this->loggerMock = $this->createMock(LoggerInterface::class);
-        $this->clientManagerMock = $this->createMock(ClientManager::class);
-        $this->doctrineMock = $this->createMock(ManagerRegistry::class);
-        $this->userProviderMock = $this->createMock(UserProviderInterface::class);
-        $this->authorizationValidatorMock = $this->createMock(AuthorizationValidatorInterface::class);
-        $this->httpMessageFactoryMock = $this->createMock(HttpMessageFactoryInterface::class);
-        $this->rolesProviderMock = $this->createMock(AnonymousCustomerUserRolesProvider::class);
+        $this->logger = $this->createMock(LoggerInterface::class);
+        $this->clientManager = $this->createMock(ClientManager::class);
+        $this->doctrine = $this->createMock(ManagerRegistry::class);
+        $this->userProvider = $this->createMock(UserProviderInterface::class);
+        $this->authorizationValidator = $this->createMock(AuthorizationValidatorInterface::class);
+        $this->httpMessageFactory = $this->createMock(HttpMessageFactoryInterface::class);
         $this->featureDependAuthenticationChecker = $this->createMock(FeatureDependAuthenticatorChecker::class);
+        $this->rolesProvider = $this->createMock(AnonymousCustomerUserRolesProvider::class);
+
+        $this->authenticator = new OAuth2Authenticator(
+            $this->logger,
+            $this->clientManager,
+            $this->doctrine,
+            $this->userProvider,
+            $this->authorizationValidator,
+            $this->httpMessageFactory,
+            $this->featureDependAuthenticationChecker,
+            'test',
+            $this->rolesProvider
+        );
     }
 
     public function testSupports(): void
     {
-        $authenticator = new OAuth2Authenticator(
-            $this->loggerMock,
-            $this->clientManagerMock,
-            $this->doctrineMock,
-            $this->userProviderMock,
-            $this->authorizationValidatorMock,
-            $this->httpMessageFactoryMock,
-            $this->featureDependAuthenticationChecker,
-            'test',
-            $this->rolesProviderMock
-        );
-
         $request = new Request();
         $request->headers->set('Authorization', 'Bearer someToken');
-        $this->featureDependAuthenticationChecker
-            ->expects(self::once())
+
+        $this->featureDependAuthenticationChecker->expects(self::once())
             ->method('isEnabled')
             ->willReturn(true);
 
-        self::assertTrue($authenticator->supports($request));
+        self::assertTrue($this->authenticator->supports($request));
     }
 
     public function testAuthenticate(): void
     {
-        $serverRequestMock = $this->createMock(ServerRequestInterface::class);
-        $serverRequestMock
+        $serverRequest = $this->createMock(ServerRequestInterface::class);
+        $serverRequest->expects(self::any())
             ->method('getAttribute')
             ->willReturnCallback(function ($attribute) {
                 $attributes = [
                     'oauth_access_token_id' => 'some_access_token_id',
                     'oauth_client_id' => 'some_client_id',
-                    'oauth_user_id' => 'testUser',
+                    'oauth_user_id' => 'testUser'
                 ];
 
                 return $attributes[$attribute] ?? null;
             });
 
-        $this->authorizationValidatorMock = $this->createMock(AuthorizationValidatorInterface::class);
-        $this->authorizationValidatorMock
-            ->expects(self::once())
+        $this->authorizationValidator->expects(self::once())
             ->method('validateAuthorization')
-            ->willReturn($serverRequestMock);
+            ->willReturn($serverRequest);
 
-        $this->userProviderMock
+        $this->userProvider->expects(self::once())
             ->method('supportsClass')
             ->willReturnCallback(function ($class) {
                 return $class === User::class;
             });
 
-        $clientMock = $this->createMock(Client::class);
-        $clientMock
-            ->method('isActive')->willReturn(true);
-        $clientMock
-            ->method('getOrganization')->willReturn(new Organization());
-        $this->clientManagerMock
-            ->method('getClient')->willReturn($clientMock);
+        $client = $this->createMock(Client::class);
+        $client->expects(self::once())
+            ->method('isActive')
+            ->willReturn(true);
+        $client->expects(self::once())
+            ->method('getOrganization')
+            ->willReturn(new Organization());
+        $this->clientManager->expects(self::once())
+            ->method('getClient')
+            ->willReturn($client);
 
-        $userMock = $this->createMock(User::class);
-        $userMock
-            ->method('getUsername')->willReturn('testUser');
-        $userMock
-            ->method('isBelongToOrganization')->willReturn(true);
-        $this->userProviderMock
-            ->method('loadUserByIdentifier')->willReturn($userMock);
+        $user = $this->createMock(User::class);
+        $user->expects(self::once())
+            ->method('isBelongToOrganization')
+            ->willReturn(true);
+        $this->userProvider->expects(self::once())
+            ->method('loadUserByIdentifier')
+            ->willReturn($user);
 
-        $httpMessageFactoryMock = $this->createMock(HttpMessageFactoryInterface::class);
-        $httpMessageFactoryMock
-            ->method('createRequest')->willReturn($serverRequestMock);
-
-        $authenticator = new OAuth2Authenticator(
-            $this->loggerMock,
-            $this->clientManagerMock,
-            $this->doctrineMock,
-            $this->userProviderMock,
-            $this->authorizationValidatorMock,
-            $httpMessageFactoryMock,
-            $this->featureDependAuthenticationChecker,
-            'test',
-            $this->rolesProviderMock
-        );
+        $this->httpMessageFactory->expects(self::once())
+            ->method('createRequest')
+            ->willReturn($serverRequest);
 
         $request = new Request();
         $request->headers->set('Authorization', 'Bearer someToken');
 
-        $passport = $authenticator->authenticate($request);
-
-        self::assertInstanceOf(Passport::class, $passport);
+        self::assertInstanceOf(Passport::class, $this->authenticator->authenticate($request));
     }
 
     public function testSupportsWithAccessTokenParameterInRequestBody(): void
     {
-        $authenticator = new OAuth2Authenticator(
-            $this->loggerMock,
-            $this->clientManagerMock,
-            $this->doctrineMock,
-            $this->userProviderMock,
-            $this->authorizationValidatorMock,
-            $this->httpMessageFactoryMock,
-            $this->featureDependAuthenticationChecker,
-            'test',
-            $this->rolesProviderMock
-        );
-
         $request = new Request();
         $request->request->add(['access_token' => 'someToken']);
         $request->headers->set('Content-type', 'application/vnd.api+json');
-        $this->featureDependAuthenticationChecker
-            ->expects(self::once())
+
+        $this->featureDependAuthenticationChecker->expects(self::once())
             ->method('isEnabled')
             ->willReturn(true);
 
-        self::assertTrue($authenticator->supports($request));
+        self::assertTrue($this->authenticator->supports($request));
     }
 
     public function testSupportsWithAccessTokenParameterInRequestBodyWithoutCorrectContentTypeHeader(): void
     {
-        $authenticator = new OAuth2Authenticator(
-            $this->loggerMock,
-            $this->clientManagerMock,
-            $this->doctrineMock,
-            $this->userProviderMock,
-            $this->authorizationValidatorMock,
-            $this->httpMessageFactoryMock,
-            $this->featureDependAuthenticationChecker,
-            'test',
-            $this->rolesProviderMock
-        );
-
         $request = new Request();
         $request->request->add(['access_token' => 'someToken']);
         $request->headers->set('Content-type', 'json');
-        $this->featureDependAuthenticationChecker
-            ->expects(self::once())
+
+        $this->featureDependAuthenticationChecker->expects(self::once())
             ->method('isEnabled')
             ->willReturn(true);
 
-        self::assertFalse($authenticator->supports($request));
+        self::assertFalse($this->authenticator->supports($request));
     }
 
     public function testSupportsWithAccessTokenParameterInURI(): void
     {
-        $authenticator = new OAuth2Authenticator(
-            $this->loggerMock,
-            $this->clientManagerMock,
-            $this->doctrineMock,
-            $this->userProviderMock,
-            $this->authorizationValidatorMock,
-            $this->httpMessageFactoryMock,
-            $this->featureDependAuthenticationChecker,
-            'test',
-            $this->rolesProviderMock
-        );
-
         $request = new Request();
         $request->query->add(['access_token' => 'someToken']);
-        $this->featureDependAuthenticationChecker
-            ->expects(self::once())
+
+        $this->featureDependAuthenticationChecker->expects(self::once())
             ->method('isEnabled')
             ->willReturn(true);
 
-        self::assertFalse($authenticator->supports($request));
+        self::assertFalse($this->authenticator->supports($request));
     }
 
     public function testAuthenticateWithAccessTokenParameterInRequestBody(): void
     {
-        $serverRequestMock = $this->createMock(ServerRequestInterface::class);
-        $serverRequestMock->method('getAttribute')
+        $serverRequest = $this->createMock(ServerRequestInterface::class);
+        $serverRequest->expects(self::any())
+            ->method('getAttribute')
             ->willReturnCallback(function ($attribute) {
                 $attributes = [
                     'oauth_access_token_id' => 'some_access_token_id',
                     'oauth_client_id' => 'some_client_id',
-                    'oauth_user_id' => 'testUser',
+                    'oauth_user_id' => 'testUser'
                 ];
 
                 return $attributes[$attribute] ?? null;
             });
 
-        $serverRequestMock->expects(self::once())
+        $serverRequest->expects(self::once())
             ->method('withHeader')
             ->with('Authorization', 'Bearer someToken')
-            ->willReturn($serverRequestMock);
+            ->willReturn($serverRequest);
 
-        $this->authorizationValidatorMock = $this->createMock(AuthorizationValidatorInterface::class);
-        $this->authorizationValidatorMock
-            ->expects(self::once())
+        $this->authorizationValidator->expects(self::once())
             ->method('validateAuthorization')
-            ->willReturn($serverRequestMock);
+            ->willReturn($serverRequest);
 
-        $this->userProviderMock
+        $this->userProvider->expects(self::once())
             ->method('supportsClass')
             ->willReturnCallback(function ($class) {
                 return $class === User::class;
             });
 
-        $clientMock = $this->createMock(Client::class);
-        $clientMock->method('isActive')->willReturn(true);
-        $clientMock->method('getOrganization')->willReturn(new Organization());
-        $this->clientManagerMock->method('getClient')->willReturn($clientMock);
+        $client = $this->createMock(Client::class);
+        $client->expects(self::once())
+            ->method('isActive')
+            ->willReturn(true);
+        $client->expects(self::once())
+            ->method('getOrganization')
+            ->willReturn(new Organization());
+        $this->clientManager->expects(self::once())
+            ->method('getClient')
+            ->willReturn($client);
 
-        $userMock = $this->createMock(User::class);
-        $userMock->method('getUsername')->willReturn('testUser');
-        $userMock->method('isBelongToOrganization')->willReturn(true);
-        $this->userProviderMock->method('loadUserByIdentifier')->willReturn($userMock);
+        $user = $this->createMock(User::class);
+        $user->expects(self::once())
+            ->method('isBelongToOrganization')
+            ->willReturn(true);
+        $this->userProvider->expects(self::once())
+            ->method('loadUserByIdentifier')
+            ->willReturn($user);
 
-        $httpMessageFactoryMock = $this->createMock(HttpMessageFactoryInterface::class);
-        $httpMessageFactoryMock->method('createRequest')->willReturn($serverRequestMock);
-
-        $authenticator = new OAuth2Authenticator(
-            $this->loggerMock,
-            $this->clientManagerMock,
-            $this->doctrineMock,
-            $this->userProviderMock,
-            $this->authorizationValidatorMock,
-            $httpMessageFactoryMock,
-            $this->featureDependAuthenticationChecker,
-            'test',
-            $this->rolesProviderMock
-        );
+        $this->httpMessageFactory->expects(self::once())
+            ->method('createRequest')
+            ->willReturn($serverRequest);
 
         $request = new Request();
         $request->request->add(['access_token' => 'someToken']);
-        $passport = $authenticator->authenticate($request);
 
-        self::assertInstanceOf(Passport::class, $passport);
+        self::assertInstanceOf(Passport::class, $this->authenticator->authenticate($request));
     }
 
     public function testAuthenticateWhenHasAuthorizationCookie(): void
     {
-        $serverRequestMock = $this->createMock(ServerRequestInterface::class);
-        $serverRequestMock
+        $serverRequest = $this->createMock(ServerRequestInterface::class);
+        $serverRequest->expects(self::any())
             ->method('getAttribute')
             ->willReturnCallback(function ($attribute) {
                 $attributes = [
                     'oauth_access_token_id' => 'some_access_token_id',
                     'oauth_client_id' => 'some_client_id',
-                    'oauth_user_id' => 'testUser',
+                    'oauth_user_id' => 'testUser'
                 ];
 
                 return $attributes[$attribute] ?? null;
             });
 
         $authorizationCookie = 'Bearer someToken';
-        $serverRequestMock
-            ->expects(self::once())
+        $serverRequest->expects(self::once())
             ->method('withHeader')
             ->with('Authorization', 'Bearer ' . $authorizationCookie)
-            ->willReturn($serverRequestMock);
+            ->willReturn($serverRequest);
 
-        $this->authorizationValidatorMock = $this->createMock(AuthorizationValidatorInterface::class);
-        $this->authorizationValidatorMock
-            ->expects(self::once())
+        $this->authorizationValidator->expects(self::once())
             ->method('validateAuthorization')
-            ->willReturn($serverRequestMock);
+            ->willReturn($serverRequest);
 
-        $this->userProviderMock
+        $this->userProvider->expects(self::once())
             ->method('supportsClass')
             ->willReturnCallback(function ($class) {
                 return $class === User::class;
             });
 
-        $clientMock = $this->createMock(Client::class);
-        $clientMock
-            ->method('isActive')->willReturn(true);
-        $clientMock
-            ->method('getOrganization')->willReturn(new Organization());
-        $this->clientManagerMock
-            ->method('getClient')->willReturn($clientMock);
+        $client = $this->createMock(Client::class);
+        $client->expects(self::once())
+            ->method('isActive')
+            ->willReturn(true);
+        $client->expects(self::once())
+            ->method('getOrganization')
+            ->willReturn(new Organization());
+        $this->clientManager->expects(self::once())
+            ->method('getClient')
+            ->willReturn($client);
 
-        $userMock = $this->createMock(User::class);
-        $userMock
-            ->method('getUsername')->willReturn('testUser');
-        $userMock
-            ->method('isBelongToOrganization')->willReturn(true);
-        $this->userProviderMock
-            ->method('loadUserByIdentifier')->willReturn($userMock);
+        $user = $this->createMock(User::class);
+        $user->expects(self::once())
+            ->method('isBelongToOrganization')
+            ->willReturn(true);
+        $this->userProvider->expects(self::once())
+            ->method('loadUserByIdentifier')
+            ->willReturn($user);
 
-        $httpMessageFactoryMock = $this->createMock(HttpMessageFactoryInterface::class);
-        $httpMessageFactoryMock
-            ->method('createRequest')->willReturn($serverRequestMock);
-
-        $authenticator = new OAuth2Authenticator(
-            $this->loggerMock,
-            $this->clientManagerMock,
-            $this->doctrineMock,
-            $this->userProviderMock,
-            $this->authorizationValidatorMock,
-            $httpMessageFactoryMock,
-            $this->featureDependAuthenticationChecker,
-            'test',
-            $this->rolesProviderMock
-        );
+        $this->httpMessageFactory->expects(self::once())
+            ->method('createRequest')
+            ->willReturn($serverRequest);
 
         $request = new Request();
         $request->cookies->set('AUTH1', 'Bearer someToken');
 
-        $authenticator->setAuthorizationCookies(['AUTH1', 'AUTH2']);
-        $passport = $authenticator->authenticate($request);
-
-        self::assertInstanceOf(Passport::class, $passport);
+        $this->authenticator->setAuthorizationCookies(['AUTH1', 'AUTH2']);
+        self::assertInstanceOf(Passport::class, $this->authenticator->authenticate($request));
     }
 
     public function testAuthenticateWhenHasEmptyAuthorizationCookies(): void
     {
-        $serverRequestMock = $this->createMock(ServerRequestInterface::class);
-        $serverRequestMock
+        $serverRequest = $this->createMock(ServerRequestInterface::class);
+        $serverRequest->expects(self::any())
             ->method('getAttribute')
             ->willReturnCallback(function ($attribute) {
                 $attributes = [
                     'oauth_access_token_id' => 'some_access_token_id',
                     'oauth_client_id' => 'some_client_id',
-                    'oauth_user_id' => 'testUser',
+                    'oauth_user_id' => 'testUser'
                 ];
 
                 return $attributes[$attribute] ?? null;
             });
 
-        $this->authorizationValidatorMock = $this->createMock(AuthorizationValidatorInterface::class);
-        $this->authorizationValidatorMock
-            ->expects(self::once())
+        $this->authorizationValidator->expects(self::once())
             ->method('validateAuthorization')
-            ->willReturn($serverRequestMock);
+            ->willReturn($serverRequest);
 
-        $this->userProviderMock
+        $this->userProvider->expects(self::once())
             ->method('supportsClass')
             ->willReturnCallback(function ($class) {
                 return $class === User::class;
             });
 
-        $clientMock = $this->createMock(Client::class);
-        $clientMock
-            ->method('isActive')->willReturn(true);
-        $clientMock
-            ->method('getOrganization')->willReturn(new Organization());
-        $this->clientManagerMock
-            ->method('getClient')->willReturn($clientMock);
+        $client = $this->createMock(Client::class);
+        $client->expects(self::once())
+            ->method('isActive')
+            ->willReturn(true);
+        $client->expects(self::once())
+            ->method('getOrganization')
+            ->willReturn(new Organization());
+        $this->clientManager->expects(self::once())
+            ->method('getClient')
+            ->willReturn($client);
 
-        $userMock = $this->createMock(User::class);
-        $userMock
-            ->method('getUsername')->willReturn('testUser');
-        $userMock
-            ->method('isBelongToOrganization')->willReturn(true);
-        $this->userProviderMock
-            ->method('loadUserByIdentifier')->willReturn($userMock);
+        $user = $this->createMock(User::class);
+        $user->expects(self::once())
+            ->method('isBelongToOrganization')
+            ->willReturn(true);
+        $this->userProvider->expects(self::once())
+            ->method('loadUserByIdentifier')
+            ->willReturn($user);
 
-        $httpMessageFactoryMock = $this->createMock(HttpMessageFactoryInterface::class);
-        $httpMessageFactoryMock
-            ->method('createRequest')->willReturn($serverRequestMock);
-
-        $authenticator = new OAuth2Authenticator(
-            $this->loggerMock,
-            $this->clientManagerMock,
-            $this->doctrineMock,
-            $this->userProviderMock,
-            $this->authorizationValidatorMock,
-            $httpMessageFactoryMock,
-            $this->featureDependAuthenticationChecker,
-            'test',
-            $this->rolesProviderMock
-        );
+        $this->httpMessageFactory->expects(self::once())
+            ->method('createRequest')
+            ->willReturn($serverRequest);
 
         $request = new Request();
         $request->headers->set('Authorization', 'Bearer someToken');
 
-        $authenticator->setAuthorizationCookies(['AUTH1', 'AUTH2']);
-        $passport = $authenticator->authenticate($request);
-
-        self::assertInstanceOf(Passport::class, $passport);
+        $this->authenticator->setAuthorizationCookies(['AUTH1', 'AUTH2']);
+        self::assertInstanceOf(Passport::class, $this->authenticator->authenticate($request));
     }
 
     public function testAuthenticatePrefersCookieWhenHasBothAuthorizationHeaderAndCookie(): void
     {
-        $serverRequestMock = $this->createMock(ServerRequestInterface::class);
-        $serverRequestMock
+        $serverRequest = $this->createMock(ServerRequestInterface::class);
+        $serverRequest->expects(self::any())
             ->method('getAttribute')
             ->willReturnCallback(function ($attribute) {
                 $attributes = [
                     'oauth_access_token_id' => 'some_access_token_id',
                     'oauth_client_id' => 'some_client_id',
-                    'oauth_user_id' => 'testUser',
+                    'oauth_user_id' => 'testUser'
                 ];
 
                 return $attributes[$attribute] ?? null;
             });
 
         $authorizationCookie = 'Bearer someToken';
-        $serverRequestMock
-            ->expects(self::once())
+        $serverRequest->expects(self::once())
             ->method('withHeader')
             ->with('Authorization', 'Bearer ' . $authorizationCookie)
-            ->willReturn($serverRequestMock);
+            ->willReturn($serverRequest);
 
-        $this->authorizationValidatorMock = $this->createMock(AuthorizationValidatorInterface::class);
-        $this->authorizationValidatorMock
-            ->expects(self::once())
+        $this->authorizationValidator->expects(self::once())
             ->method('validateAuthorization')
-            ->willReturn($serverRequestMock);
+            ->willReturn($serverRequest);
 
-        $this->userProviderMock
+        $this->userProvider->expects(self::once())
             ->method('supportsClass')
             ->willReturnCallback(function ($class) {
                 return $class === User::class;
             });
 
-        $clientMock = $this->createMock(Client::class);
-        $clientMock
-            ->method('isActive')->willReturn(true);
-        $clientMock
-            ->method('getOrganization')->willReturn(new Organization());
-        $this->clientManagerMock
-            ->method('getClient')->willReturn($clientMock);
+        $client = $this->createMock(Client::class);
+        $client->expects(self::once())
+            ->method('isActive')
+            ->willReturn(true);
+        $client->expects(self::once())
+            ->method('getOrganization')
+            ->willReturn(new Organization());
+        $this->clientManager->expects(self::once())
+            ->method('getClient')
+            ->willReturn($client);
 
-        $userMock = $this->createMock(User::class);
-        $userMock
-            ->method('getUsername')->willReturn('testUser');
-        $userMock
-            ->method('isBelongToOrganization')->willReturn(true);
-        $this->userProviderMock
-            ->method('loadUserByIdentifier')->willReturn($userMock);
+        $user = $this->createMock(User::class);
+        $user->expects(self::once())
+            ->method('isBelongToOrganization')
+            ->willReturn(true);
+        $this->userProvider->expects(self::once())
+            ->method('loadUserByIdentifier')
+            ->willReturn($user);
 
-        $httpMessageFactoryMock = $this->createMock(HttpMessageFactoryInterface::class);
-        $httpMessageFactoryMock
-            ->method('createRequest')->willReturn($serverRequestMock);
-
-        $authenticator = new OAuth2Authenticator(
-            $this->loggerMock,
-            $this->clientManagerMock,
-            $this->doctrineMock,
-            $this->userProviderMock,
-            $this->authorizationValidatorMock,
-            $httpMessageFactoryMock,
-            $this->featureDependAuthenticationChecker,
-            'test',
-            $this->rolesProviderMock
-        );
+        $this->httpMessageFactory->expects(self::once())
+            ->method('createRequest')
+            ->willReturn($serverRequest);
 
         $request = new Request();
         $request->headers->set('Authorization', 'Bearer someInvalidToken');
         $request->cookies->set('AUTH1', 'Bearer someToken');
 
-        $authenticator->setAuthorizationCookies(['AUTH1', 'AUTH2']);
-        $passport = $authenticator->authenticate($request);
-
-        self::assertInstanceOf(Passport::class, $passport);
+        $this->authenticator->setAuthorizationCookies(['AUTH1', 'AUTH2']);
+        self::assertInstanceOf(Passport::class, $this->authenticator->authenticate($request));
     }
 
     public function testCreateOAuth2Token(): void
     {
-        $userMock = $this->createMock(User::class);
-        $userMock
-            ->method('getUsername')->willReturn('testUser');
-        $organizationMock = $this->createMock(Organization::class);
+        $user = $this->createMock(User::class);
+        $organization = $this->createMock(Organization::class);
 
         $passport = new SelfValidatingPassport(
-            new UserBadge('testUser', function () use ($userMock) {
-                return $userMock;
+            new UserBadge('testUser', function () use ($user) {
+                return $user;
             })
         );
-        $passport->setAttribute('organization', $organizationMock);
+        $passport->setAttribute('organization', $organization);
 
-
-        $authenticator = new OAuth2Authenticator(
-            $this->loggerMock,
-            $this->clientManagerMock,
-            $this->doctrineMock,
-            $this->userProviderMock,
-            $this->authorizationValidatorMock,
-            $this->httpMessageFactoryMock,
-            $this->featureDependAuthenticationChecker,
-            'test',
-            $this->rolesProviderMock
-        );
-
-        $token = $authenticator->createToken($passport, 'firewallName');
-
-        self::assertInstanceOf(OAuth2Token::class, $token);
+        self::assertInstanceOf(OAuth2Token::class, $this->authenticator->createToken($passport, 'firewallName'));
     }
 
     public function testCreateAnonymousCustomerUserToken(): void
@@ -543,30 +434,16 @@ class OAuth2AuthenticatorTest extends TestCase
         $organization = $this->createMock(Organization::class);
         $roles = ['ROLE_ANONYMOUS'];
 
-        $userBadge = new UserBadge('username', function () use ($user) {
+        $passport = new SelfValidatingPassport(new UserBadge('username', function () use ($user) {
             return $user;
-        });
-
-        $passport = new SelfValidatingPassport($userBadge);
+        }));
         $passport->setAttribute('organization', $organization);
 
-        $rolesProviderMock = $this->createMock(AnonymousCustomerUserRolesProvider::class);
-        $rolesProviderMock
-            ->method('getRoles')->willReturn($roles);
+        $this->rolesProvider->expects(self::once())
+            ->method('getRoles')
+            ->willReturn($roles);
 
-        $authenticator = new OAuth2Authenticator(
-            $this->loggerMock,
-            $this->clientManagerMock,
-            $this->doctrineMock,
-            $this->userProviderMock,
-            $this->authorizationValidatorMock,
-            $this->httpMessageFactoryMock,
-            $this->featureDependAuthenticationChecker,
-            'test',
-            $rolesProviderMock
-        );
-
-        $resultToken = $authenticator->createToken($passport, 'firewallName');
+        $resultToken = $this->authenticator->createToken($passport, 'firewallName');
 
         self::assertInstanceOf(AnonymousCustomerUserToken::class, $resultToken);
         self::assertEquals($roles, $resultToken->getRoles());
@@ -574,25 +451,12 @@ class OAuth2AuthenticatorTest extends TestCase
 
     public function testOnAuthenticationFailure(): void
     {
-        $requestMock = $this->createMock(Request::class);
-        $exceptionMock = $this->createMock(AuthenticationException::class);
+        $request = $this->createMock(Request::class);
+        $exception = $this->createMock(AuthenticationException::class);
 
-        $expectedResponse = new Response('', 401, []);
-
-        $authenticator = new OAuth2Authenticator(
-            $this->loggerMock,
-            $this->clientManagerMock,
-            $this->doctrineMock,
-            $this->userProviderMock,
-            $this->authorizationValidatorMock,
-            $this->httpMessageFactoryMock,
-            $this->featureDependAuthenticationChecker,
-            'test',
-            $this->rolesProviderMock
+        self::assertEquals(
+            new Response('', 401, []),
+            $this->authenticator->onAuthenticationFailure($request, $exception)
         );
-
-        $response = $authenticator->onAuthenticationFailure($requestMock, $exceptionMock);
-
-        self::assertEquals($expectedResponse, $response);
     }
 }

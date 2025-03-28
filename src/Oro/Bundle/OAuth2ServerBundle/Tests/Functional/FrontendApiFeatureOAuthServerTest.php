@@ -30,53 +30,55 @@ class FrontendApiFeatureOAuthServerTest extends OAuthServerTestCase
         ]);
     }
 
-    public function testGetAuthTokenOnEnabledFeature()
+    public function testGetAuthTokenOnEnabledFeature(): void
     {
         $accessToken = $this->sendTokenRequest(
             [
-                'grant_type'    => 'password',
-                'client_id'     => LoadFrontendPasswordGrantClient::OAUTH_CLIENT_ID,
+                'grant_type' => 'password',
+                'client_id' => LoadFrontendPasswordGrantClient::OAUTH_CLIENT_ID,
                 'client_secret' => LoadFrontendPasswordGrantClient::OAUTH_CLIENT_SECRET,
-                'username'      => 'grzegorz.brzeczyszczykiewicz@example.com',
-                'password'      => 'test'
-            ],
-            Response::HTTP_OK
+                'username' => 'grzegorz.brzeczyszczykiewicz@example.com',
+                'password' => 'test'
+            ]
         );
 
         self::assertEquals('Bearer', $accessToken['token_type']);
     }
 
-    public function testGetAuthTokenOnEnabledFeatureAndDisabledGuestAccess()
+    public function testGetAuthTokenOnEnabledFeatureAndDisabledGuestAccess(): void
     {
-        $configManager = $this->getConfigManager();
+        $configManager = self::getConfigManager();
         $configManager->set('oro_frontend.guest_access_enabled', false);
         $configManager->flush();
-
-        $accessToken = $this->sendTokenRequest(
-            [
-                'grant_type'    => 'password',
-                'client_id'     => LoadFrontendPasswordGrantClient::OAUTH_CLIENT_ID,
-                'client_secret' => LoadFrontendPasswordGrantClient::OAUTH_CLIENT_SECRET,
-                'username'      => 'grzegorz.brzeczyszczykiewicz@example.com',
-                'password'      => 'test'
-            ],
-            Response::HTTP_OK
-        );
+        try {
+            $accessToken = $this->sendTokenRequest(
+                [
+                    'grant_type' => 'password',
+                    'client_id' => LoadFrontendPasswordGrantClient::OAUTH_CLIENT_ID,
+                    'client_secret' => LoadFrontendPasswordGrantClient::OAUTH_CLIENT_SECRET,
+                    'username' => 'grzegorz.brzeczyszczykiewicz@example.com',
+                    'password' => 'test'
+                ]
+            );
+        } finally {
+            $configManager->set('oro_frontend.guest_access_enabled', true);
+            $configManager->flush();
+        }
 
         self::assertEquals('Bearer', $accessToken['token_type']);
     }
 
-    public function testGetAuthTokenOnDisabledFeature()
+    public function testGetAuthTokenOnDisabledFeature(): void
     {
         $this->disableApiFeature(self::API_FEATURE_NAME);
         try {
             $response = $this->sendTokenRequest(
                 [
-                    'grant_type'    => 'password',
-                    'client_id'     => LoadFrontendPasswordGrantClient::OAUTH_CLIENT_ID,
+                    'grant_type' => 'password',
+                    'client_id' => LoadFrontendPasswordGrantClient::OAUTH_CLIENT_ID,
                     'client_secret' => LoadFrontendPasswordGrantClient::OAUTH_CLIENT_SECRET,
-                    'username'      => 'grzegorz.brzeczyszczykiewicz@example.com',
-                    'password'      => 'test'
+                    'username' => 'grzegorz.brzeczyszczykiewicz@example.com',
+                    'password' => 'test'
                 ],
                 Response::HTTP_UNAUTHORIZED
             );
@@ -86,40 +88,42 @@ class FrontendApiFeatureOAuthServerTest extends OAuthServerTestCase
 
         self::assertEquals(
             [
-                'error'             => 'invalid_client',
+                'error' => 'invalid_client',
                 'error_description' => 'Client authentication failed',
-                'message'           => 'Client authentication failed'
+                'message' => 'Client authentication failed'
             ],
             $response
         );
     }
 
-    public function testTryToGetAuthTokenOnDisabledFeatureAndDisabledGuestAccess()
+    public function testTryToGetAuthTokenOnDisabledFeatureAndDisabledGuestAccess(): void
     {
-        $configManager = $this->getConfigManager();
+        $configManager = self::getConfigManager();
         $configManager->set('oro_frontend.guest_access_enabled', false);
         $configManager->flush();
         $this->disableApiFeature(self::API_FEATURE_NAME);
         try {
             $response = $this->sendTokenRequest(
                 [
-                    'grant_type'    => 'password',
-                    'client_id'     => LoadFrontendPasswordGrantClient::OAUTH_CLIENT_ID,
+                    'grant_type' => 'password',
+                    'client_id' => LoadFrontendPasswordGrantClient::OAUTH_CLIENT_ID,
                     'client_secret' => LoadFrontendPasswordGrantClient::OAUTH_CLIENT_SECRET,
-                    'username'      => 'grzegorz.brzeczyszczykiewicz@example.com',
-                    'password'      => 'test'
+                    'username' => 'grzegorz.brzeczyszczykiewicz@example.com',
+                    'password' => 'test'
                 ],
                 Response::HTTP_UNAUTHORIZED
             );
         } finally {
             $this->enableApiFeature(self::API_FEATURE_NAME);
+            $configManager->set('oro_frontend.guest_access_enabled', true);
+            $configManager->flush();
         }
 
         self::assertEquals(
             [
-                'error'             => 'invalid_client',
+                'error' => 'invalid_client',
                 'error_description' => 'Client authentication failed',
-                'message'           => 'Client authentication failed'
+                'message' => 'Client authentication failed'
             ],
             $response
         );

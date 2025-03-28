@@ -44,9 +44,6 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
     private const CUSTOMER_VISITOR_MANAGER_SERVICE = 'oro_customer.customer_visitor_manager';
     private const CUSTOMER_LOGIN_SOURCES = 'oro_customer_user.login_sources';
 
-    private const AUTH_CODE_LOG_ATTEMPT_HELPER = 'oro_oauth2_server.auth_code_log_attempt.helper';
-    private const DECRYPTED_TOKEN_PROVIDER = 'oro_oauth2_server.provider.decrypted_token';
-
     #[\Override]
     public function load(array $configs, ContainerBuilder $container): void
     {
@@ -71,6 +68,7 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
         $this->configureAuthorizationServer($container, $config['authorization_server']);
         $this->configureResourceServer($container, $config['resource_server']);
         $this->configureCustomerUserLoginAttempts($container);
+        $this->configureAuthCodeGrantSuccessHandler($container, $config['authorization_server']);
         $this->configureAuthCodeLogAttemptHelper($container, $config['authorization_server']);
         $this->configureDecryptedTokenProvider($container, $config['authorization_server']);
 
@@ -376,15 +374,21 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
         }
     }
 
+    private function configureAuthCodeGrantSuccessHandler(ContainerBuilder $container, array $config): void
+    {
+        $container->getDefinition('oro_oauth2_server.handler.get_access_token.auth_code_grant_success_handler')
+            ->addMethodCall('setEncryptionKey', [$config['encryption_key']]);
+    }
+
     private function configureAuthCodeLogAttemptHelper(ContainerBuilder $container, array $config): void
     {
-        $container->getDefinition(self::AUTH_CODE_LOG_ATTEMPT_HELPER)
+        $container->getDefinition('oro_oauth2_server.auth_code_log_attempt.helper')
             ->addMethodCall('setEncryptionKey', [$config['encryption_key']]);
     }
 
     private function configureDecryptedTokenProvider(ContainerBuilder $container, array $config): void
     {
-        $container->getDefinition(self::DECRYPTED_TOKEN_PROVIDER)
+        $container->getDefinition('oro_oauth2_server.provider.decrypted_token')
             ->addMethodCall('setEncryptionKey', [$config['encryption_key']]);
     }
 }

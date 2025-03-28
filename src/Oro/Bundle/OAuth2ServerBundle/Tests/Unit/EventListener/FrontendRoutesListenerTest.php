@@ -20,9 +20,15 @@ class FrontendRoutesListenerTest extends \PHPUnit\Framework\TestCase
         $listener->onCollectionAutoload($event);
 
         $routes = $collection->all();
-        self::assertCount(4, $routes);
-        self::assertArrayHasKey('oro_oauth2_server_frontend_login_check', $routes);
-        self::assertArrayHasKey('oro_oauth2_server_frontend_login_form', $routes);
-        self::assertArrayHasKey('oro_oauth2_server_frontend_authenticate', $routes);
+        self::assertSame(
+            [
+                'existing',
+                'oro_oauth2_server_frontend_login_check',
+                'oro_oauth2_server_frontend_login_form',
+                'oro_oauth2_server_frontend_authenticate',
+                'oro_oauth2_server_frontend_authenticate_visitor'
+            ],
+            array_keys($routes)
+        );
     }
 }

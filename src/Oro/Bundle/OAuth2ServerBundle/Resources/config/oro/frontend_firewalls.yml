@@ -1,9 +1,9 @@
 oauth2_frontend_authorization_login:
-    pattern: ^/oauth2-token/login$
+    pattern: '^/oauth2-token/login$'
     provider: commerce_customer_user
     context: customer_identity
 oauth2_frontend_authorization_authenticate:
-    pattern: ^/oauth2-token/(authorize|login-check)
+    pattern: '^/oauth2-token/(authorize|login-check)$'
     provider: commerce_customer_user
     context: customer_identity
     organization-form-login:
@@ -13,3 +13,7 @@ oauth2_frontend_authorization_authenticate:
     entry_point: organization_form_login
     logout:
         path: oro_customer_customer_user_security_logout
+oauth2_frontend_authorization_authenticate_visitor:
+    pattern: '^/oauth2-token/authorize-visitor$'
+    stateless: true
+    security: false

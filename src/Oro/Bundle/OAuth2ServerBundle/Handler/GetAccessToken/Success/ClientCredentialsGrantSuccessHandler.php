@@ -10,27 +10,18 @@ use Oro\Bundle\UserBundle\Security\UserLoginAttemptLogger;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
- * Logs the success getting of access token for client credentials grant.
+ * Handles successfully processed OAuth client credentials grant access token.
  */
 class ClientCredentialsGrantSuccessHandler implements SuccessHandlerInterface
 {
     use ExtractClientIdTrait;
 
-    private ManagerRegistry $doctrine;
-    private ClientManager $clientManager;
-    private UserLoginAttemptLogger $backendLogger;
-    private ?UserLoginAttemptLogger $frontendLogger;
-
     public function __construct(
-        ManagerRegistry $doctrine,
-        ClientManager $clientManager,
-        UserLoginAttemptLogger $backendLogger,
-        ?UserLoginAttemptLogger $frontendLogger
+        private ManagerRegistry $doctrine,
+        private ClientManager $clientManager,
+        private UserLoginAttemptLogger $backendLogger,
+        private ?UserLoginAttemptLogger $frontendLogger
     ) {
-        $this->doctrine = $doctrine;
-        $this->clientManager = $clientManager;
-        $this->backendLogger = $backendLogger;
-        $this->frontendLogger = $frontendLogger;
     }
 
     #[\Override]
@@ -43,11 +34,15 @@ class ClientCredentialsGrantSuccessHandler implements SuccessHandlerInterface
 
         /** @var Client $client */
         $client = $this->clientManager->getClient($this->getClientId($request));
-        $user = $this->doctrine->getRepository($client->getOwnerEntityClass())->find($client->getOwnerEntityId());
-        if (null !== $this->frontendLogger && $client->isFrontend()) {
-            $this->frontendLogger->logSuccessLoginAttempt($user, 'OAuth');
-        } else {
-            $this->backendLogger->logSuccessLoginAttempt($user, 'OAuth');
+        if (null !== $client) {
+            $user = $this->doctrine->getRepository($client->getOwnerEntityClass())->find($client->getOwnerEntityId());
+            if (null !== $user) {
+                if (null !== $this->frontendLogger && $client->isFrontend()) {
+                    $this->frontendLogger->logSuccessLoginAttempt($user, 'OAuth');
+                } else {
+                    $this->backendLogger->logSuccessLoginAttempt($user, 'OAuth');
+                }
+            }
         }
     }
 }

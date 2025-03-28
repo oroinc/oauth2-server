@@ -4,6 +4,7 @@ namespace Oro\Bundle\OAuth2ServerBundle\DependencyInjection\Security\Factory;
 
 use Oro\Bundle\OAuth2ServerBundle\Security\Authenticator\OAuth2Authenticator;
 use Oro\Bundle\OAuth2ServerBundle\Security\VisitorUserProvider;
+use Symfony\Bridge\PsrHttpMessage\HttpMessageFactoryInterface;
 use Symfony\Bundle\SecurityBundle\DependencyInjection\Security\Factory\AuthenticatorFactoryInterface;
 use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -15,8 +16,6 @@ use Symfony\Component\DependencyInjection\Reference;
  */
 class OAuth2Factory implements AuthenticatorFactoryInterface
 {
-    private const AUTHENTICATOR_SERVICE  = 'oro_oauth2_server.security.authenticator';
-
     #[\Override]
     public function createAuthenticator(
         ContainerBuilder $container,
@@ -24,7 +23,7 @@ class OAuth2Factory implements AuthenticatorFactoryInterface
         array $config,
         string $userProviderId
     ): string {
-        $authenticatorId = self::AUTHENTICATOR_SERVICE . '.' . $firewallName;
+        $authenticatorId = 'oro_oauth2_server.security.authenticator.' . $firewallName;
 
         $container
             ->register($authenticatorId, OAuth2Authenticator::class)
@@ -33,14 +32,15 @@ class OAuth2Factory implements AuthenticatorFactoryInterface
             ->addArgument(new Reference('doctrine'))
             ->addArgument(new Reference($this->getUserProvider($container, $firewallName, $config, $userProviderId)))
             ->addArgument(new Reference('oro_oauth2_server.league.authorization_validator'))
-            ->addArgument(new Reference('Symfony\Bridge\PsrHttpMessage\HttpMessageFactoryInterface'))
+            ->addArgument(new Reference(HttpMessageFactoryInterface::class))
             ->addArgument(new Reference('oro_api.security.authenticator.feature_checker'))
             ->addArgument($firewallName)
             ->addArgument(
-                $this->isVisitorFirewall($config) ? $this->createAnonymousCustomerUserRolesProvider() : null
+                $this->isVisitorFirewall($config)
+                    ? new Reference('oro_customer.authentication.anonymous_customer_user_roles_provider')
+                    : null
             )
             ->addMethodCall('setAuthorizationCookies', [$config['authorization_cookies']]);
-        ;
 
         return $authenticatorId;
     }
@@ -98,10 +98,5 @@ class OAuth2Factory implements AuthenticatorFactoryInterface
         return
             class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')
             && $config['anonymous_customer_user'] === true;
-    }
-
-    private function createAnonymousCustomerUserRolesProvider(): Reference
-    {
-        return new Reference('oro_customer.authentication.anonymous_customer_user_roles_provider');
     }
 }

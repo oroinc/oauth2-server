@@ -40,7 +40,7 @@ class LoadPasswordGrantClient extends AbstractFixture implements
     public function load(ObjectManager $manager)
     {
         $client = new Client();
-        $client->setOrganization($this->getReference('organization'));
+        $client->setOrganization($this->getReference(LoadOrganization::ORGANIZATION));
         $client->setName('test application backend');
         $client->setGrants(['password']);
         $client->setIdentifier(self::OAUTH_CLIENT_ID);

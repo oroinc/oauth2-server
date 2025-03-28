@@ -20,3 +20,11 @@ oro_oauth2_server_frontend_authenticate:
         _controller: oro_oauth2_server.frontend_authorize_client_controller::authorizeAction
     options:
         frontend: true
+
+oro_oauth2_server_frontend_authenticate_visitor:
+    path: '/oauth2-token/authorize-visitor'
+    methods: [GET]
+    defaults:
+        _controller: oro_oauth2_server.frontend_authorize_client_controller::authorizeVisitorAction
+    options:
+        frontend: true

@@ -8,6 +8,8 @@ services:
             - { name: container.service_subscriber }
             - { name: container.service_subscriber, id: oro_oauth2_server.handler.frontend_authorize_client.handler, key: Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\AuthorizeClientHandler }
             - { name: container.service_subscriber, id: oro_oauth2_server.handler.authorize_client.exception_handler, key: Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\Exception\ExceptionHandler }
+            - { name: container.service_subscriber, id: oro_customer.customer_visitor_manager, key: Oro\Bundle\CustomerBundle\Entity\CustomerVisitorManager }
+            - { name: container.service_subscriber, id: oro_oauth2_server.visitor_access_token_parser, key: Oro\Bundle\OAuth2ServerBundle\Security\VisitorAccessTokenParser }
 
     oro_oauth2_server.listener.frontend_routes_listener:
         class: Oro\Bundle\OAuth2ServerBundle\EventListener\FrontendRoutesListener

@@ -24,17 +24,17 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
     private function getBearerAuthHeaderValue(): string
     {
         /** @var User $user */
-        $user = $this->getReference('user');
+        $user = $this->getReference(LoadUser::USER);
         $userName = $user->getUserIdentifier();
         $responseData = $this->sendPasswordAccessTokenRequest($userName, $userName);
 
         return sprintf('Bearer %s', $responseData['access_token']);
     }
 
-    public function testGetAuthToken()
+    public function testGetAuthToken(): void
     {
         $startDateTime = new \DateTime('now', new \DateTimeZone('UTC'));
-        $user = $this->getReference('user');
+        $user = $this->getReference(LoadUser::USER);
         $accessToken = $this->sendPasswordAccessTokenRequest($user->getUserIdentifier(), $user->getUserIdentifier());
 
         self::assertEquals('Bearer', $accessToken['token_type']);
@@ -53,18 +53,19 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
         self::assertClientLastUsedValueIsCorrect($startDateTime, $client);
     }
 
-    public function testLockUserOnAttemptsLimit()
+    public function testLockUserOnAttemptsLimit(): void
     {
         if (!class_exists('Oro\Bundle\UserProBundle\OroUserProBundle')) {
             self::markTestSkipped('can be tested only with UserProBundle');
         }
 
-        $configManager = $this->getConfigManager();
+        $configManager = self::getConfigManager();
+        $initialFailedLoginLimit = $configManager->get('oro_user_pro.failed_login_limit');
         $configManager->set('oro_user_pro.failed_login_limit_enabled', true);
         $configManager->set('oro_user_pro.failed_login_limit', 1);
         $configManager->flush();
 
-        $user = $this->getReference('user');
+        $user = $this->getReference(LoadUser::USER);
         $responseContent = $this->sendPasswordAccessTokenRequest(
             $user->getUserIdentifier(),
             'wrong',
@@ -72,8 +73,8 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
         );
         self::assertEquals(
             [
-                'error'             => 'invalid_grant',
-                'message'           => 'The user credentials were incorrect.',
+                'error' => 'invalid_grant',
+                'message' => 'The user credentials were incorrect.',
                 'error_description' => 'The user credentials were incorrect.'
             ],
             $responseContent
@@ -86,8 +87,8 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
         );
         self::assertEquals(
             [
-                'error'             => 'invalid_grant',
-                'message'           => 'The user credentials were incorrect.',
+                'error' => 'invalid_grant',
+                'message' => 'The user credentials were incorrect.',
                 'error_description' => 'The user credentials were incorrect.'
             ],
             $responseContent
@@ -100,8 +101,8 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
         );
         self::assertEquals(
             [
-                'error'             => 'invalid_grant',
-                'message'           => 'The provided authorization grant (e.g., authorization code,'
+                'error' => 'invalid_grant',
+                'message' => 'The provided authorization grant (e.g., authorization code,'
                     . ' resource owner credentials) or refresh token is invalid, expired, revoked,'
                     . ' does not match the redirection URI used in the authorization request,'
                     . ' or was issued to another client.',
@@ -109,7 +110,7 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
                     . ' resource owner credentials) or refresh token is invalid, expired, revoked,'
                     . ' does not match the redirection URI used in the authorization request,'
                     . ' or was issued to another client.',
-                'hint'              => 'Account is locked.'
+                'hint' => 'Account is locked.'
             ],
             $responseContent
         );
@@ -117,20 +118,25 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
         $user = self::getContainer()->get('doctrine')->getRepository(User::class)->find($user->getId());
         self::assertEquals('locked', $user->getAuthStatus()->getInternalId());
         self::assertEquals(3, $user->getFailedLoginCount());
+
+        $configManager->set('oro_user_pro.failed_login_limit_enabled', false);
+        $configManager->set('oro_user_pro.failed_login_limit', $initialFailedLoginLimit);
+        $configManager->flush();
     }
 
-    public function testResetFailedLoginCounters()
+    public function testResetFailedLoginCounters(): void
     {
         if (!class_exists('Oro\Bundle\UserProBundle\OroUserProBundle')) {
             self::markTestSkipped('can be tested only with UserProBundle');
         }
 
-        $configManager = $this->getConfigManager();
+        $configManager = self::getConfigManager();
+        $initialFailedLoginLimit = $configManager->get('oro_user_pro.failed_login_limit');
         $configManager->set('oro_user_pro.failed_login_limit_enabled', true);
         $configManager->set('oro_user_pro.failed_login_limit', 2);
         $configManager->flush();
 
-        $user = $this->getReference('user');
+        $user = $this->getReference(LoadUser::USER);
         $responseContent = $this->sendPasswordAccessTokenRequest(
             $user->getUserIdentifier(),
             'wrong',
@@ -138,8 +144,8 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
         );
         self::assertEquals(
             [
-                'error'             => 'invalid_grant',
-                'message'           => 'The user credentials were incorrect.',
+                'error' => 'invalid_grant',
+                'message' => 'The user credentials were incorrect.',
                 'error_description' => 'The user credentials were incorrect.'
             ],
             $responseContent
@@ -154,16 +160,19 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
         self::assertEquals('Bearer', $responseContent['token_type']);
         $user = self::getContainer()->get('doctrine')->getRepository(User::class)->find($user->getId());
         self::assertEquals(0, $user->getFailedLoginCount());
+
+        $configManager->set('oro_user_pro.failed_login_limit_enabled', false);
+        $configManager->set('oro_user_pro.failed_login_limit', $initialFailedLoginLimit);
     }
 
-    public function testGetAuthTokenForNotExistingUser()
+    public function testGetAuthTokenForNotExistingUser(): void
     {
         $responseContent = $this->sendPasswordAccessTokenRequest('test', 'test', Response::HTTP_BAD_REQUEST);
 
         self::assertEquals(
             [
-                'error'             => 'invalid_grant',
-                'message'           => 'The user credentials were incorrect.',
+                'error' => 'invalid_grant',
+                'message' => 'The user credentials were incorrect.',
                 'error_description' => 'The user credentials were incorrect.'
             ],
             $responseContent
@@ -173,10 +182,10 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
         self::assertNull($client->getLastUsedAt());
     }
 
-    public function testGetAuthTokenForDeactivatedUserShouldReturnUnauthorizedStatusCode()
+    public function testGetAuthTokenForDeactivatedUserShouldReturnUnauthorizedStatusCode(): void
     {
         /** @var User $user */
-        $user = $this->getReference('user');
+        $user = $this->getReference(LoadUser::USER);
         $user->setEnabled(false);
         $this->getEntityManager()->flush();
         $userName = $user->getUserIdentifier();
@@ -185,8 +194,8 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
 
         self::assertEquals(
             [
-                'error'             => 'invalid_grant',
-                'message'           => 'The provided authorization grant (e.g., authorization code,'
+                'error' => 'invalid_grant',
+                'message' => 'The provided authorization grant (e.g., authorization code,'
                     . ' resource owner credentials) or refresh token is invalid, expired, revoked,'
                     . ' does not match the redirection URI used in the authorization request,'
                     . ' or was issued to another client.',
@@ -194,7 +203,7 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
                     . ' resource owner credentials) or refresh token is invalid, expired, revoked,'
                     . ' does not match the redirection URI used in the authorization request,'
                     . ' or was issued to another client.',
-                'hint'              => 'Account is disabled.'
+                'hint' => 'Account is disabled.'
             ],
             $responseContent
         );
@@ -202,10 +211,10 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
         self::assertNull($client->getLastUsedAt());
     }
 
-    public function testGetAuthTokenForDeactivatedClientShouldReturnUnauthorizedStatusCode()
+    public function testGetAuthTokenForDeactivatedClientShouldReturnUnauthorizedStatusCode(): void
     {
         /** @var User $user */
-        $user = $this->getReference('user');
+        $user = $this->getReference(LoadUser::USER);
         $userName = $user->getUserIdentifier();
 
         /** @var Client $client */
@@ -217,21 +226,21 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
 
         self::assertEquals(
             [
-                'error'             => 'invalid_client',
-                'message'           => 'Client authentication failed',
+                'error' => 'invalid_client',
+                'message' => 'Client authentication failed',
                 'error_description' => 'Client authentication failed'
             ],
             $responseContent
         );
     }
 
-    public function testApiRequestWithCorrectAccessTokenShouldReturnRequestedData()
+    public function testApiRequestWithCorrectAccessTokenShouldReturnRequestedData(): void
     {
         $authorizationHeader = $this->getBearerAuthHeaderValue();
         $expectedData = [
             'data' => [
                 'type' => 'users',
-                'id'   => '<toString(@user->id)>'
+                'id' => '<toString(@user->id)>'
             ]
         ];
 
@@ -251,12 +260,12 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
         $this->assertResponseContains($expectedData, $response);
     }
 
-    public function testApiRequestWithCorrectAccessTokenButForDeactivatedUserShouldReturnUnauthorizedStatusCode()
+    public function testApiRequestWithCorrectAccessTokenButForDeactivatedUserShouldReturnUnauthorizedStatusCode(): void
     {
         $authorizationHeader = $this->getBearerAuthHeaderValue();
 
         /** @var User $user */
-        $user = $this->getReference('user');
+        $user = $this->getReference(LoadUser::USER);
         $user->setEnabled(false);
         $this->getEntityManager()->flush();
 
@@ -271,9 +280,9 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
         self::assertSame('', $response->getContent());
     }
 
-    public function testGetRefreshedAuthToken()
+    public function testGetRefreshedAuthToken(): void
     {
-        $user = $this->getReference('user');
+        $user = $this->getReference(LoadUser::USER);
         $client = $this->getReference(LoadPasswordGrantClient::OAUTH_CLIENT_REFERENCE);
 
         $accessToken = $this->sendPasswordAccessTokenRequest($user->getUserIdentifier(), $user->getUserIdentifier());
@@ -292,24 +301,24 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
         self::assertTrue($passwordAccessDate < $updatedClient->getLastUsedAt());
     }
 
-    public function testGetRefreshedAuthTokenForWrongRefreshToken()
+    public function testGetRefreshedAuthTokenForWrongRefreshToken(): void
     {
         $responseContent = $this->sendRefreshAccessTokenRequest('test', Response::HTTP_UNAUTHORIZED);
 
         self::assertEquals(
             [
-                'error'             => 'invalid_request',
-                'message'           => 'The refresh token is invalid.',
+                'error' => 'invalid_request',
+                'message' => 'The refresh token is invalid.',
                 'error_description' => 'The refresh token is invalid.',
-                'hint'              => 'Cannot decrypt the refresh token'
+                'hint' => 'Cannot decrypt the refresh token'
             ],
             $responseContent
         );
     }
 
-    public function testApiRequestWithCorrectRefreshedAccessTokenShouldReturnRequestedData()
+    public function testApiRequestWithCorrectRefreshedAccessTokenShouldReturnRequestedData(): void
     {
-        $user = $this->getReference('user');
+        $user = $this->getReference(LoadUser::USER);
         $accessToken = $this->sendPasswordAccessTokenRequest($user->getUserIdentifier(), $user->getUserIdentifier());
         $refreshedToken = $this->sendRefreshAccessTokenRequest($accessToken['refresh_token']);
         $refreshedAuthorizationHeader = sprintf('Bearer %s', $refreshedToken['access_token']);
@@ -317,7 +326,7 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
         $expectedData = [
             'data' => [
                 'type' => 'users',
-                'id'   => '<toString(@user->id)>'
+                'id' => '<toString(@user->id)>'
             ]
         ];
 
@@ -337,20 +346,17 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
         $this->assertResponseContains($expectedData, $response);
     }
 
-    public function testApiRequestWithAccessTokedAfterGettingRefreshedAccessTokenShouldNotReturnData()
+    public function testApiRequestWithAccessTokedAfterGettingRefreshedAccessTokenShouldNotReturnData(): void
     {
-        $user = $this->getReference('user');
+        $user = $this->getReference(LoadUser::USER);
         $accessToken = $this->sendPasswordAccessTokenRequest($user->getUserIdentifier(), $user->getUserIdentifier());
         $refreshedToken = $this->sendRefreshAccessTokenRequest($accessToken['refresh_token']);
-
-        $authorizationHeader = sprintf('Bearer %s', $accessToken['access_token']);
-        $refreshedAuthorizationHeader = sprintf('Bearer %s', $refreshedToken['access_token']);
 
         // test that the old access token cannot be used
         $response = $this->get(
             ['entity' => 'users', 'id' => '<toString(@user->id)>'],
             [],
-            ['HTTP_AUTHORIZATION' => $authorizationHeader],
+            ['HTTP_AUTHORIZATION' => sprintf('Bearer %s', $accessToken['access_token'])],
             false
         );
         self::assertResponseStatusCodeEquals($response, Response::HTTP_UNAUTHORIZED);
@@ -360,7 +366,7 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
         $response = $this->get(
             ['entity' => 'users', 'id' => '<toString(@user->id)>'],
             [],
-            ['HTTP_AUTHORIZATION' => $refreshedAuthorizationHeader]
+            ['HTTP_AUTHORIZATION' => sprintf('Bearer %s', $refreshedToken['access_token'])]
         );
         $this->assertResponseContains(
             ['data' => ['type' => 'users', 'id' => '<toString(@user->id)>']],
@@ -368,9 +374,9 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
         );
     }
 
-    public function testGetRefreshedAuthTokenForDeactivatedUserShouldReturnUnauthorizedStatusCode()
+    public function testGetRefreshedAuthTokenForDeactivatedUserShouldReturnUnauthorizedStatusCode(): void
     {
-        $user = $this->getReference('user');
+        $user = $this->getReference(LoadUser::USER);
         $accessToken = $this->sendPasswordAccessTokenRequest($user->getUserIdentifier(), $user->getUserIdentifier());
 
         $user->setEnabled(false);
@@ -383,8 +389,8 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
 
         self::assertEquals(
             [
-                'error'             => 'invalid_grant',
-                'message'           => 'The provided authorization grant (e.g., authorization code,'
+                'error' => 'invalid_grant',
+                'message' => 'The provided authorization grant (e.g., authorization code,'
                     . ' resource owner credentials) or refresh token is invalid, expired, revoked,'
                     . ' does not match the redirection URI used in the authorization request,'
                     . ' or was issued to another client.',
@@ -392,16 +398,16 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
                     . ' resource owner credentials) or refresh token is invalid, expired, revoked,'
                     . ' does not match the redirection URI used in the authorization request,'
                     . ' or was issued to another client.',
-                'hint'              => 'Account is disabled.'
+                'hint' => 'Account is disabled.'
             ],
             $refreshedToken
         );
     }
 
-    public function testGetRefreshedAuthTokenForDeactivatedClient()
+    public function testGetRefreshedAuthTokenForDeactivatedClient(): void
     {
         /** @var User $user */
-        $user = $this->getReference('user');
+        $user = $this->getReference(LoadUser::USER);
         $accessToken = $this->sendPasswordAccessTokenRequest($user->getUserIdentifier(), $user->getUserIdentifier());
 
         /** @var Client $client */
@@ -416,8 +422,8 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
 
         self::assertEquals(
             [
-                'error'             => 'invalid_client',
-                'message'           => 'Client authentication failed',
+                'error' => 'invalid_client',
+                'message' => 'Client authentication failed',
                 'error_description' => 'Client authentication failed'
             ],
             $refreshedToken
@@ -431,11 +437,11 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
     ): array {
         return $this->sendTokenRequest(
             [
-                'grant_type'    => 'password',
-                'client_id'     => LoadPasswordGrantClient::OAUTH_CLIENT_ID,
+                'grant_type' => 'password',
+                'client_id' => LoadPasswordGrantClient::OAUTH_CLIENT_ID,
                 'client_secret' => LoadPasswordGrantClient::OAUTH_CLIENT_SECRET,
-                'username'      => $userName,
-                'password'      => $password
+                'username' => $userName,
+                'password' => $password
             ],
             $expectedStatusCode
         );
@@ -445,8 +451,8 @@ class PasswordGrantOAuthServerTest extends OAuthServerTestCase
     {
         return $this->sendTokenRequest(
             [
-                'grant_type'    => 'refresh_token',
-                'client_id'     => LoadPasswordGrantClient::OAUTH_CLIENT_ID,
+                'grant_type' => 'refresh_token',
+                'client_id' => LoadPasswordGrantClient::OAUTH_CLIENT_ID,
                 'client_secret' => LoadPasswordGrantClient::OAUTH_CLIENT_SECRET,
                 'refresh_token' => $token
             ],

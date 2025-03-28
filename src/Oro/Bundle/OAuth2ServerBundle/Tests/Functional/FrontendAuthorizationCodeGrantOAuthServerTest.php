@@ -4,12 +4,13 @@ namespace Oro\Bundle\OAuth2ServerBundle\Tests\Functional;
 
 use Oro\Bundle\OAuth2ServerBundle\Tests\Functional\DataFixtures\LoadAuthorizationCodeGrantClient;
 use Oro\Bundle\OAuth2ServerBundle\Tests\Functional\DataFixtures\LoadFrontendAuthorizationCodeGrantClient;
+use Oro\Bundle\TestFrameworkBundle\Tests\Functional\DataFixtures\LoadUser;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @SuppressWarnings(PHPMD.TooManyPublicMethods)
  */
-class FrontendAuthorizationCodeGrantServerTest extends OAuthServerTestCase
+class FrontendAuthorizationCodeGrantOAuthServerTest extends OAuthServerTestCase
 {
     #[\Override]
     protected function setUp(): void
@@ -21,15 +22,9 @@ class FrontendAuthorizationCodeGrantServerTest extends OAuthServerTestCase
         $this->loadFixtures([
             LoadAuthorizationCodeGrantClient::class,
             LoadFrontendAuthorizationCodeGrantClient::class,
+            LoadUser::class,
             'Oro\Bundle\CustomerBundle\Tests\Functional\DataFixtures\LoadCustomerUserData'
         ]);
-    }
-
-    private function getBearerAuthHeaderValue(): string
-    {
-        $responseData = $this->sendAccessTokenRequest();
-
-        return sprintf('Bearer %s', $responseData['access_token']);
     }
 
     private function sendAuthCodeRequest(
@@ -69,7 +64,7 @@ class FrontendAuthorizationCodeGrantServerTest extends OAuthServerTestCase
             $this->initClient([], self::generateBasicAuthHeader());
         }
 
-        $response = $this->sendAuthCodeRequest($type, $clientId, $redirectUri, true);
+        $response = $this->sendAuthCodeRequest($type, $clientId, $redirectUri);
 
         $parameters = [];
         self::assertResponseStatusCodeEquals($response, Response::HTTP_FOUND);
@@ -80,11 +75,11 @@ class FrontendAuthorizationCodeGrantServerTest extends OAuthServerTestCase
     }
 
     private function sendAccessTokenRequest(
-        ?string $code = null,
-        $redirectUri = 'http://test.com',
+        ?string $code,
+        $redirectUri,
         int $expectedStatusCode = Response::HTTP_OK
     ): array {
-        if ($code === null) {
+        if (null === $code) {
             $code = $this->getAuthCode(
                 'frontend',
                 LoadFrontendAuthorizationCodeGrantClient::OAUTH_CLIENT_ID,
@@ -94,17 +89,38 @@ class FrontendAuthorizationCodeGrantServerTest extends OAuthServerTestCase
 
         return $this->sendTokenRequest(
             [
-                'grant_type'    => 'authorization_code',
-                'client_id'     => LoadFrontendAuthorizationCodeGrantClient::OAUTH_CLIENT_ID,
+                'grant_type' => 'authorization_code',
+                'client_id' => LoadFrontendAuthorizationCodeGrantClient::OAUTH_CLIENT_ID,
                 'client_secret' => LoadFrontendAuthorizationCodeGrantClient::OAUTH_CLIENT_SECRET,
-                'code'          => $code,
-                'redirect_uri'  => $redirectUri,
+                'code' => $code,
+                'redirect_uri' => $redirectUri
             ],
             $expectedStatusCode
         );
     }
 
-    public function testGetFrontendAuthCode()
+    public function testFrontendAuthenticateRequest(): void
+    {
+        $this->client->request(
+            'GET',
+            $this->getUrl(
+                'oro_oauth2_server_frontend_authenticate',
+                [
+                    'response_type' => 'code',
+                    'client_id' => LoadFrontendAuthorizationCodeGrantClient::OAUTH_CLIENT_ID,
+                    'redirect_uri' => 'http://test.com'
+                ]
+            )
+        );
+        $response = $this->client->getResponse();
+        self::assertHtmlResponseStatusCodeEquals($response, Response::HTTP_FOUND);
+        self::assertStringContainsString(
+            $this->getUrl('oro_oauth2_server_frontend_login_form'),
+            $response->getContent()
+        );
+    }
+
+    public function testGetFrontendAuthCode(): void
     {
         $code = $this->getAuthCode(
             'frontend',
@@ -116,13 +132,12 @@ class FrontendAuthorizationCodeGrantServerTest extends OAuthServerTestCase
         self::assertNotNull($code);
     }
 
-    public function testGetFrontendAuthCodeWithoutRedirectURI()
+    public function testGetFrontendAuthCodeWithoutRedirectUri(): void
     {
         $this->initClient([], self::generateBasicAuthHeader('grzegorz.brzeczyszczykiewicz@example.com', 'test'));
         $response = $this->sendAuthCodeRequest(
             'frontend',
-            LoadFrontendAuthorizationCodeGrantClient::OAUTH_CLIENT_ID,
-            null
+            LoadFrontendAuthorizationCodeGrantClient::OAUTH_CLIENT_ID
         );
 
         $parameters = [];
@@ -135,7 +150,7 @@ class FrontendAuthorizationCodeGrantServerTest extends OAuthServerTestCase
         self::assertNotNull($code);
     }
 
-    public function testTryToGetFrontendAuthCodeWithNotGrantedRequest()
+    public function testTryToGetFrontendAuthCodeWithNotGrantedRequest(): void
     {
         $this->initClient([], self::generateBasicAuthHeader('grzegorz.brzeczyszczykiewicz@example.com', 'test'));
         $response = $this->sendAuthCodeRequest(
@@ -159,14 +174,13 @@ class FrontendAuthorizationCodeGrantServerTest extends OAuthServerTestCase
         self::assertEquals('The resource owner or authorization server denied the request.', $parameters['message']);
     }
 
-    public function testTryToGetFrontendAuthCodeWithWithWrongRedirectUri()
+    public function testTryToGetFrontendAuthCodeWithWrongRedirectUri(): void
     {
         $this->initClient([], self::generateBasicAuthHeader('grzegorz.brzeczyszczykiewicz@example.com', 'test'));
         $response = $this->sendAuthCodeRequest(
             'frontend',
             LoadFrontendAuthorizationCodeGrantClient::OAUTH_CLIENT_ID,
-            'http://wrong.com',
-            true
+            'http://wrong.com'
         );
 
         self::assertResponseStatusCodeEquals($response, Response::HTTP_UNAUTHORIZED);
@@ -178,14 +192,13 @@ class FrontendAuthorizationCodeGrantServerTest extends OAuthServerTestCase
         self::assertResponseHeader($response, 'WWW-Authenticate', 'Basic realm="OAuth"');
     }
 
-    public function testTryToGetFrontendAuthCodeWithWithWrongClientId()
+    public function testTryToGetFrontendAuthCodeWithWrongClientId(): void
     {
         $this->initClient([], self::generateBasicAuthHeader('grzegorz.brzeczyszczykiewicz@example.com', 'test'));
         $response = $this->sendAuthCodeRequest(
             'frontend',
             'wrong_client',
-            'http://test.com',
-            true
+            'http://test.com'
         );
 
         self::assertResponseStatusCodeEquals($response, Response::HTTP_UNAUTHORIZED);
@@ -197,61 +210,59 @@ class FrontendAuthorizationCodeGrantServerTest extends OAuthServerTestCase
         self::assertResponseHeader($response, 'WWW-Authenticate', 'Basic realm="OAuth"');
     }
 
-    public function testTryToGetFrontendAuthCodeOnBackendClient()
+    public function testTryToGetFrontendAuthCodeOnBackendClient(): void
     {
         $this->initClient([], self::generateBasicAuthHeader('grzegorz.brzeczyszczykiewicz@example.com', 'test'));
         $response = $this->sendAuthCodeRequest(
             'frontend',
             LoadAuthorizationCodeGrantClient::OAUTH_CLIENT_ID,
-            'http://test.com',
-            true
+            'http://test.com'
         );
 
         self::assertResponseStatusCodeEquals($response, Response::HTTP_NOT_FOUND);
     }
 
-    public function testTryToGetBackendAuthCodeOnFrontendClient()
+    public function testTryToGetBackendAuthCodeOnFrontendClient(): void
     {
         $this->initClient([], self::generateBasicAuthHeader());
         $response = $this->sendAuthCodeRequest(
             'backend',
             LoadFrontendAuthorizationCodeGrantClient::OAUTH_CLIENT_ID,
-            'http://test.com',
-            true
+            'http://test.com'
         );
 
         self::assertResponseStatusCodeEquals($response, Response::HTTP_NOT_FOUND);
     }
 
-    public function testGetFrontendAuthToken()
+    public function testGetFrontendAuthToken(): void
     {
         $startDateTime = new \DateTime('now', new \DateTimeZone('UTC'));
-        $accessToken = $this->sendAccessTokenRequest();
+        $accessToken = $this->sendAccessTokenRequest(null, 'http://test.com');
 
         self::assertEquals('Bearer', $accessToken['token_type']);
         self::assertLessThanOrEqual(3600, $accessToken['expires_in']);
         self::assertGreaterThanOrEqual(3599, $accessToken['expires_in']);
         self::assertArrayHasKey('refresh_token', $accessToken);
 
-        [$accessTokenFirstPart, $accessTokenSecondPart] = explode('.', $accessToken['access_token']);
-        $accessTokenFirstPart = self::jsonToArray(base64_decode($accessTokenFirstPart));
-        $accessTokenSecondPart = self::jsonToArray(base64_decode($accessTokenSecondPart));
-        self::assertEquals('JWT', $accessTokenFirstPart['typ']);
-        self::assertEquals('RS256', $accessTokenFirstPart['alg']);
-        self::assertEquals(LoadFrontendAuthorizationCodeGrantClient::OAUTH_CLIENT_ID, $accessTokenSecondPart['aud']);
+        [$accessTokenPart1, $accessTokenPart2] = explode('.', $accessToken['access_token']);
+        $accessTokenPart1 = self::jsonToArray(base64_decode($accessTokenPart1));
+        $accessTokenPart2 = self::jsonToArray(base64_decode($accessTokenPart2));
+        self::assertEquals('JWT', $accessTokenPart1['typ']);
+        self::assertEquals('RS256', $accessTokenPart1['alg']);
+        self::assertEquals(LoadFrontendAuthorizationCodeGrantClient::OAUTH_CLIENT_ID, $accessTokenPart2['aud']);
 
         $client = $this->getReference(LoadFrontendAuthorizationCodeGrantClient::OAUTH_CLIENT_REFERENCE);
         self::assertClientLastUsedValueIsCorrect($startDateTime, $client);
     }
 
-    public function testTryToMakeApiRequestWithCorrectFrontendAccessTokenOnBackendApi()
+    public function testTryToMakeApiRequestWithCorrectFrontendAccessTokenOnBackendApi(): void
     {
-        $authorizationHeader = $this->getBearerAuthHeaderValue();
+        $accessToken = $this->sendAccessTokenRequest(null, 'http://test.com');
 
         $response = $this->get(
             ['entity' => 'users', 'id' => '<toString(@user->id)>'],
             [],
-            ['HTTP_AUTHORIZATION' => $authorizationHeader],
+            ['HTTP_AUTHORIZATION' => sprintf('Bearer %s', $accessToken['access_token'])],
             false
         );
 
@@ -259,7 +270,7 @@ class FrontendAuthorizationCodeGrantServerTest extends OAuthServerTestCase
         self::assertSame('', $response->getContent());
     }
 
-    public function testTryToGetAuthTokenWithWrongAuthCode()
+    public function testTryToGetAuthTokenWithWrongAuthCode(): void
     {
         $accessToken = $this->sendAccessTokenRequest(
             'wrong_code',
@@ -270,7 +281,7 @@ class FrontendAuthorizationCodeGrantServerTest extends OAuthServerTestCase
         self::assertEquals('Cannot decrypt the authorization code', $accessToken['hint']);
     }
 
-    public function testTryToGetAuthTokenTwiceWithSameAuthCode()
+    public function testTryToGetAuthTokenTwiceWithSameAuthCode(): void
     {
         $code = $this->getAuthCode(
             'frontend',
@@ -286,7 +297,7 @@ class FrontendAuthorizationCodeGrantServerTest extends OAuthServerTestCase
         self::assertEquals('Authorization code has been revoked', $accessToken1['hint']);
     }
 
-    public function testTryToGetAuthTokenWithWrongRedirectURI()
+    public function testTryToGetAuthTokenWithWrongRedirectUri(): void
     {
         $accessToken = $this->sendAccessTokenRequest(
             null,

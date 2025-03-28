@@ -18,7 +18,7 @@ class BackendGrantRequestTest extends OAuthServerTestCase
             LoadClientCredentialsClient::class,
             LoadPasswordGrantClient::class,
             LoadAuthorizationCodeGrantClient::class,
-            LoadUser::class,
+            LoadUser::class
         ]);
     }
 
@@ -27,19 +27,16 @@ class BackendGrantRequestTest extends OAuthServerTestCase
         $this->initClient([], self::generateBasicAuthHeader());
         $requestParameters = [
             'response_type' => 'code',
-            'client_id'     => $clientId,
-            'redirect_uri'  => 'http://test.com',
+            'client_id' => $clientId,
+            'redirect_uri' => 'http://test.com'
         ];
 
         $this->client->request(
             'POST',
-            $this->getUrl(
-                'oro_oauth2_server_authenticate',
-                $requestParameters
-            ),
+            $this->getUrl('oro_oauth2_server_authenticate', $requestParameters),
             [
                 'grantAccess' => 'true',
-                '_csrf_token' => $this->getCsrfToken('authorize_client')->getValue(),
+                '_csrf_token' => $this->getCsrfToken('authorize_client')->getValue()
             ]
         );
 
@@ -51,15 +48,15 @@ class BackendGrantRequestTest extends OAuthServerTestCase
         return $parameters['code'];
     }
 
-    public function testSendAuthCodeGrantRequest()
+    public function testSendAuthCodeGrantRequest(): void
     {
         $responseData = $this->sendTokenRequest(
             [
-                'grant_type'    => 'authorization_code',
-                'client_id'     => LoadAuthorizationCodeGrantClient::OAUTH_CLIENT_ID,
+                'grant_type' => 'authorization_code',
+                'client_id' => LoadAuthorizationCodeGrantClient::OAUTH_CLIENT_ID,
                 'client_secret' => LoadAuthorizationCodeGrantClient::OAUTH_CLIENT_SECRET,
-                'code'          => $this->getAuthCode(LoadAuthorizationCodeGrantClient::OAUTH_CLIENT_ID),
-                'redirect_uri'  => 'http://test.com',
+                'code' => $this->getAuthCode(LoadAuthorizationCodeGrantClient::OAUTH_CLIENT_ID),
+                'redirect_uri' => 'http://test.com'
             ]
         );
 
@@ -69,59 +66,59 @@ class BackendGrantRequestTest extends OAuthServerTestCase
         self::assertArrayHasKey('refresh_token', $responseData);
     }
 
-    public function testTryToSendAuthCodeGrantRequestWithPasswordGrantClient()
+    public function testTryToSendAuthCodeGrantRequestWithPasswordGrantClient(): void
     {
         $responseData = $this->sendTokenRequest(
             [
-                'grant_type'    => 'authorization_code',
-                'client_id'     => LoadPasswordGrantClient::OAUTH_CLIENT_ID,
+                'grant_type' => 'authorization_code',
+                'client_id' => LoadPasswordGrantClient::OAUTH_CLIENT_ID,
                 'client_secret' => LoadPasswordGrantClient::OAUTH_CLIENT_SECRET,
-                'code'          => $this->getAuthCode(LoadAuthorizationCodeGrantClient::OAUTH_CLIENT_ID),
-                'redirect_uri'  => 'http://test.com',
+                'code' => $this->getAuthCode(LoadAuthorizationCodeGrantClient::OAUTH_CLIENT_ID),
+                'redirect_uri' => 'http://test.com'
             ],
             Response::HTTP_UNAUTHORIZED
         );
 
         self::assertEquals(
             [
-                'error'             => 'invalid_client',
+                'error' => 'invalid_client',
                 'error_description' => 'Client authentication failed',
-                'message'           => 'Client authentication failed',
+                'message' => 'Client authentication failed'
             ],
             $responseData
         );
     }
 
-    public function testTryToSendAuthCodeGrantRequestWithClientCredentialsGrantClient()
+    public function testTryToSendAuthCodeGrantRequestWithClientCredentialsGrantClient(): void
     {
         $responseData = $this->sendTokenRequest(
             [
-                'grant_type'    => 'authorization_code',
-                'client_id'     => LoadClientCredentialsClient::OAUTH_CLIENT_ID,
+                'grant_type' => 'authorization_code',
+                'client_id' => LoadClientCredentialsClient::OAUTH_CLIENT_ID,
                 'client_secret' => LoadClientCredentialsClient::OAUTH_CLIENT_SECRET,
-                'code'          => $this->getAuthCode(LoadAuthorizationCodeGrantClient::OAUTH_CLIENT_ID),
-                'redirect_uri'  => 'http://test.com',
+                'code' => $this->getAuthCode(LoadAuthorizationCodeGrantClient::OAUTH_CLIENT_ID),
+                'redirect_uri' => 'http://test.com'
             ],
             Response::HTTP_UNAUTHORIZED
         );
 
         self::assertEquals(
             [
-                'error'             => 'invalid_client',
+                'error' => 'invalid_client',
                 'error_description' => 'Client authentication failed',
-                'message'           => 'Client authentication failed',
+                'message' => 'Client authentication failed'
             ],
             $responseData
         );
     }
 
-    public function testSendClientCredentialsGrantRequest()
+    public function testSendClientCredentialsGrantRequest(): void
     {
         $responseData = $this->sendTokenRequest(
             [
-                'grant_type'    => 'client_credentials',
-                'client_id'     => LoadClientCredentialsClient::OAUTH_CLIENT_ID,
-                'client_secret' => LoadClientCredentialsClient::OAUTH_CLIENT_SECRET,
+                'grant_type' => 'client_credentials',
+                'client_id' => LoadClientCredentialsClient::OAUTH_CLIENT_ID,
+                'client_secret' => LoadClientCredentialsClient::OAUTH_CLIENT_SECRET
             ]
         );
 
@@ -130,58 +127,58 @@ class BackendGrantRequestTest extends OAuthServerTestCase
         self::assertArrayHasKey('access_token', $responseData);
     }
 
-    public function testTryToSendClientCredentialsGrantRequestWithPasswordGrantClient()
+    public function testTryToSendClientCredentialsGrantRequestWithPasswordGrantClient(): void
     {
         $responseData = $this->sendTokenRequest(
             [
-                'grant_type'    => 'client_credentials',
-                'client_id'     => LoadPasswordGrantClient::OAUTH_CLIENT_ID,
-                'client_secret' => LoadPasswordGrantClient::OAUTH_CLIENT_SECRET,
+                'grant_type' => 'client_credentials',
+                'client_id' => LoadPasswordGrantClient::OAUTH_CLIENT_ID,
+                'client_secret' => LoadPasswordGrantClient::OAUTH_CLIENT_SECRET
             ],
             Response::HTTP_UNAUTHORIZED
         );
 
         self::assertEquals(
             [
-                'error'             => 'invalid_client',
+                'error' => 'invalid_client',
                 'error_description' => 'Client authentication failed',
-                'message'           => 'Client authentication failed',
+                'message' => 'Client authentication failed'
             ],
             $responseData
         );
     }
 
-    public function testTryToSendClientCredentialsGrantRequestWithAuthCodeGrantClient()
+    public function testTryToSendClientCredentialsGrantRequestWithAuthCodeGrantClient(): void
     {
         $responseData = $this->sendTokenRequest(
             [
-                'grant_type'    => 'client_credentials',
-                'client_id'     => LoadAuthorizationCodeGrantClient::OAUTH_CLIENT_ID,
-                'client_secret' => LoadAuthorizationCodeGrantClient::OAUTH_CLIENT_SECRET,
+                'grant_type' => 'client_credentials',
+                'client_id' => LoadAuthorizationCodeGrantClient::OAUTH_CLIENT_ID,
+                'client_secret' => LoadAuthorizationCodeGrantClient::OAUTH_CLIENT_SECRET
             ],
             Response::HTTP_UNAUTHORIZED
         );
 
         self::assertEquals(
             [
-                'error'             => 'invalid_client',
+                'error' => 'invalid_client',
                 'error_description' => 'Client authentication failed',
-                'message'           => 'Client authentication failed',
+                'message' => 'Client authentication failed'
             ],
             $responseData
         );
     }
 
-    public function testSendPasswordGrantRequest()
+    public function testSendPasswordGrantRequest(): void
     {
-        $userName = $this->getReference('user')->getUserIdentifier();
+        $userName = $this->getReference(LoadUser::USER)->getUserIdentifier();
         $responseData = $this->sendTokenRequest(
             [
-                'grant_type'    => 'password',
-                'client_id'     => LoadPasswordGrantClient::OAUTH_CLIENT_ID,
+                'grant_type' => 'password',
+                'client_id' => LoadPasswordGrantClient::OAUTH_CLIENT_ID,
                 'client_secret' => LoadPasswordGrantClient::OAUTH_CLIENT_SECRET,
-                'username'      => $userName,
-                'password'      => $userName,
+                'username' => $userName,
+                'password' => $userName
             ]
         );
 
@@ -191,49 +188,49 @@ class BackendGrantRequestTest extends OAuthServerTestCase
         self::assertArrayHasKey('refresh_token', $responseData);
     }
 
-    public function testTryToSendPasswordGrantRequestWithClientCredentialsGrantClient()
+    public function testTryToSendPasswordGrantRequestWithClientCredentialsGrantClient(): void
     {
-        $userName = $this->getReference('user')->getUserIdentifier();
+        $userName = $this->getReference(LoadUser::USER)->getUserIdentifier();
         $responseData = $this->sendTokenRequest(
             [
-                'grant_type'    => 'password',
-                'client_id'     => LoadClientCredentialsClient::OAUTH_CLIENT_ID,
+                'grant_type' => 'password',
+                'client_id' => LoadClientCredentialsClient::OAUTH_CLIENT_ID,
                 'client_secret' => LoadClientCredentialsClient::OAUTH_CLIENT_SECRET,
-                'username'      => $userName,
-                'password'      => $userName,
+                'username' => $userName,
+                'password' => $userName
             ],
             Response::HTTP_UNAUTHORIZED
         );
 
         self::assertEquals(
             [
-                'error'             => 'invalid_client',
+                'error' => 'invalid_client',
                 'error_description' => 'Client authentication failed',
-                'message'           => 'Client authentication failed',
+                'message' => 'Client authentication failed'
             ],
             $responseData
         );
     }
 
-    public function testTryToSendPasswordGrantRequestWithAuthCodeGrantClient()
+    public function testTryToSendPasswordGrantRequestWithAuthCodeGrantClient(): void
     {
-        $userName = $this->getReference('user')->getUserIdentifier();
+        $userName = $this->getReference(LoadUser::USER)->getUserIdentifier();
         $responseData = $this->sendTokenRequest(
             [
-                'grant_type'    => 'password',
-                'client_id'     => LoadAuthorizationCodeGrantClient::OAUTH_CLIENT_ID,
+                'grant_type' => 'password',
+                'client_id' => LoadAuthorizationCodeGrantClient::OAUTH_CLIENT_ID,
                 'client_secret' => LoadAuthorizationCodeGrantClient::OAUTH_CLIENT_SECRET,
-                'username'      => $userName,
-                'password'      => $userName,
+                'username' => $userName,
+                'password' => $userName
             ],
             Response::HTTP_UNAUTHORIZED
         );
 
         self::assertEquals(
             [
-                'error'             => 'invalid_client',
+                'error' => 'invalid_client',
                 'error_description' => 'Client authentication failed',
-                'message'           => 'Client authentication failed',
+                'message' => 'Client authentication failed'
             ],
             $responseData
         );

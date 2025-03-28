@@ -4,29 +4,21 @@ namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Handler\GetAccessToken\Succes
 
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Persistence\ObjectRepository;
+use GuzzleHttp\Psr7\ServerRequest;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
 use Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Success\ClientCredentialsGrantSuccessHandler;
 use Oro\Bundle\UserBundle\Entity\User;
 use Oro\Bundle\UserBundle\Security\UserLoginAttemptLogger;
-use Psr\Http\Message\ServerRequestInterface;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 
-class ClientCredentialsGrantSuccessHandlerTest extends \PHPUnit\Framework\TestCase
+class ClientCredentialsGrantSuccessHandlerTest extends TestCase
 {
-    /** @var ManagerRegistry|\PHPUnit\Framework\MockObject\MockObject */
-    private $doctrine;
-
-    /** @var ClientManager|\PHPUnit\Framework\MockObject\MockObject */
-    private $clientManager;
-
-    /** @var UserLoginAttemptLogger|\PHPUnit\Framework\MockObject\MockObject */
-    private $backendLogger;
-
-    /** @var UserLoginAttemptLogger|\PHPUnit\Framework\MockObject\MockObject */
-    private $frontendLogger;
-
-    /** @var ObjectRepository|\PHPUnit\Framework\MockObject\MockObject */
-    private $repo;
+    private ManagerRegistry&MockObject $doctrine;
+    private ClientManager&MockObject $clientManager;
+    private UserLoginAttemptLogger&MockObject $backendLogger;
+    private ObjectRepository&MockObject $repo;
 
     #[\Override]
     protected function setUp(): void
@@ -34,57 +26,88 @@ class ClientCredentialsGrantSuccessHandlerTest extends \PHPUnit\Framework\TestCa
         $this->doctrine = $this->createMock(ManagerRegistry::class);
         $this->clientManager = $this->createMock(ClientManager::class);
         $this->backendLogger = $this->createMock(UserLoginAttemptLogger::class);
-        $this->frontendLogger = $this->createMock(UserLoginAttemptLogger::class);
         $this->repo = $this->createMock(ObjectRepository::class);
+    }
+
+    private function getHandler(?UserLoginAttemptLogger $frontendLogger): ClientCredentialsGrantSuccessHandler
+    {
+        return new ClientCredentialsGrantSuccessHandler(
+            $this->doctrine,
+            $this->clientManager,
+            $this->backendLogger,
+            $frontendLogger
+        );
+    }
+
+    private function getClient(string $ownerEntityClass, int $ownerEntityId, bool $isFrontend): Client
+    {
+        $client = new Client();
+        $client->setOwnerEntity($ownerEntityClass, $ownerEntityId);
+        $client->setFrontend($isFrontend);
+
+        return $client;
     }
 
     public function testHandleWithNonClientCredentialsRequest(): void
     {
-        $request = $this->createMock(ServerRequestInterface::class);
-        $request->expects(self::once())
-            ->method('getParsedBody')
-            ->willReturn(['grant_type' => 'password']);
+        $request = (new ServerRequest('GET', ''))
+            ->withParsedBody(['grant_type' => 'other']);
 
         $this->backendLogger->expects(self::never())
             ->method('logSuccessLoginAttempt');
-        $this->frontendLogger->expects(self::never())
+        $frontendLogger = $this->createMock(UserLoginAttemptLogger::class);
+        $frontendLogger->expects(self::never())
             ->method('logSuccessLoginAttempt');
 
-        $handler = new ClientCredentialsGrantSuccessHandler(
-            $this->doctrine,
-            $this->clientManager,
-            $this->backendLogger,
-            $this->frontendLogger
-        );
+        $handler = $this->getHandler($frontendLogger);
+        $handler->handle($request);
+    }
+
+    public function testHandleWithoutFrontendBundle(): void
+    {
+        $request = (new ServerRequest('GET', ''))
+            ->withParsedBody(['grant_type' => 'client_credentials', 'client_id' => 'test_client']);
+        $user = new User();
+
+        $client = $this->getClient('Test\User', 1, false);
+        $this->clientManager->expects(self::once())
+            ->method('getClient')
+            ->with('test_client')
+            ->willReturn($client);
+
+        $this->doctrine->expects(self::once())
+            ->method('getRepository')
+            ->with('Test\User')
+            ->willReturn($this->repo);
+        $this->repo->expects(self::once())
+            ->method('find')
+            ->with(1)
+            ->willReturn($user);
+
+        $this->backendLogger->expects(self::once())
+            ->method('logSuccessLoginAttempt')
+            ->with($user, 'OAuth');
+
+        $handler = $this->getHandler(null);
         $handler->handle($request);
     }
 
     public function testHandleWithBackendRequest(): void
     {
+        $request = (new ServerRequest('GET', ''))
+            ->withParsedBody(['grant_type' => 'client_credentials', 'client_id' => 'test_client']);
         $user = new User();
-        $request = $this->createMock(ServerRequestInterface::class);
-        $request->expects(self::atLeastOnce())
-            ->method('getParsedBody')
-            ->willReturn(['grant_type' => 'client_credentials', 'client_id' => '10']);
-        $request->expects(self::once())
-            ->method('hasHeader')
-            ->with('Authorization')
-            ->willReturn(false);
 
-        $client = new Client();
-        $client->setFrontend(false);
-        $client->setOwnerEntity('test_backend', 1);
-
+        $client = $this->getClient('Test\User', 1, false);
         $this->clientManager->expects(self::once())
             ->method('getClient')
-            ->with('10')
+            ->with('test_client')
             ->willReturn($client);
 
         $this->doctrine->expects(self::once())
             ->method('getRepository')
-            ->with('test_backend')
+            ->with('Test\User')
             ->willReturn($this->repo);
-
         $this->repo->expects(self::once())
             ->method('find')
             ->with(1)
@@ -93,48 +116,31 @@ class ClientCredentialsGrantSuccessHandlerTest extends \PHPUnit\Framework\TestCa
         $this->backendLogger->expects(self::once())
             ->method('logSuccessLoginAttempt')
             ->with($user, 'OAuth');
-        $this->frontendLogger->expects(self::never())
+        $frontendLogger = $this->createMock(UserLoginAttemptLogger::class);
+        $frontendLogger->expects(self::never())
             ->method('logSuccessLoginAttempt');
 
-        $handler = new ClientCredentialsGrantSuccessHandler(
-            $this->doctrine,
-            $this->clientManager,
-            $this->backendLogger,
-            $this->frontendLogger
-        );
+        $handler = $this->getHandler($frontendLogger);
         $handler->handle($request);
     }
 
     public function testHandleWithBackendRequestWhenCredentialsProvidedInBasicAuthorizationHeader(): void
     {
+        $request = (new ServerRequest('GET', ''))
+            ->withParsedBody(['grant_type' => 'client_credentials'])
+            ->withHeader('Authorization', ['Basic ' . base64_encode('test_client:test_secret')]);
         $user = new User();
-        $request = $this->createMock(ServerRequestInterface::class);
-        $request->expects(self::atLeastOnce())
-            ->method('getParsedBody')
-            ->willReturn(['grant_type' => 'client_credentials']);
-        $request->expects(self::once())
-            ->method('hasHeader')
-            ->with('Authorization')
-            ->willReturn(true);
-        $request->expects(self::once())
-            ->method('getHeader')
-            ->with('Authorization')
-            ->willReturn(['Basic ' . base64_encode('10:secret')]);
 
-        $client = new Client();
-        $client->setFrontend(false);
-        $client->setOwnerEntity('test_backend', 1);
-
+        $client = $this->getClient('Test\User', 1, false);
         $this->clientManager->expects(self::once())
             ->method('getClient')
-            ->with('10')
+            ->with('test_client')
             ->willReturn($client);
 
         $this->doctrine->expects(self::once())
             ->method('getRepository')
-            ->with('test_backend')
+            ->with('Test\User')
             ->willReturn($this->repo);
-
         $this->repo->expects(self::once())
             ->method('find')
             ->with(1)
@@ -143,48 +149,31 @@ class ClientCredentialsGrantSuccessHandlerTest extends \PHPUnit\Framework\TestCa
         $this->backendLogger->expects(self::once())
             ->method('logSuccessLoginAttempt')
             ->with($user, 'OAuth');
-        $this->frontendLogger->expects(self::never())
+        $frontendLogger = $this->createMock(UserLoginAttemptLogger::class);
+        $frontendLogger->expects(self::never())
             ->method('logSuccessLoginAttempt');
 
-        $handler = new ClientCredentialsGrantSuccessHandler(
-            $this->doctrine,
-            $this->clientManager,
-            $this->backendLogger,
-            $this->frontendLogger
-        );
+        $handler = $this->getHandler($frontendLogger);
         $handler->handle($request);
     }
 
     public function testHandleWithBackendRequestWhenCredentialsProvidedInBasicAuthorizationHeaderAndRequestBody(): void
     {
+        $request = (new ServerRequest('GET', ''))
+            ->withParsedBody(['grant_type' => 'client_credentials', 'client_id' => 'test_client'])
+            ->withHeader('Authorization', ['Basic ' . base64_encode('test_client:test_secret')]);
         $user = new User();
-        $request = $this->createMock(ServerRequestInterface::class);
-        $request->expects(self::atLeastOnce())
-            ->method('getParsedBody')
-            ->willReturn(['grant_type' => 'client_credentials', 'client_id' => '10']);
-        $request->expects(self::once())
-            ->method('hasHeader')
-            ->with('Authorization')
-            ->willReturn(true);
-        $request->expects(self::once())
-            ->method('getHeader')
-            ->with('Authorization')
-            ->willReturn(['Basic ' . base64_encode('100:secret')]);
 
-        $client = new Client();
-        $client->setFrontend(false);
-        $client->setOwnerEntity('test_backend', 1);
-
+        $client = $this->getClient('Test\User', 1, false);
         $this->clientManager->expects(self::once())
             ->method('getClient')
-            ->with('10')
+            ->with('test_client')
             ->willReturn($client);
 
         $this->doctrine->expects(self::once())
             ->method('getRepository')
-            ->with('test_backend')
+            ->with('Test\User')
             ->willReturn($this->repo);
-
         $this->repo->expects(self::once())
             ->method('find')
             ->with(1)
@@ -193,161 +182,109 @@ class ClientCredentialsGrantSuccessHandlerTest extends \PHPUnit\Framework\TestCa
         $this->backendLogger->expects(self::once())
             ->method('logSuccessLoginAttempt')
             ->with($user, 'OAuth');
-        $this->frontendLogger->expects(self::never())
+        $frontendLogger = $this->createMock(UserLoginAttemptLogger::class);
+        $frontendLogger->expects(self::never())
             ->method('logSuccessLoginAttempt');
 
-        $handler = new ClientCredentialsGrantSuccessHandler(
-            $this->doctrine,
-            $this->clientManager,
-            $this->backendLogger,
-            $this->frontendLogger
-        );
+        $handler = $this->getHandler($frontendLogger);
         $handler->handle($request);
     }
 
     public function testHandleWithFrontendRequest(): void
     {
+        $request = (new ServerRequest('GET', ''))
+            ->withParsedBody(['grant_type' => 'client_credentials', 'client_id' => 'test_client']);
         $user = new User();
-        $request = $this->createMock(ServerRequestInterface::class);
-        $request->expects(self::atLeastOnce())
-            ->method('getParsedBody')
-            ->willReturn(['grant_type' => 'client_credentials', 'client_id' => '20']);
-        $request->expects(self::once())
-            ->method('hasHeader')
-            ->with('Authorization')
-            ->willReturn(false);
 
-        $client = new Client();
-        $client->setFrontend(true);
-        $client->setOwnerEntity('test_backend', 2);
-
+        $client = $this->getClient('Test\User', 1, true);
         $this->clientManager->expects(self::once())
             ->method('getClient')
-            ->with('20')
+            ->with('test_client')
             ->willReturn($client);
 
         $this->doctrine->expects(self::once())
             ->method('getRepository')
-            ->with('test_backend')
+            ->with('Test\User')
             ->willReturn($this->repo);
-
         $this->repo->expects(self::once())
             ->method('find')
-            ->with(2)
+            ->with(1)
             ->willReturn($user);
 
         $this->backendLogger->expects(self::never())
             ->method('logSuccessLoginAttempt');
-        $this->frontendLogger->expects(self::once())
+        $frontendLogger = $this->createMock(UserLoginAttemptLogger::class);
+        $frontendLogger->expects(self::once())
             ->method('logSuccessLoginAttempt')
             ->with($user, 'OAuth');
 
-        $handler = new ClientCredentialsGrantSuccessHandler(
-            $this->doctrine,
-            $this->clientManager,
-            $this->backendLogger,
-            $this->frontendLogger
-        );
+        $handler = $this->getHandler($frontendLogger);
         $handler->handle($request);
     }
 
     public function testHandleWithFrontendRequestWhenCredentialsProvidedInBasicAuthorizationHeader(): void
     {
+        $request = (new ServerRequest('GET', ''))
+            ->withParsedBody(['grant_type' => 'client_credentials'])
+            ->withHeader('Authorization', ['Basic ' . base64_encode('test_client:test_secret')]);
         $user = new User();
-        $request = $this->createMock(ServerRequestInterface::class);
-        $request->expects(self::atLeastOnce())
-            ->method('getParsedBody')
-            ->willReturn(['grant_type' => 'client_credentials']);
-        $request->expects(self::once())
-            ->method('hasHeader')
-            ->with('Authorization')
-            ->willReturn(true);
-        $request->expects(self::once())
-            ->method('getHeader')
-            ->with('Authorization')
-            ->willReturn(['Basic ' . base64_encode('20:secret')]);
 
-        $client = new Client();
-        $client->setFrontend(true);
-        $client->setOwnerEntity('test_backend', 2);
-
+        $client = $this->getClient('Test\User', 1, true);
         $this->clientManager->expects(self::once())
             ->method('getClient')
-            ->with('20')
+            ->with('test_client')
             ->willReturn($client);
 
         $this->doctrine->expects(self::once())
             ->method('getRepository')
-            ->with('test_backend')
+            ->with('Test\User')
             ->willReturn($this->repo);
-
         $this->repo->expects(self::once())
             ->method('find')
-            ->with(2)
+            ->with(1)
             ->willReturn($user);
 
         $this->backendLogger->expects(self::never())
             ->method('logSuccessLoginAttempt');
-        $this->frontendLogger->expects(self::once())
+        $frontendLogger = $this->createMock(UserLoginAttemptLogger::class);
+        $frontendLogger->expects(self::once())
             ->method('logSuccessLoginAttempt')
             ->with($user, 'OAuth');
 
-        $handler = new ClientCredentialsGrantSuccessHandler(
-            $this->doctrine,
-            $this->clientManager,
-            $this->backendLogger,
-            $this->frontendLogger
-        );
+        $handler = $this->getHandler($frontendLogger);
         $handler->handle($request);
     }
 
     public function testHandleWithFrontendRequestWhenCredentialsProvidedInBasicAuthorizationHeaderAndRequestBody(): void
     {
+        $request = (new ServerRequest('GET', ''))
+            ->withParsedBody(['grant_type' => 'client_credentials', 'client_id' => 'test_client'])
+            ->withHeader('Authorization', ['Basic ' . base64_encode('test_client:test_secret')]);
         $user = new User();
-        $request = $this->createMock(ServerRequestInterface::class);
-        $request->expects(self::atLeastOnce())
-            ->method('getParsedBody')
-            ->willReturn(['grant_type' => 'client_credentials', 'client_id' => '20']);
-        $request->expects(self::once())
-            ->method('hasHeader')
-            ->with('Authorization')
-            ->willReturn(true);
-        $request->expects(self::once())
-            ->method('getHeader')
-            ->with('Authorization')
-            ->willReturn(['Basic ' . base64_encode('200:secret')]);
 
-        $client = new Client();
-        $client->setFrontend(true);
-        $client->setOwnerEntity('test_backend', 2);
-
+        $client = $this->getClient('Test\User', 1, true);
         $this->clientManager->expects(self::once())
             ->method('getClient')
-            ->with('20')
+            ->with('test_client')
             ->willReturn($client);
 
         $this->doctrine->expects(self::once())
             ->method('getRepository')
-            ->with('test_backend')
+            ->with('Test\User')
             ->willReturn($this->repo);
-
         $this->repo->expects(self::once())
             ->method('find')
-            ->with(2)
+            ->with(1)
             ->willReturn($user);
 
         $this->backendLogger->expects(self::never())
             ->method('logSuccessLoginAttempt');
-        $this->frontendLogger->expects(self::once())
+        $frontendLogger = $this->createMock(UserLoginAttemptLogger::class);
+        $frontendLogger->expects(self::once())
             ->method('logSuccessLoginAttempt')
             ->with($user, 'OAuth');
 
-        $handler = new ClientCredentialsGrantSuccessHandler(
-            $this->doctrine,
-            $this->clientManager,
-            $this->backendLogger,
-            $this->frontendLogger
-        );
+        $handler = $this->getHandler($frontendLogger);
         $handler->handle($request);
     }
 }

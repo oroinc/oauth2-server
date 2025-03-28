@@ -4,7 +4,9 @@ namespace Oro\Bundle\OAuth2ServerBundle\Provider;
 
 use League\OAuth2\Server\CryptTrait;
 use Oro\Bundle\CustomerBundle\Security\CustomerUserLoader;
+use Oro\Bundle\CustomerBundle\Security\VisitorIdentifierUtil;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
+use Oro\Bundle\OAuth2ServerBundle\League\AuthCodeGrantUserIdentifierUtil;
 use Oro\Bundle\UserBundle\Security\UserLoader;
 use Oro\Bundle\UserBundle\Security\UserLoginAttemptLogger;
 use Psr\Http\Message\ServerRequestInterface;
@@ -57,20 +59,23 @@ class AuthCodeLogAttemptHelper
         $user = null;
         try {
             $authCodePayload = json_decode($this->decrypt($parameters['code']), null, 512, JSON_THROW_ON_ERROR);
-            $userId = $authCodePayload->user_id;
+            [$userIdentifier] = AuthCodeGrantUserIdentifierUtil::decodeIdentifier($authCodePayload->user_id);
             $client = $this->clientManager->getClient($parameters['client_id']);
-            if ($this->frontendUserLoader !== null && $client && $client->isFrontend()) {
+            if ($this->frontendUserLoader !== null && $client?->isFrontend()) {
                 $isFrontendRequest = true;
-                $user = $this->frontendUserLoader->loadUser($userId);
+                if (!VisitorIdentifierUtil::isVisitorIdentifier($userIdentifier)) {
+                    $user = $this->frontendUserLoader->loadUser($userIdentifier);
+                }
             } else {
-                $user = $this->backendUserLoader->loadUser($userId);
+                $user = $this->backendUserLoader->loadUser($userIdentifier);
             }
         } catch (\Exception $e) {
         }
+        if (null === $user) {
+            return;
+        }
 
-        $logger = (null !== $this->frontendLogger && $isFrontendRequest)
-            ? $this->frontendLogger
-            : $this->backendLogger;
+        $logger = $isFrontendRequest ? $this->frontendLogger : $this->backendLogger;
         if (null !== $logger) {
             if ($isSuccess) {
                 $logger->logSuccessLoginAttempt($user, $source);

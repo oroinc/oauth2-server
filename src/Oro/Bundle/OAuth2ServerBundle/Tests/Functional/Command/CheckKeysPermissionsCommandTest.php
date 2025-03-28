@@ -6,25 +6,20 @@ namespace Oro\Bundle\OAuth2ServerBundle\Tests\Functional\Command;
 
 use Oro\Bundle\OAuth2ServerBundle\League\CryptKeyFile;
 use Oro\Bundle\TestFrameworkBundle\Test\WebTestCase;
-use Oro\Component\Testing\Command\CommandTestingTrait;
 use Oro\Component\Testing\ReflectionUtil;
-use Symfony\Component\Console\Command\Command;
+use Oro\Component\Testing\TempDirExtension;
 use Symfony\Component\Filesystem\Filesystem;
 
 class CheckKeysPermissionsCommandTest extends WebTestCase
 {
-    use CommandTestingTrait;
+    use TempDirExtension;
 
     private CryptKeyFile $oAuth2PrivateKey;
-
     private string $originalOAuth2PrivateKeyPath;
 
     protected function setUp(): void
     {
         $this->initClient();
-
-        $this->command = $this->findCommand('oro:cron:oauth-server:check-keys-permissions');
-        $this->commandTester = $this->getCommandTester($this->command);
 
         $this->oAuth2PrivateKey = self::getContainer()->get('oro_oauth2_server.league.private_key');
         $this->originalOAuth2PrivateKeyPath = $this->oAuth2PrivateKey->getKeyPath();
@@ -32,77 +27,69 @@ class CheckKeysPermissionsCommandTest extends WebTestCase
 
     protected function tearDown(): void
     {
-        $this->setOAuth2PrivateKeyPath($this->originalOAuth2PrivateKeyPath);
+        $this->setOAuth2KeyPath($this->oAuth2PrivateKey, $this->originalOAuth2PrivateKeyPath);
+    }
+
+    private function setOAuth2KeyPath(CryptKeyFile $key, string $path): void
+    {
+        ReflectionUtil::setPropertyValue($key, 'keyPath', $path);
+    }
+
+    private function createOAuth2KeyFile(string $path, int $chmodMode): string
+    {
+        $filesystem = new Filesystem();
+        $filesystem->dumpFile($path, 'sample_key');
+        $filesystem->chmod($path, $chmodMode);
+        clearstatcache();
+
+        return $path;
+    }
+
+    private function getRandomPath(): string
+    {
+        return $this->getTempFile('oauth_check_keys_permissions', 'key', '.key');
     }
 
     public function testExecuteWhenInvalidPermissions(): void
     {
-        $this->commandTester->execute([]);
+        $result = self::runCommand('oro:cron:oauth-server:check-keys-permissions');
 
-        $this->assertOutputContains($this->commandTester, 'Checking OAuth 2.0 private key permissions.');
-        $this->assertOutputContains($this->commandTester, 'OAuth 2.0 private key permissions are not secure.');
+        self::assertStringContainsString('Checking OAuth 2.0 private key permissions.', $result);
+        self::assertStringContainsString('OAuth 2.0 private key permissions are not secure.', $result);
     }
 
     public function testExecuteReturnsSuccess(): void
     {
-        $cachePath = self::getContainer()->getParameter('kernel.cache_dir');
-        $privateKeyPath = tempnam($cachePath, 'private.key');
-        $filesystem = new Filesystem();
-        $filesystem->dumpFile($privateKeyPath, 'sample_key');
-        $filesystem->chmod($privateKeyPath, 0600);
-        clearstatcache();
+        $this->setOAuth2KeyPath($this->oAuth2PrivateKey, $this->createOAuth2KeyFile($this->getRandomPath(), 0600));
 
-        $this->setOAuth2PrivateKeyPath($privateKeyPath);
+        $result = self::runCommand('oro:cron:oauth-server:check-keys-permissions');
 
-        try {
-            $this->commandTester->execute([]);
-        } finally {
-            $filesystem->remove($privateKeyPath);
-        }
-
-        self::assertEquals(Command::SUCCESS, $this->commandTester->getStatusCode());
-
-        $this->assertOutputContains($this->commandTester, 'Checking OAuth 2.0 private key permissions.');
-        $this->assertOutputContains($this->commandTester, 'OAuth 2.0 private key permissions are secure.');
+        self::assertStringContainsString('Checking OAuth 2.0 private key permissions.', $result);
+        self::assertStringContainsString('OAuth 2.0 private key permissions are secure.', $result);
     }
 
     public function testExecuteReturnsFailure(): void
     {
-        $cachePath = self::getContainer()->getParameter('kernel.cache_dir');
-        $privateKeyPath = tempnam($cachePath, 'private.key');
-        $filesystem = new Filesystem();
-        $filesystem->dumpFile($privateKeyPath, 'sample_key');
-        $filesystem->chmod($privateKeyPath, 0644);
-        clearstatcache();
+        $this->setOAuth2KeyPath($this->oAuth2PrivateKey, $this->createOAuth2KeyFile($this->getRandomPath(), 0644));
 
-        $this->setOAuth2PrivateKeyPath($privateKeyPath);
+        $result = self::runCommand('oro:cron:oauth-server:check-keys-permissions');
 
-        $this->commandTester->execute([]);
-
-        $this->assertOutputContains($this->commandTester, 'Checking OAuth 2.0 private key permissions.');
-        $this->assertOutputContains(
-            $this->commandTester,
+        self::assertStringContainsString('Checking OAuth 2.0 private key permissions.', $result);
+        self::assertStringContainsString(
             'Be aware that the locally generated private key may have permissions that allow access by other '
             . 'Linux users. For production deployment, ensure that only the web server has read and write '
-            . 'permissions for the private key. [ERROR] OAuth 2.0 private key permissions are not secure.'
+            . 'permissions for the private key. [ERROR] OAuth 2.0 private key permissions are not secure.',
+            $result
         );
     }
 
     public function testExecuteReturnsNotExists(): void
     {
-        $cachePath = self::getContainer()->getParameter('kernel.cache_dir');
-        $privateKeyPath = $cachePath . DIRECTORY_SEPARATOR . uniqid('private_', true) . '.key';
+        $this->setOAuth2KeyPath($this->oAuth2PrivateKey, $this->getRandomPath());
 
-        $this->setOAuth2PrivateKeyPath($privateKeyPath);
+        $result = self::runCommand('oro:cron:oauth-server:check-keys-permissions');
 
-        $this->commandTester->execute([]);
-
-        $this->assertOutputContains($this->commandTester, 'Checking OAuth 2.0 private key permissions.');
-        $this->assertOutputContains($this->commandTester, 'OAuth 2.0 private key does not exist.');
-    }
-
-    private function setOAuth2PrivateKeyPath(string $path): void
-    {
-        ReflectionUtil::setPropertyValue($this->oAuth2PrivateKey, 'keyPath', $path);
+        self::assertStringContainsString('Checking OAuth 2.0 private key permissions.', $result);
+        self::assertStringContainsString('OAuth 2.0 private key does not exist.', $result);
     }
 }
