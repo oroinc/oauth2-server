@@ -305,6 +305,7 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
     private function reconfigureLoginFirewalls(ExtendedContainerBuilder $container): void
     {
         $securityConfigs = $container->getExtensionConfig('security');
+        $oroSecurityConfigs = $container->getExtensionConfig('oro_security');
         $firewalls = $securityConfigs[0]['firewalls'];
 
         // enable basic authorization for test env
@@ -338,6 +339,24 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
 
             // add access_control configs for frontend
             $accessControlConfig = Yaml::parseFile(__DIR__ . '/../Resources/config/oro/frontend_access_control.yml');
+            foreach ($accessControlConfig as &$accessControl) {
+                if (!isset($accessControl['options']['frontend']) || false === $accessControl['options']['frontend']) {
+                    $accessControl['path'] = sprintf(
+                        '^%s%s',
+                        '%web_backend_prefix%',
+                        ltrim($accessControl['path'], '^')
+                    );
+                }
+                if (isset($accessControl['options'])) {
+                    unset($accessControl['options']);
+                }
+            }
+            unset($accessControl);
+
+            $oroSecurityConfigs[0]['access_control'] = array_merge(
+                $accessControlConfig,
+                $oroSecurityConfigs[0]['access_control']
+            );
             $securityConfigs[0]['access_control'] = array_merge(
                 $accessControlConfig,
                 $securityConfigs[0]['access_control']
@@ -345,6 +364,7 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
         }
 
         $securityConfigs[0]['firewalls'] = $firewalls;
+        $container->setExtensionConfig('oro_security', $oroSecurityConfigs);
         $container->setExtensionConfig('security', $securityConfigs);
     }
 
