@@ -78,7 +78,7 @@ class CheckKeysPermissionsCommandTest extends WebTestCase
         self::assertStringContainsString(
             'Be aware that the locally generated private key may have permissions that allow access by other '
             . 'Linux users. For production deployment, ensure that only the web server has read and write '
-            . 'permissions for the private key. [ERROR] OAuth 2.0 private key permissions are not secure.',
+            . 'permissions for the private key. [WARNING] OAuth 2.0 private key permissions are not secure.',
             $result
         );
     }

@@ -65,7 +65,7 @@ HELP
         $isPrivateKeySecure = $this->checker->isPrivateKeySecure();
 
         if ($isPrivateKeySecure === null) {
-            $io->error('OAuth 2.0 private key does not exist.');
+            $io->warning('OAuth 2.0 private key does not exist.');
         } elseif ($isPrivateKeySecure === true) {
             $io->success('OAuth 2.0 private key permissions are secure.');
         } else {
@@ -73,7 +73,7 @@ HELP
 
             $io->warning($message);
 
-            $io->error('OAuth 2.0 private key permissions are not secure.');
+            $io->warning('OAuth 2.0 private key permissions are not secure.');
 
             $this->sendNotificationAlert($message);
         }
