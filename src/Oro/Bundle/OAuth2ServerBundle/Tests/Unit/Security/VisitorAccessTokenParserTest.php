@@ -21,6 +21,10 @@ class VisitorAccessTokenParserTest extends TestCase
     #[\Override]
     protected function setUp(): void
     {
+        if (!class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {
+            self::markTestSkipped('can be tested only with CustomerBundle');
+        }
+
         $this->authorizationValidator = $this->createMock(AuthorizationValidatorInterface::class);
         $this->serverRequestFactory = $this->createMock(ServerRequestFactoryInterface::class);
         $this->logger = $this->createMock(LoggerInterface::class);
