@@ -53,6 +53,10 @@ class VisitorAccessTokenParserTest extends TestCase
 
     public function testGetVisitorSessionId(): void
     {
+        if (!class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {
+            self::markTestSkipped('can be tested only with CustomerBundle');
+        }
+
         $visitorAccessToken = 'test_access_token';
         $visitorSessionId = 'test_visitor';
         $validatedRequest = $this->createMock(ServerRequestInterface::class);
@@ -126,6 +130,10 @@ class VisitorAccessTokenParserTest extends TestCase
 
     public function testGetVisitorSessionIdForVisitorAccessTokenWithInvalidUserIdentifier(): void
     {
+        if (!class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {
+            self::markTestSkipped('can be tested only with CustomerBundle');
+        }
+
         $visitorAccessToken = 'test_access_token';
         $validatedRequest = $this->createMock(ServerRequestInterface::class);
 
