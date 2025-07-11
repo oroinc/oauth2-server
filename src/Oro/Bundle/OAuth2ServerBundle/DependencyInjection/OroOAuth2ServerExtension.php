@@ -308,34 +308,10 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
         $oroSecurityConfigs = $container->getExtensionConfig('oro_security');
         $firewalls = $securityConfigs[0]['firewalls'];
 
-        // enable basic authorization for test env
-        if ('test' === $container->getParameter('kernel.environment')) {
-            $firewalls['oauth2_authorization_authenticate']['organization-http-basic'] = [
-                'realm' => 'AccountUser REST Area'
-            ];
-        }
-
         if (class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {
-            // move backend firewalls
-            foreach (['oauth2_authorization_login', 'oauth2_authorization_authenticate'] as $firewallName) {
-                $pattern = $firewalls[$firewallName]['pattern'];
-                $firewalls[$firewallName]['pattern'] = str_replace(
-                    '^/',
-                    '^%web_backend_prefix%/',
-                    $pattern
-                );
-            }
-
             // add frontend firewalls
             $frontendFirewalls = Yaml::parseFile(__DIR__ . '/../Resources/config/oro/frontend_firewalls.yml');
             $firewalls = array_merge($frontendFirewalls, $firewalls);
-
-            // enable basic authorization for test env
-            if ('test' === $container->getParameter('kernel.environment')) {
-                $firewalls['oauth2_frontend_authorization_authenticate']['organization-http-basic'] = [
-                    'realm' => 'AccountUser REST Area'
-                ];
-            }
 
             // add access_control configs for frontend
             $accessControlConfig = Yaml::parseFile(__DIR__ . '/../Resources/config/oro/frontend_access_control.yml');

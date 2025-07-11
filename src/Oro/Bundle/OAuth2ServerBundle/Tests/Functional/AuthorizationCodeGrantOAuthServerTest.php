@@ -135,11 +135,7 @@ class AuthorizationCodeGrantOAuthServerTest extends OAuthServerTestCase
             )
         );
         $response = $this->client->getResponse();
-        self::assertHtmlResponseStatusCodeEquals($response, Response::HTTP_FOUND);
-        self::assertStringContainsString(
-            $this->getUrl('oro_oauth2_server_login_form'),
-            $response->getContent()
-        );
+        self::assertHtmlResponseStatusCodeEquals($response, Response::HTTP_UNAUTHORIZED);
     }
 
     public function testGetAuthCode(): void
@@ -528,56 +524,18 @@ class AuthorizationCodeGrantOAuthServerTest extends OAuthServerTestCase
         self::assertEquals('invalid_client', $accessToken['error']);
     }
 
-    public function testTryToOpenLoginPageWithoutAdditionalData(): void
-    {
-        $this->client->request(
-            'GET',
-            $this->getUrl('oro_oauth2_server_login_form')
-        );
-
-        self::assertEquals(Response::HTTP_NOT_FOUND, $this->client->getResponse()->getStatusCode());
-    }
-
-    public function testTryToOpenLoginPageWithoutClientIdParameter(): void
-    {
-        $session = $this->createSession();
-        $session->set('_security.oauth2_authorization_authenticate.target_path', 'http://test.com');
-        $session->save();
-
-        $this->client->request(
-            'GET',
-            $this->getUrl('oro_oauth2_server_login_form')
-        );
-
-        self::assertEquals(Response::HTTP_NOT_FOUND, $this->client->getResponse()->getStatusCode());
-    }
-
-    public function testTryToOpenLoginPageWithWrongClientIdParameter(): void
-    {
-        $session = $this->createSession();
-        $session->set('_security.oauth2_authorization_authenticate.target_path', 'http://test.com?client_id=wrong');
-        $session->save();
-
-        $this->client->request(
-            'GET',
-            $this->getUrl('oro_oauth2_server_login_form')
-        );
-
-        self::assertEquals(Response::HTTP_NOT_FOUND, $this->client->getResponse()->getStatusCode());
-    }
-
     public function testOpenLoginPage(): void
     {
         $session = $this->createSession();
         $session->set(
-            '_security.oauth2_authorization_authenticate.target_path',
+            '_security.main.target_path',
             'http://test.com?client_id=OxvBGZ4Z0gG6Maihm2amg80LcSpJez4'
         );
         $session->save();
 
         $this->client->request(
             'GET',
-            $this->getUrl('oro_oauth2_server_login_form')
+            $this->getUrl('oro_user_security_login')
         );
 
         self::assertEquals(Response::HTTP_OK, $this->client->getResponse()->getStatusCode());

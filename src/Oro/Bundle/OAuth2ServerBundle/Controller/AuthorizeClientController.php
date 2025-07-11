@@ -50,7 +50,7 @@ class AuthorizeClientController extends AbstractController
         string $type,
         ServerRequestInterface $serverRequest,
         SymfonyRequest $request
-    ): ResponseInterface|SymfonyResponse {
+    ): ResponseInterface|SymfonyResponse|array {
         try {
             $authServer = $this->getAuthorizationServer();
             $authRequest = $authServer->validateAuthorizationRequest($serverRequest);
@@ -93,14 +93,12 @@ class AuthorizeClientController extends AbstractController
             return $this->handleException($serverRequest, $exception);
         }
 
-        $template = 'frontend' === $type
-            ? '@OroOAuth2Server/Security/authorize_frontend.html.twig'
-            : '@OroOAuth2Server/Security/authorize.html.twig';
-
-        return $this->render(
-            $template,
-            ['appName' => $client->getName()]
-        );
+        return 'frontend' === $type
+            ? ['data' => ['appName' => $client->getName()]]
+            : $this->render(
+                '@OroOAuth2Server/Security/authorize.html.twig',
+                ['appName' => $client->getName()]
+            );
     }
 
     /**

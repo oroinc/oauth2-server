@@ -1,0 +1,25 @@
+{% block _oauth_access_prompt_form_container_widget %}
+    <div class="grid-col-12 form-actions__wrapper" {{ block('block_attributes') }}>
+        {{ block_widget(block) }}
+    </div>
+    <form id="form" method="post">
+        <input type="hidden" name="grantAccess" id="grantAccess">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authorize_client') }}">
+    </form>
+    <script type="text/javascript">
+        window.addEventListener('load', function() {
+            document.getElementById('grantBtn').addEventListener('click', function () {
+                sendForm(true);
+            });
+            document.getElementById('cancelBtn').addEventListener('click', function () {
+                sendForm(false);
+            });
+            function sendForm(isAuthorized) {
+                document.getElementById('grantAccess').value = isAuthorized;
+                document.getElementById('grantBtn').setAttribute('disabled', 'disabled');
+                document.getElementById('cancelBtn').setAttribute('disabled', 'disabled');
+                document.getElementById("form").submit();
+            }
+        });
+    </script>
+{% endblock %}

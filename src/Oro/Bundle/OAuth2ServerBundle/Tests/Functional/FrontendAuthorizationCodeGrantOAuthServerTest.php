@@ -113,11 +113,7 @@ class FrontendAuthorizationCodeGrantOAuthServerTest extends OAuthServerTestCase
             )
         );
         $response = $this->client->getResponse();
-        self::assertHtmlResponseStatusCodeEquals($response, Response::HTTP_FOUND);
-        self::assertStringContainsString(
-            $this->getUrl('oro_oauth2_server_frontend_login_form'),
-            $response->getContent()
-        );
+        self::assertHtmlResponseStatusCodeEquals($response, Response::HTTP_UNAUTHORIZED);
     }
 
     public function testGetFrontendAuthCode(): void

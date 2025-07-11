@@ -107,13 +107,9 @@ class FrontendAuthorizationCodeGrantVisitorOAuthServerTest extends OAuthServerTe
             $sendViaPost ? ['HTTP_X-HTTP-Method-Override' => 'GET'] : []
         );
         $authenticateResponse = $this->client->getResponse();
-        self::assertHtmlResponseStatusCodeEquals($authenticateResponse, Response::HTTP_FOUND);
-        self::assertStringContainsString(
-            $this->getUrl('oro_oauth2_server_frontend_login_form'),
-            $authenticateResponse->getContent()
-        );
+        self::assertHtmlResponseStatusCodeEquals($authenticateResponse, Response::HTTP_UNAUTHORIZED);
         $session = $this->client->getRequest()->getSession();
-        $storedTargetPath = $session->get('_security.oauth2_frontend_authorization_authenticate.target_path');
+        $storedTargetPath = $session->get('_security.frontend.target_path');
         foreach ($authenticateParameters as $name => $value) {
             self::assertStringContainsString($name . '=' . urlencode($value), $storedTargetPath, $name);
         }
@@ -357,6 +353,7 @@ class FrontendAuthorizationCodeGrantVisitorOAuthServerTest extends OAuthServerTe
 
     public function testShoppingListWithGuestOauthToken(): void
     {
+
         if (!class_exists('Oro\Bundle\ShoppingListBundle\OroShoppingListBundle')) {
             self::markTestSkipped('can be tested only with ShoppingListBundle');
         }
@@ -452,6 +449,7 @@ class FrontendAuthorizationCodeGrantVisitorOAuthServerTest extends OAuthServerTe
 
     public function testShoppingListWithGuestOauthTokenWhenAccessTokenRequestForUserIsSentViaPost(): void
     {
+
         if (!class_exists('Oro\Bundle\ShoppingListBundle\OroShoppingListBundle')) {
             self::markTestSkipped('can be tested only with ShoppingListBundle');
         }

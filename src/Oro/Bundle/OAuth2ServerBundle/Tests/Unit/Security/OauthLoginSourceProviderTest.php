@@ -7,15 +7,25 @@ use Oro\Bundle\OAuth2ServerBundle\Security\Authenticator\OAuth2Authenticator;
 use Oro\Bundle\OAuth2ServerBundle\Security\OauthLoginSourceProvider;
 use Oro\Bundle\SecurityBundle\Authentication\Authenticator\UsernamePasswordOrganizationAuthenticator;
 use Oro\Bundle\UserBundle\Entity\User;
+use PHPUnit\Framework\MockObject\MockObject;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 
 class OauthLoginSourceProviderTest extends \PHPUnit\Framework\TestCase
 {
+    private RequestStack $requestStack;
+
+    protected function setUp(): void
+    {
+        $this->requestStack = new RequestStack();
+    }
+
     public function testGetLoginSourceForFailedRequestWithNonOAuthToken(): void
     {
-        $provider = new OauthLoginSourceProvider();
+        $provider = new OauthLoginSourceProvider($this->requestStack);
         self::assertNull(
             $provider->getLoginSourceForFailedRequest(
                 $this->getAuthenticatorMock('test'),
@@ -26,30 +36,20 @@ class OauthLoginSourceProviderTest extends \PHPUnit\Framework\TestCase
 
     public function testGetLoginSourceForFailedRequestWithOAuth2Authenticator(): void
     {
-        $provider = new OauthLoginSourceProvider();
+        $provider = new OauthLoginSourceProvider($this->requestStack);
         self::assertEquals(
             'OAuth',
             $provider->getLoginSourceForFailedRequest($this->createMock(OAuth2Authenticator::class), new \Exception())
         );
     }
 
-    public function testGetLoginSourceForFailedRequestWithNonOAuthTokenAndAuthFirewall(): void
+    public function testGetLoginSourceForFailedRequestWithNonOAuthTokenAndAuthRequest(): void
     {
-        $authenticator = $this->getAuthenticatorMock('test', 'oauth2_authorization_authenticate');
-        $provider = new OauthLoginSourceProvider();
-        self::assertEquals(
-            'OAuthCode',
-            $provider->getLoginSourceForFailedRequest($authenticator, new \Exception())
-        );
-    }
-
-    public function testGetLoginSourceForFailedRequestWithNonOAuthTokenAndFrontendAuthFirewall(): void
-    {
-        $authenticator = $this->getAuthenticatorMock(
-            'test',
-            'oauth2_frontend_authorization_authenticate'
-        );
-        $provider = new OauthLoginSourceProvider();
+        $request = new Request();
+        $request->attributes->set('_oauth_login', true);
+        $this->requestStack->push($request);
+        $authenticator = $this->getAuthenticatorMock('test');
+        $provider = new OauthLoginSourceProvider($this->requestStack);
         self::assertEquals(
             'OAuthCode',
             $provider->getLoginSourceForFailedRequest($authenticator, new \Exception())
@@ -59,19 +59,19 @@ class OauthLoginSourceProviderTest extends \PHPUnit\Framework\TestCase
     public function testGetLoginSourceForSuccessRequestWithNonOAuthToken(): void
     {
         $token = new UsernamePasswordToken(new User(), 'test');
-        $provider = new OauthLoginSourceProvider();
+        $provider = new OauthLoginSourceProvider($this->requestStack);
         self::assertNull($provider->getLoginSourceForSuccessRequest($token));
     }
 
     public function testGetLoginSourceForSuccessRequestWithOAuth2Token(): void
     {
         $token = new OAuth2Token();
-        $provider = new OauthLoginSourceProvider();
+        $provider = new OauthLoginSourceProvider($this->requestStack);
         self::assertEquals('OAuth', $provider->getLoginSourceForSuccessRequest($token));
     }
 
 
-    private function getAuthenticatorMock(string $userName, ?string $firewallName = null)
+    private function getAuthenticatorMock(string $userName): UsernamePasswordOrganizationAuthenticator|MockObject
     {
         $passport = $this->createMock(Passport::class);
         $passport->expects($this->any())
@@ -83,12 +83,6 @@ class OauthLoginSourceProviderTest extends \PHPUnit\Framework\TestCase
             ->with(UserBadge::class)
             ->willReturn(new UserBadge($userName));
         $authenticator = $this->createMock(UsernamePasswordOrganizationAuthenticator::class);
-
-        if (null !== $firewallName) {
-            $authenticator->expects($this->any())
-                ->method('getFirewallName')
-                ->willReturn($firewallName);
-        }
 
         return $authenticator;
     }
