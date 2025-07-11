@@ -21,21 +21,6 @@ security:
             migrate_from:
                 - sha512
     firewalls:
-        oauth2_authorization_login:
-            pattern: '^/oauth2-token/login$'
-            provider: chain_provider
-            context: main
-        oauth2_authorization_authenticate:
-            pattern: '^/oauth2-token/(authorize|login-check)$'
-            provider: chain_provider
-            context: main
-            entry_point: organization_form_login
-            organization-form-login:
-                enable_csrf: true
-                check_path: oro_oauth2_server_login_check
-                login_path: oro_oauth2_server_login_form
-            logout:
-                path: oro_user_security_logout
         oauth2_authorization_server:
             pattern: '^/oauth2-token$'
             stateless: true

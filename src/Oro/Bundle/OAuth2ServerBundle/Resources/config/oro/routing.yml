@@ -19,17 +19,6 @@ oro_oauth2_server_client:
     type: annotation
     prefix: /oauth2
 
-oro_oauth2_server_login_check:
-    path: '/oauth2-token/login-check'
-    defaults:
-        _controller: Oro\Bundle\OAuth2ServerBundle\Controller\LoginController::checkAction
-
-oro_oauth2_server_login_form:
-    path: '/oauth2-token/login'
-    defaults:
-        type: backoffice
-        _controller: Oro\Bundle\OAuth2ServerBundle\Controller\LoginController::loginAction
-
 oro_oauth2_server_authenticate:
     path: '/oauth2-token/authorize'
     defaults:

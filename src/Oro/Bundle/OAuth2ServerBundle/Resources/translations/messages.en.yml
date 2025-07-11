@@ -93,6 +93,7 @@ oro:
         auth_code:
             grant: Grant
             cancel: Cancel
+            password_changed: Password was changed?
             login_message: Sign in to continue to "%app_name%".
             authorize_message: '"%app_name%" wants to access your account.'
             authorize_description: |

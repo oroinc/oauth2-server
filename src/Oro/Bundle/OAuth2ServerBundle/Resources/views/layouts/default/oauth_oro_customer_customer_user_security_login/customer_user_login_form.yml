@@ -1,0 +1,58 @@
+layout:
+    imports:
+        -
+            id: oro_customer_form
+            namespace: login
+            root: page_content
+        -
+            id: oro_customer_registration_instructions
+            root: login_page
+            namespace: registration_instructions
+        -
+            id: oro_customer_form_login
+            root: login_form
+    actions:
+        - '@setBlockTheme':
+            themes: '@OroOAuth2Server/layouts/default/page/layout.html.twig'
+        - '@move':
+            id: logo
+            parentId: page_content
+            siblingId: page_title_container
+        - '@setOption':
+            id: logo
+            optionName: renderLink
+            optionValue: false
+        - '@remove':
+            id: page_header
+        - '@remove':
+            id: page_title_container
+        - '@remove':
+            id: logo_print
+        - '@remove':
+              id: page_main_header
+        - '@remove':
+            id: page_footer
+        - '@remove':
+            id: scroll_top
+        - '@remove':
+            id: menus_sidebar_container
+        - '@remove':
+            id: menus_footer_sidebar_container
+        - '@add':
+            id: custom_style
+            parentId: head
+            siblingId: styles
+            blockType: block
+        - '@remove':
+            id: login_wrapper_register
+        - '@setOption':
+            id: login_label
+            optionName: text
+            optionValue:
+                label: oro.oauth2server.auth_code.login_message
+                parameters:
+                    '%app_name%': '=data["appName"]'
+        - '@setOption':
+            id: __login_form_target
+            optionName: value
+            optionValue: ''

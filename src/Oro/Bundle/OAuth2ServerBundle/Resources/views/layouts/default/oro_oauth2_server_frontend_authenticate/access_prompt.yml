@@ -1,0 +1,90 @@
+layout:
+    imports:
+        -
+            id: oro_customer_form
+            namespace: access_prompt
+            root: page_content
+    actions:
+        - '@setBlockTheme':
+            themes: '@OroOAuth2Server/layouts/default/page/layout.html.twig'
+        - '@setBlockTheme':
+            themes: '@OroOAuth2Server/layouts/default/oro_oauth2_server_frontend_authenticate/layout.html.twig'
+        - '@move':
+            id: logo
+            parentId: page_content
+            siblingId: page_title_container
+        - '@setOption':
+            id: logo
+            optionName: renderLink
+            optionValue: false
+        - '@remove':
+            id: page_header
+        - '@remove':
+            id: page_title_container
+        - '@remove':
+            id: logo_print
+        - '@remove':
+            id: page_main_header
+        - '@remove':
+            id: page_footer
+        - '@remove':
+            id: scroll_top
+        - '@remove':
+            id: menus_sidebar_container
+        - '@remove':
+            id: menus_footer_sidebar_container
+        - '@remove':
+            id: access_prompt_form
+        - '@remove':
+            id: access_prompt_required_label
+        - '@add':
+            id: custom_style
+            parentId: head
+            siblingId: styles
+            blockType: block
+        - '@setOption':
+            id: access_prompt_page
+            optionName: attr.class
+            optionValue: 'single-form-page'
+        - '@setOption':
+            id: access_prompt_label
+            optionName: text
+            optionValue:
+                label: oro.oauth2server.auth_code.authorize_message
+                parameters:
+                    '%app_name%': '=data["appName"]'
+        - '@setOption':
+            id: access_prompt_description
+            optionName: text
+            optionValue:
+                label: oro.oauth2server.auth_code.authorize_description
+                parameters:
+                    '%app_name%': '=data["appName"]'
+        - '@add':
+            id: oauth_access_prompt_form_container
+            blockType: container
+            parentId: access_prompt_form_additional
+        - '@add':
+            id: oauth_access_prompt_form_button_cancelBtn
+            parentId: oauth_access_prompt_form_container
+            blockType: button
+            options:
+                type: button
+                action: submit
+                text: oro.oauth2server.auth_code.cancel
+                icon: close
+                attr:
+                    id: cancelBtn
+                    class: "btn btn--outlined"
+        - '@add':
+            id: oauth_access_prompt_form_button_grantBtn
+            parentId: oauth_access_prompt_form_container
+            blockType: button
+            options:
+                type: button
+                action: submit
+                text: oro.oauth2server.auth_code.grant
+                icon: check
+                attr:
+                    id: grantBtn
+                    class: "btn extra-submit btn-uppercase btn-primary"

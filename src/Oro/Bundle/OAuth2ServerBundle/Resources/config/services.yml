@@ -455,6 +455,8 @@ services:
 
     oro_oauth2_server.security.oauth_login_source_provider:
         class: Oro\Bundle\OAuth2ServerBundle\Security\OauthLoginSourceProvider
+        arguments:
+            - '@request_stack'
         tags:
             - { name: oro_security.login_source_provider.success }
             - { name: oro_security.login_source_provider.fail }
@@ -528,3 +530,14 @@ services:
     oro_oauth2_server.security.http.entry_point.oauth:
         class:  Oro\Bundle\OAuth2ServerBundle\Security\Http\EntryPoint\OAuthEntryPoint
         decorates: oro_api.security.http.entry_point.api
+
+    oro_oauth2_server.event_listener.login_controller_listener:
+        class: Oro\Bundle\OAuth2ServerBundle\EventListener\OauthLoginTemplateListener
+        arguments:
+            - '@oro_oauth2_server.client_manager'
+        calls:
+            - [addRoute, ['oro_user_security_login']]
+            - [addRoute, ['oro_user_reset_request']]
+            - [addRoute, ['oro_user_reset_check_email']]
+        tags:
+            - { name: kernel.event_listener, event: kernel.view, method: onKernelView }

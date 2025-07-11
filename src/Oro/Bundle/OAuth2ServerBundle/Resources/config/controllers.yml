@@ -11,12 +11,6 @@ services:
         tags:
             - { name: container.service_subscriber }
 
-    Oro\Bundle\OAuth2ServerBundle\Controller\LoginController:
-        calls:
-            - [setContainer, ['@Psr\Container\ContainerInterface']]
-        tags:
-            - { name: container.service_subscriber }
-
     Oro\Bundle\OAuth2ServerBundle\Controller\AuthorizeClientController:
         calls:
             - [setContainer, ['@Psr\Container\ContainerInterface']]

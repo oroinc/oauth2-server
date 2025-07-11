@@ -1,0 +1,4 @@
+layout:
+    actions:
+        - '@setBlockTheme':
+            themes: '@OroOAuth2Server/layouts/oauth_login/imports/oauth_access_prompt/layout.html.twig'

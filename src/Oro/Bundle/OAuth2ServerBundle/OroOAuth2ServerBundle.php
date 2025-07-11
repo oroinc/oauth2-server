@@ -3,7 +3,6 @@
 namespace Oro\Bundle\OAuth2ServerBundle;
 
 use Oro\Bundle\OAuth2ServerBundle\DependencyInjection\Compiler\AddAccessTokenAsSkippedApiFilterKeyPass;
-use Oro\Bundle\OAuth2ServerBundle\DependencyInjection\Compiler\AddSkippedLogAttemptsFirewallsPass;
 use Oro\Bundle\OAuth2ServerBundle\DependencyInjection\Compiler\OpenApiCompilerPass;
 use Oro\Bundle\OAuth2ServerBundle\DependencyInjection\Compiler\RedirectListenerPass;
 use Oro\Bundle\OAuth2ServerBundle\DependencyInjection\Compiler\SkipSyncTrackingPass;
@@ -26,7 +25,6 @@ class OroOAuth2ServerBundle extends Bundle
         $extension->addAuthenticatorFactory(new OAuth2Factory());
 
         $container->addCompilerPass(new SkipSyncTrackingPass());
-        $container->addCompilerPass(new AddSkippedLogAttemptsFirewallsPass());
         $container->addCompilerPass(new RedirectListenerPass());
         $container->addCompilerPass(new OpenApiCompilerPass());
         $container->addCompilerPass(new AddAccessTokenAsSkippedApiFilterKeyPass());

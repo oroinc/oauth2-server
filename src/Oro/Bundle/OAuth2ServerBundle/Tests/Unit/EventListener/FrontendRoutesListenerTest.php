@@ -23,8 +23,6 @@ class FrontendRoutesListenerTest extends \PHPUnit\Framework\TestCase
         self::assertSame(
             [
                 'existing',
-                'oro_oauth2_server_frontend_login_check',
-                'oro_oauth2_server_frontend_login_form',
                 'oro_oauth2_server_frontend_authenticate',
                 'oro_oauth2_server_frontend_authenticate_visitor'
             ],
