@@ -6,10 +6,11 @@ use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\AuthorizeClientHandler;
 use Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\AuthorizeClientHandlerInterface;
 use Oro\Bundle\UserBundle\Entity\User;
+use PHPUnit\Framework\TestCase;
 
-class AuthorizeClientHandlerTest extends \PHPUnit\Framework\TestCase
+class AuthorizeClientHandlerTest extends TestCase
 {
-    public function testHandle()
+    public function testHandle(): void
     {
         $client = new Client();
         $user = new User();

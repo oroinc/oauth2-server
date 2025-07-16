@@ -11,21 +11,17 @@ use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Provider\ClientEntityVirtualRelationProvider;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Oro\Bundle\UserBundle\Entity\User;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-class ClientEntityVirtualRelationProviderTest extends \PHPUnit\Framework\TestCase
+class ClientEntityVirtualRelationProviderTest extends TestCase
 {
     /** @var string[] */
     private $ownerEntityClasses;
-
-    /** @var DoctrineHelper|\PHPUnit\Framework\MockObject\MockObject */
-    private $doctrineHelper;
-
-    /** @var ConfigProvider */
-    private $entityConfigProvider;
-
-    /** @var ClientEntityVirtualRelationProvider */
-    private $provider;
+    private DoctrineHelper&MockObject $doctrineHelper;
+    private ConfigProvider $entityConfigProvider;
+    private ClientEntityVirtualRelationProvider $provider;
 
     #[\Override]
     protected function setUp(): void
@@ -56,12 +52,12 @@ class ClientEntityVirtualRelationProviderTest extends \PHPUnit\Framework\TestCas
     /**
      * @dataProvider fieldDataProvider
      */
-    public function testIsVirtualRelation(string $className, string $fieldName, bool $supported)
+    public function testIsVirtualRelation(string $className, string $fieldName, bool $supported): void
     {
         $this->assertEquals($supported, $this->provider->isVirtualRelation($className, $fieldName));
     }
 
-    public function testGetTargetJoinAlias()
+    public function testGetTargetJoinAlias(): void
     {
         foreach (array_keys($this->ownerEntityClasses) as $relationName) {
             $this->assertEquals(
@@ -74,7 +70,7 @@ class ClientEntityVirtualRelationProviderTest extends \PHPUnit\Framework\TestCas
     /**
      * @dataProvider fieldDataProvider
      */
-    public function testGetVirtualRelationQuery(string $className, string $fieldName, bool $expected)
+    public function testGetVirtualRelationQuery(string $className, string $fieldName, bool $expected): void
     {
         $this->entityConfigProvider->addEntityConfig(User::class, ['label' => 'user_label']);
         $this->entityConfigProvider->addEntityConfig(Organization::class, ['label' => 'organization_label']);
@@ -87,7 +83,7 @@ class ClientEntityVirtualRelationProviderTest extends \PHPUnit\Framework\TestCas
         }
     }
 
-    public function testGetVirtualRelations()
+    public function testGetVirtualRelations(): void
     {
         $this->entityConfigProvider->addEntityConfig(User::class, ['label' => 'user_label']);
         $this->entityConfigProvider->addEntityConfig(Organization::class, ['label' => 'organization_label']);

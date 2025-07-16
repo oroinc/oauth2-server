@@ -5,15 +5,14 @@ namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Handler\AuthorizeClient\Excep
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\Exception\LogAuthorizeClientHandler;
 use Oro\Bundle\OAuth2ServerBundle\Provider\AuthCodeLogAttemptHelper;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
 
-class LogAuthorizeClientHandlerTest extends \PHPUnit\Framework\TestCase
+class LogAuthorizeClientHandlerTest extends TestCase
 {
-    /** @var AuthCodeLogAttemptHelper|\PHPUnit\Framework\MockObject\MockObject */
-    private $logAttemptHelper;
-
-    /** @var LogAuthorizeClientHandler */
-    private $handler;
+    private AuthCodeLogAttemptHelper&MockObject $logAttemptHelper;
+    private LogAuthorizeClientHandler $handler;
 
     #[\Override]
     protected function setUp(): void

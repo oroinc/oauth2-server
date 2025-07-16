@@ -8,19 +8,16 @@ use Oro\Bundle\OAuth2ServerBundle\League\Repository\UserRepository;
 use Oro\Bundle\OAuth2ServerBundle\Security\OAuthUserChecker;
 use Oro\Bundle\UserBundle\Entity\User;
 use Oro\Bundle\UserBundle\Security\UserLoaderInterface;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\PasswordHasher\PasswordHasherInterface;
 
-class UserRepositoryTest extends \PHPUnit\Framework\TestCase
+class UserRepositoryTest extends TestCase
 {
-    /** @var UserLoaderInterface|\PHPUnit\Framework\MockObject\MockObject */
-    private $userLoader;
-
-    /** @var PasswordHasherFactoryInterface|\PHPUnit\Framework\MockObject\MockObject */
-    private $passwordHasherFactory;
-
-    /** @var UserRepository */
-    private $userRepository;
+    private UserLoaderInterface&MockObject $userLoader;
+    private PasswordHasherFactoryInterface&MockObject $passwordHasherFactory;
+    private UserRepository $userRepository;
 
     #[\Override]
     protected function setUp(): void
@@ -35,7 +32,7 @@ class UserRepositoryTest extends \PHPUnit\Framework\TestCase
         );
     }
 
-    public function testUserNotFound()
+    public function testUserNotFound(): void
     {
         $username = 'test_username';
         $password = 'test_password';
@@ -56,7 +53,7 @@ class UserRepositoryTest extends \PHPUnit\Framework\TestCase
         self::assertNull($userEntity);
     }
 
-    public function testInvalidPassword()
+    public function testInvalidPassword(): void
     {
         $username = 'test_username';
         $password = 'test_password';
@@ -97,7 +94,7 @@ class UserRepositoryTest extends \PHPUnit\Framework\TestCase
         self::assertNull($userEntity);
     }
 
-    public function testValidPassword()
+    public function testValidPassword(): void
     {
         $username = 'test_username';
         $password = 'test_password';

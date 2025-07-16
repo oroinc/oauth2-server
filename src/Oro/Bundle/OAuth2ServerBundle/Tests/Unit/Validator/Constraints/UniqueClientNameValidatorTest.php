@@ -11,6 +11,7 @@ use Oro\Bundle\OAuth2ServerBundle\Validator\Constraints\UniqueClientName;
 use Oro\Bundle\OAuth2ServerBundle\Validator\Constraints\UniqueClientNameValidator;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Oro\Component\Testing\ReflectionUtil;
+use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Exception\RuntimeException;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
@@ -18,8 +19,7 @@ use Symfony\Component\Validator\Test\ConstraintValidatorTestCase;
 
 class UniqueClientNameValidatorTest extends ConstraintValidatorTestCase
 {
-    /** @var ManagerRegistry */
-    private $doctrine;
+    private ManagerRegistry $doctrine;
 
     #[\Override]
     protected function setUp(): void
@@ -35,24 +35,16 @@ class UniqueClientNameValidatorTest extends ConstraintValidatorTestCase
     }
 
     /**
-     * @param Organization $organization
-     * @param string       $name
-     * @param bool         $isFrontend
-     * @param string|null  $ownerEntityClass
-     * @param int|null     $ownerEntityId
-     * @param int|null     $clientEntityId
-     *
-     * @return QueryBuilder|\PHPUnit\Framework\MockObject\MockObject
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
     private function expectGetValidationQueryBuilder(
-        $organization,
-        $name,
-        $isFrontend,
-        $ownerEntityClass = null,
-        $ownerEntityId = null,
-        $clientEntityId = null
-    ) {
+        Organization $organization,
+        string $name,
+        bool $isFrontend,
+        ?string $ownerEntityClass = null,
+        ?int $ownerEntityId = null,
+        ?int $clientEntityId = null
+    ): QueryBuilder&MockObject {
         $em = $this->createMock(EntityManagerInterface::class);
         $this->doctrine->expects(self::once())
             ->method('getManagerForClass')

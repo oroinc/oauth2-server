@@ -3,10 +3,11 @@
 namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Provider;
 
 use Oro\Bundle\OAuth2ServerBundle\Provider\GuestAccessAllowedUrlsProvider;
+use PHPUnit\Framework\TestCase;
 
-class GuestAccessAllowedUrlsProviderTest extends \PHPUnit\Framework\TestCase
+class GuestAccessAllowedUrlsProviderTest extends TestCase
 {
-    public function testGetAllowedUrlsPatterns()
+    public function testGetAllowedUrlsPatterns(): void
     {
         if (!\class_exists('Oro\Bundle\FrontendBundle\OroFrontendBundle')) {
             self::markTestSkipped('can be tested only with FrontendBundle');

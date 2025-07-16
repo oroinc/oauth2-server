@@ -4,19 +4,16 @@ namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Security;
 
 use Oro\Bundle\CustomerBundle\Entity\CustomerVisitorManager;
 use Oro\Bundle\OAuth2ServerBundle\Security\VisitorUserProvider;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 
-class VisitorUserProviderTest extends \PHPUnit\Framework\TestCase
+class VisitorUserProviderTest extends TestCase
 {
-    /** @var \PHPUnit\Framework\MockObject\MockObject */
-    private $innerUserProvider;
-
-    /** @var \PHPUnit\Framework\MockObject\MockObject */
-    private $visitorManager;
-
-    /** @var VisitorUserProvider */
-    private $visitorUserProvider;
+    private UserProviderInterface&MockObject $innerUserProvider;
+    private CustomerVisitorManager&MockObject $visitorManager;
+    private VisitorUserProvider $visitorUserProvider;
 
     #[\Override]
     protected function setUp(): void

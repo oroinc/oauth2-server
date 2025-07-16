@@ -17,10 +17,11 @@ use PHPUnit\Framework\TestCase;
 
 class AccessTokenDataProviderTest extends TestCase
 {
-    private DecryptedAccessTokenProvider|MockObject $decryptedAccessTokenProvider;
-    private ObjectRepository|MockObject $repository;
+    private DecryptedAccessTokenProvider&MockObject $decryptedAccessTokenProvider;
+    private ObjectRepository&MockObject $repository;
     private AccessTokenDataProvider $accessTokenDataProvider;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->decryptedAccessTokenProvider = $this->createMock(DecryptedAccessTokenProvider::class);

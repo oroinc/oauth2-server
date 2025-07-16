@@ -9,18 +9,15 @@ use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Provider\ClientEntityVariablesProvider;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Oro\Bundle\UserBundle\Entity\User;
+use PHPUnit\Framework\TestCase;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-class ClientEntityVariableProviderTest extends \PHPUnit\Framework\TestCase
+class ClientEntityVariableProviderTest extends TestCase
 {
     /** @var string[] */
     private $ownerEntityClasses;
-
-    /** @var ConfigProviderMock */
-    private $entityConfigProvider;
-
-    /** @var ClientEntityVariablesProvider */
-    private $provider;
+    private ConfigProviderMock $entityConfigProvider;
+    private ClientEntityVariablesProvider $provider;
 
     #[\Override]
     protected function setUp(): void
@@ -46,7 +43,7 @@ class ClientEntityVariableProviderTest extends \PHPUnit\Framework\TestCase
         );
     }
 
-    public function testGetVariableDefinitions()
+    public function testGetVariableDefinitions(): void
     {
         $this->entityConfigProvider->addEntityConfig(User::class, ['label' => 'user_label']);
         $this->entityConfigProvider->addEntityConfig(Organization::class, ['label' => 'organization_label']);
@@ -70,7 +67,7 @@ class ClientEntityVariableProviderTest extends \PHPUnit\Framework\TestCase
         );
     }
 
-    public function testGetVariableProcessorsForClientEntity()
+    public function testGetVariableProcessorsForClientEntity(): void
     {
         self::assertEquals(
             [
@@ -87,7 +84,7 @@ class ClientEntityVariableProviderTest extends \PHPUnit\Framework\TestCase
         );
     }
 
-    public function testGetVariableGetters()
+    public function testGetVariableGetters(): void
     {
         self::assertEquals(
             [
@@ -107,7 +104,7 @@ class ClientEntityVariableProviderTest extends \PHPUnit\Framework\TestCase
         );
     }
 
-    public function testGetVariableProcessorsForAnotherEntity()
+    public function testGetVariableProcessorsForAnotherEntity(): void
     {
         self::assertSame([], $this->provider->getVariableProcessors(\stdClass::class));
     }

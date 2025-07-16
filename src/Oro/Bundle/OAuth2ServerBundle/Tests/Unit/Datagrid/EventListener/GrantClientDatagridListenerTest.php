@@ -8,11 +8,11 @@ use Oro\Bundle\DataGridBundle\Datagrid\ParameterBag;
 use Oro\Bundle\DataGridBundle\Event\BuildAfter;
 use Oro\Bundle\DataGridBundle\Event\BuildBefore;
 use Oro\Bundle\OAuth2ServerBundle\Datagrid\EventListener\GrantClientDatagridListener;
+use PHPUnit\Framework\TestCase;
 
-class GrantClientDatagridListenerTest extends \PHPUnit\Framework\TestCase
+class GrantClientDatagridListenerTest extends TestCase
 {
-    /** @var GrantClientDatagridListener */
-    private $listener;
+    private GrantClientDatagridListener $listener;
 
     #[\Override]
     protected function setUp(): void
@@ -20,7 +20,7 @@ class GrantClientDatagridListenerTest extends \PHPUnit\Framework\TestCase
         $this->listener = new GrantClientDatagridListener();
     }
 
-    public function testOnBuildBeforeWhenShowGrantsIsNotRequested()
+    public function testOnBuildBeforeWhenShowGrantsIsNotRequested(): void
     {
         $config = DatagridConfiguration::create([
             'source' => [
@@ -41,7 +41,7 @@ class GrantClientDatagridListenerTest extends \PHPUnit\Framework\TestCase
         self::assertSame($initialConfig, $config->toArray());
     }
 
-    public function testOnBuildBeforeWhenShowGrantsIsRequested()
+    public function testOnBuildBeforeWhenShowGrantsIsRequested(): void
     {
         $config = DatagridConfiguration::create([
             'source' => [
@@ -65,7 +65,7 @@ class GrantClientDatagridListenerTest extends \PHPUnit\Framework\TestCase
         self::assertSame($expectedConfig, $config->toArray());
     }
 
-    public function testOnBuildAfterWhenShowGrantsIsNotRequested()
+    public function testOnBuildAfterWhenShowGrantsIsNotRequested(): void
     {
         $config = DatagridConfiguration::create([
             'columns' => [
@@ -81,7 +81,7 @@ class GrantClientDatagridListenerTest extends \PHPUnit\Framework\TestCase
         self::assertSame($initialConfig, $config->toArray());
     }
 
-    public function testOnBuildAfterWhenShowGrantsIsRequested()
+    public function testOnBuildAfterWhenShowGrantsIsRequested(): void
     {
         $config = DatagridConfiguration::create([
             'columns' => [

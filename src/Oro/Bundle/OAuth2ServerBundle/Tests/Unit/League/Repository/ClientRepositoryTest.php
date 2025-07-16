@@ -13,31 +13,22 @@ use Oro\Bundle\OAuth2ServerBundle\Security\ApiFeatureChecker;
 use Oro\Bundle\OAuth2ServerBundle\Security\OAuthUserChecker;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Oro\Bundle\UserBundle\Entity\User;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\PasswordHasher\PasswordHasherInterface;
 
 /**
  * @SuppressWarnings(PHPMD.TooManyPublicMethods)
  */
-class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
+class ClientRepositoryTest extends TestCase
 {
-    /** @var ClientManager|\PHPUnit\Framework\MockObject\MockObject */
-    private $clientManager;
-
-    /** @var PasswordHasherFactoryInterface|\PHPUnit\Framework\MockObject\MockObject */
-    private $passwordHasherFactory;
-
-    /** @var ApiFeatureChecker|\PHPUnit\Framework\MockObject\MockObject */
-    private $featureChecker;
-
-    /** @var OAuthUserChecker|\PHPUnit\Framework\MockObject\MockObject */
-    private $userChecker;
-
-    /** @var ManagerRegistry|\PHPUnit\Framework\MockObject\MockObject */
-    private $doctrine;
-
-    /** @var ClientRepository */
-    private $clientRepository;
+    private ClientManager&MockObject $clientManager;
+    private PasswordHasherFactoryInterface&MockObject $passwordHasherFactory;
+    private ApiFeatureChecker&MockObject $featureChecker;
+    private OAuthUserChecker&MockObject $userChecker;
+    private ManagerRegistry&MockObject $doctrine;
+    private ClientRepository $clientRepository;
 
     #[\Override]
     protected function setUp(): void
@@ -65,7 +56,7 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         return $organization;
     }
 
-    public function testGetClientEntityWhenClientNotFound()
+    public function testGetClientEntityWhenClientNotFound(): void
     {
         $clientIdentifier = 'test_client';
 
@@ -78,7 +69,7 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         self::assertNull($clientEntity);
     }
 
-    public function testGetClientEntityWhenNotActiveClient()
+    public function testGetClientEntityWhenNotActiveClient(): void
     {
         $clientIdentifier = 'test_client';
         $client = new Client();
@@ -93,7 +84,7 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         self::assertNull($clientEntity);
     }
 
-    public function testGetClientEntityWhenGrantSupported()
+    public function testGetClientEntityWhenGrantSupported(): void
     {
         $clientIdentifier = 'test_client';
         $grantType = 'test_grant';
@@ -123,7 +114,7 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         self::assertFalse($clientEntity->isFrontend());
     }
 
-    public function testGetClientEntityWhenGrantNotSupported()
+    public function testGetClientEntityWhenGrantNotSupported(): void
     {
         $clientIdentifier = 'test_client';
         $clientGrants = ['another_grant'];
@@ -143,7 +134,7 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         self::assertNull($clientEntity);
     }
 
-    public function testGetClientEntityWhenPasswordGrantShouldSupportRefreshTokenGrant()
+    public function testGetClientEntityWhenPasswordGrantShouldSupportRefreshTokenGrant(): void
     {
         $clientIdentifier = 'test_client';
         $clientGrants = ['password'];
@@ -175,7 +166,7 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         self::assertFalse($clientEntity->isFrontend());
     }
 
-    public function testGetClientEntityWhenAuthorizationCodeGrantShouldSupportRefreshTokenGrant()
+    public function testGetClientEntityWhenAuthorizationCodeGrantShouldSupportRefreshTokenGrant(): void
     {
         $clientIdentifier = 'test_client';
         $clientGrants = ['authorization_code'];
@@ -207,7 +198,7 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         self::assertFalse($clientEntity->isFrontend());
     }
 
-    public function testGetClientEntityWhenOrganizationIsDisabled()
+    public function testGetClientEntityWhenOrganizationIsDisabled(): void
     {
         $clientIdentifier = 'test_client';
         $clientRedirectUris = ['test_url'];
@@ -228,7 +219,7 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         self::assertNull($clientEntity);
     }
 
-    public function testValidateClientWhenClientNotFound()
+    public function testValidateClientWhenClientNotFound(): void
     {
         $clientIdentifier = 'test_client';
         $clientSecret = 'test_secret';
@@ -247,7 +238,7 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         self::assertFalse($result);
     }
 
-    public function testValidateClientWhenNotActiveClient()
+    public function testValidateClientWhenNotActiveClient(): void
     {
         $clientIdentifier = 'test_client';
         $clientSecret = 'test_secret';
@@ -268,7 +259,7 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         self::assertFalse($result);
     }
 
-    public function testValidateClientWhenClientHasOwnerAndOwnerIsNotActive()
+    public function testValidateClientWhenClientHasOwnerAndOwnerIsNotActive(): void
     {
         $clientIdentifier = 'test_client';
         $clientSecret = 'test_secret';
@@ -312,7 +303,7 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         self::assertFalse($result);
     }
 
-    public function testValidateClientWhenGrantSupported()
+    public function testValidateClientWhenGrantSupported(): void
     {
         $clientIdentifier = 'test_client';
         $clientSecret = 'test_secret';
@@ -353,7 +344,7 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         self::assertTrue($result);
     }
 
-    public function testValidateClientWhenGrantNotSupported()
+    public function testValidateClientWhenGrantNotSupported(): void
     {
         $clientIdentifier = 'test_client';
         $clientSecret = 'test_secret';
@@ -379,7 +370,7 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         self::assertFalse($result);
     }
 
-    public function testValidateClientWhenPasswordGrantShouldSupportRefreshTokenGrant()
+    public function testValidateClientWhenPasswordGrantShouldSupportRefreshTokenGrant(): void
     {
         $clientIdentifier = 'test_client';
         $clientSecret = 'test_secret';
@@ -420,7 +411,7 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         self::assertTrue($result);
     }
 
-    public function testValidateClientWhenAuthorizationCodeGrantShouldSupportRefreshTokenGrant()
+    public function testValidateClientWhenAuthorizationCodeGrantShouldSupportRefreshTokenGrant(): void
     {
         $clientIdentifier = 'test_client';
         $clientSecret = 'test_secret';
@@ -461,7 +452,7 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         self::assertTrue($result);
     }
 
-    public function testValidateClientWhenOrganizationIsDisabled()
+    public function testValidateClientWhenOrganizationIsDisabled(): void
     {
         $clientIdentifier = 'test_client';
         $clientSecret = 'test_secret';
@@ -487,7 +478,7 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         self::assertFalse($result);
     }
 
-    public function testValidateClientWhenInvalidSecret()
+    public function testValidateClientWhenInvalidSecret(): void
     {
         $clientIdentifier = 'test_client';
         $clientSecret = 'test_secret';
@@ -526,7 +517,7 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         self::assertFalse($result);
     }
 
-    public function testValidateClientWhenValidSecret()
+    public function testValidateClientWhenValidSecret(): void
     {
         $clientIdentifier = 'test_client';
         $clientSecret = 'test_secret';
@@ -572,7 +563,7 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         self::assertTrue($result);
     }
 
-    public function testValidateClientWhenValidSecretForFrontend()
+    public function testValidateClientWhenValidSecretForFrontend(): void
     {
         $clientIdentifier = 'test_client';
         $clientSecret = 'test_secret';
@@ -618,7 +609,7 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         self::assertTrue($result);
     }
 
-    public function testValidateClientWhenValidSecretAndClientHasOwnerAndOwnerIsActive()
+    public function testValidateClientWhenValidSecretAndClientHasOwnerAndOwnerIsActive(): void
     {
         $clientIdentifier = 'test_client';
         $clientSecret = 'test_secret';

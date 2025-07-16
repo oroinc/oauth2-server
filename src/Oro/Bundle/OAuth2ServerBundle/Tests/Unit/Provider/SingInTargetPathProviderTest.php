@@ -11,11 +11,11 @@ use Symfony\Component\HttpFoundation\RequestStack;
 
 class SingInTargetPathProviderTest extends TestCase
 {
-    private SignInTargetPathProviderInterface|MockObject $innerProvider;
+    private SignInTargetPathProviderInterface&MockObject $innerProvider;
     private RequestStack $requestStack;
-
     private SingInTargetPathProvider $provider;
 
+    #[\Override]
     protected function setUp(): void
     {
         if (!class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {

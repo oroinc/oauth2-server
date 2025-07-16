@@ -5,13 +5,14 @@ namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Entity;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Oro\Component\Testing\ReflectionUtil;
+use PHPUnit\Framework\TestCase;
 
 /**
  * @SuppressWarnings(PHPMD.TooManyPublicMethods)
  */
-class ClientTest extends \PHPUnit\Framework\TestCase
+class ClientTest extends TestCase
 {
-    public function testGetId()
+    public function testGetId(): void
     {
         $entity = new Client();
         self::assertNull($entity->getId());
@@ -21,7 +22,7 @@ class ClientTest extends \PHPUnit\Framework\TestCase
         self::assertSame($id, $entity->getId());
     }
 
-    public function testName()
+    public function testName(): void
     {
         $name = 'test';
 
@@ -32,7 +33,7 @@ class ClientTest extends \PHPUnit\Framework\TestCase
         self::assertSame($name, $entity->getName());
     }
 
-    public function testIdentifier()
+    public function testIdentifier(): void
     {
         $identifier = 'test';
 
@@ -43,7 +44,7 @@ class ClientTest extends \PHPUnit\Framework\TestCase
         self::assertSame($identifier, $entity->getIdentifier());
     }
 
-    public function testSecret()
+    public function testSecret(): void
     {
         $secret = 'test_secret';
         $salt = 'test_salt';
@@ -57,7 +58,7 @@ class ClientTest extends \PHPUnit\Framework\TestCase
         self::assertSame($salt, $entity->getSalt());
     }
 
-    public function testPlainSecret()
+    public function testPlainSecret(): void
     {
         $plainSecret = 'test';
 
@@ -68,7 +69,7 @@ class ClientTest extends \PHPUnit\Framework\TestCase
         self::assertSame($plainSecret, $entity->getPlainSecret());
     }
 
-    public function testGrants()
+    public function testGrants(): void
     {
         $grants = ['test'];
 
@@ -79,7 +80,7 @@ class ClientTest extends \PHPUnit\Framework\TestCase
         self::assertSame($grants, $entity->getGrants());
     }
 
-    public function testScopes()
+    public function testScopes(): void
     {
         $scopes = ['test'];
 
@@ -90,7 +91,7 @@ class ClientTest extends \PHPUnit\Framework\TestCase
         self::assertSame($scopes, $entity->getScopes());
     }
 
-    public function testRedirectUris()
+    public function testRedirectUris(): void
     {
         $uris = ['test'];
 
@@ -101,7 +102,7 @@ class ClientTest extends \PHPUnit\Framework\TestCase
         self::assertSame($uris, $entity->getRedirectUris());
     }
 
-    public function testActive()
+    public function testActive(): void
     {
         $entity = new Client();
         self::assertTrue($entity->isActive());
@@ -113,7 +114,7 @@ class ClientTest extends \PHPUnit\Framework\TestCase
         self::assertTrue($entity->isActive());
     }
 
-    public function testOrganization()
+    public function testOrganization(): void
     {
         $organization = $this->createMock(Organization::class);
 
@@ -127,7 +128,7 @@ class ClientTest extends \PHPUnit\Framework\TestCase
         self::assertNull($entity->getOrganization());
     }
 
-    public function testOwnerEntity()
+    public function testOwnerEntity(): void
     {
         $ownerEntityClass = 'Test\Entity';
         $ownerEntityId = 123;
@@ -141,7 +142,7 @@ class ClientTest extends \PHPUnit\Framework\TestCase
         self::assertSame($ownerEntityId, $entity->getOwnerEntityId());
     }
 
-    public function testFrontend()
+    public function testFrontend(): void
     {
         $entity = new Client();
         self::assertFalse($entity->isFrontend());
@@ -153,7 +154,7 @@ class ClientTest extends \PHPUnit\Framework\TestCase
         self::assertFalse($entity->isFrontend());
     }
 
-    public function testLastUsedAt()
+    public function testLastUsedAt(): void
     {
         $entity = new Client();
         self::assertNull($entity->getLastUsedAt());
@@ -163,7 +164,7 @@ class ClientTest extends \PHPUnit\Framework\TestCase
         self::assertSame($lastUsedAt, $entity->getLastUsedAt());
     }
 
-    public function testConfidential()
+    public function testConfidential(): void
     {
         $entity = new Client();
         self::assertTrue($entity->isConfidential());
@@ -175,7 +176,7 @@ class ClientTest extends \PHPUnit\Framework\TestCase
         self::assertTrue($entity->isConfidential());
     }
 
-    public function testPlainTextPkceAllowed()
+    public function testPlainTextPkceAllowed(): void
     {
         $entity = new Client();
         self::assertFalse($entity->isPlainTextPkceAllowed());

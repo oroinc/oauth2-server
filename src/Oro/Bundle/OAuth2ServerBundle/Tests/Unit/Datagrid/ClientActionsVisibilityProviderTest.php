@@ -6,14 +6,13 @@ use Oro\Bundle\DataGridBundle\Datasource\ResultRecordInterface;
 use Oro\Bundle\OAuth2ServerBundle\Datagrid\ClientActionsVisibilityProvider;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 
-class ClientActionsVisibilityProviderTest extends \PHPUnit\Framework\TestCase
+class ClientActionsVisibilityProviderTest extends TestCase
 {
-    /** @var ClientManager|\PHPUnit\Framework\MockObject\MockObject */
-    private $clientManager;
-
-    /** @var ClientActionsVisibilityProvider */
-    private $visibilityProvider;
+    private ClientManager&MockObject $clientManager;
+    private ClientActionsVisibilityProvider $visibilityProvider;
 
     #[\Override]
     protected function setUp(): void
@@ -23,7 +22,7 @@ class ClientActionsVisibilityProviderTest extends \PHPUnit\Framework\TestCase
         $this->visibilityProvider = new ClientActionsVisibilityProvider($this->clientManager);
     }
 
-    public function testGetActionsVisibilityWhenClientModificationIsDenied()
+    public function testGetActionsVisibilityWhenClientModificationIsDenied(): void
     {
         $client = $this->createMock(Client::class);
         $record = $this->createMock(ResultRecordInterface::class);
@@ -61,7 +60,7 @@ class ClientActionsVisibilityProviderTest extends \PHPUnit\Framework\TestCase
         );
     }
 
-    public function testGetActionsVisibilityForActiveClientAndClientModificationIsGranted()
+    public function testGetActionsVisibilityForActiveClientAndClientModificationIsGranted(): void
     {
         $client = $this->createMock(Client::class);
         $record = $this->createMock(ResultRecordInterface::class);
@@ -99,7 +98,7 @@ class ClientActionsVisibilityProviderTest extends \PHPUnit\Framework\TestCase
         );
     }
 
-    public function testGetActionsVisibilityForNotActiveClientAndClientModificationIsGranted()
+    public function testGetActionsVisibilityForNotActiveClientAndClientModificationIsGranted(): void
     {
         $client = $this->createMock(Client::class);
         $record = $this->createMock(ResultRecordInterface::class);
@@ -137,7 +136,7 @@ class ClientActionsVisibilityProviderTest extends \PHPUnit\Framework\TestCase
         );
     }
 
-    public function testGetActionsVisibilityForClientDeletionIsDenied()
+    public function testGetActionsVisibilityForClientDeletionIsDenied(): void
     {
         $client = $this->createMock(Client::class);
         $record = $this->createMock(ResultRecordInterface::class);
@@ -175,7 +174,7 @@ class ClientActionsVisibilityProviderTest extends \PHPUnit\Framework\TestCase
         );
     }
 
-    public function testGetActionsVisibilityWhenClientModificationAndDeletionAreDenied()
+    public function testGetActionsVisibilityWhenClientModificationAndDeletionAreDenied(): void
     {
         $client = $this->createMock(Client::class);
         $record = $this->createMock(ResultRecordInterface::class);

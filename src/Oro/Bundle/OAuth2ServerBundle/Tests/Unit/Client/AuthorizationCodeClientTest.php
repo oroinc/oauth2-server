@@ -18,11 +18,12 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 class AuthorizationCodeClientTest extends TestCase
 {
-    private HttpKernelInterface|MockObject $httpKernel;
-    private ClientRepository|MockObject $clientRepository;
-    private RequestStack|MockObject $requestStack;
+    private HttpKernelInterface&MockObject $httpKernel;
+    private ClientRepository&MockObject $clientRepository;
+    private RequestStack&MockObject $requestStack;
     private AuthorizationCodeClient $client;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->httpKernel = $this->createMock(HttpKernelInterface::class);

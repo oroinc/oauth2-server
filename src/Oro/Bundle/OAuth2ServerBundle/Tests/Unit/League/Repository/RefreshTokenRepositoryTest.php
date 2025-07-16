@@ -18,20 +18,15 @@ use Oro\Bundle\OAuth2ServerBundle\League\Repository\RefreshTokenRepository;
 use Oro\Bundle\OAuth2ServerBundle\Security\OAuthUserChecker;
 use Oro\Bundle\UserBundle\Entity\UserInterface;
 use Oro\Bundle\UserBundle\Security\UserLoaderInterface;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 
-class RefreshTokenRepositoryTest extends \PHPUnit\Framework\TestCase
+class RefreshTokenRepositoryTest extends TestCase
 {
-    /** @var ManagerRegistry|\PHPUnit\Framework\MockObject\MockObject */
-    private $doctrine;
-
-    /** @var UserLoaderInterface|\PHPUnit\Framework\MockObject\MockObject */
-    private $userLoader;
-
-    /** @var OAuthUserChecker|\PHPUnit\Framework\MockObject\MockObject */
-    private $userChecker;
-
-    /** @var RefreshTokenRepository */
-    private $repository;
+    private ManagerRegistry&MockObject $doctrine;
+    private UserLoaderInterface&MockObject $userLoader;
+    private OAuthUserChecker&MockObject $userChecker;
+    private RefreshTokenRepository $repository;
 
     #[\Override]
     protected function setUp(): void
@@ -47,10 +42,7 @@ class RefreshTokenRepositoryTest extends \PHPUnit\Framework\TestCase
         );
     }
 
-    /**
-     * @return EntityManagerInterface|\PHPUnit\Framework\MockObject\MockObject
-     */
-    private function expectGetEntityManager()
+    private function expectGetEntityManager(): EntityManagerInterface&MockObject
     {
         $em = $this->createMock(EntityManagerInterface::class);
         $this->doctrine->expects(self::atLeast(1))
@@ -61,14 +53,10 @@ class RefreshTokenRepositoryTest extends \PHPUnit\Framework\TestCase
         return $em;
     }
 
-    /**
-     * @param string                                                               $entityClass
-     * @param EntityManagerInterface|\PHPUnit\Framework\MockObject\MockObject|null $em
-     *
-     * @return EntityRepository|\PHPUnit\Framework\MockObject\MockObject
-     */
-    private function expectGetRepository($entityClass, $em = null)
-    {
+    private function expectGetRepository(
+        string $entityClass,
+        EntityManagerInterface|MockObject|null $em = null
+    ): EntityRepository&MockObject {
         if (null === $em) {
             $em = $this->expectGetEntityManager();
         }
@@ -82,12 +70,12 @@ class RefreshTokenRepositoryTest extends \PHPUnit\Framework\TestCase
         return $repository;
     }
 
-    public function testGetNewRefreshToken()
+    public function testGetNewRefreshToken(): void
     {
         self::assertInstanceOf(RefreshTokenEntity::class, $this->repository->getNewRefreshToken());
     }
 
-    public function testPersistNewRefreshTokenOnExistToken()
+    public function testPersistNewRefreshTokenOnExistToken(): void
     {
         $this->expectException(UniqueTokenIdentifierConstraintViolationException::class);
         $this->expectExceptionMessage('Could not create unique access token identifier');
@@ -111,7 +99,7 @@ class RefreshTokenRepositoryTest extends \PHPUnit\Framework\TestCase
         $this->repository->persistNewRefreshToken($refreshTokenEntity);
     }
 
-    public function testPersistNewAccessToken()
+    public function testPersistNewAccessToken(): void
     {
         $scope = new ScopeEntity();
         $scope->setIdentifier('test_scope');
@@ -172,7 +160,7 @@ class RefreshTokenRepositoryTest extends \PHPUnit\Framework\TestCase
         $this->repository->persistNewRefreshToken($refreshTokenEntity);
     }
 
-    public function testRevokeRefreshTokenOnNonExistToken()
+    public function testRevokeRefreshTokenOnNonExistToken(): void
     {
         $repository = $this->expectGetRepository(RefreshToken::class);
         $repository->expects(self::once())
@@ -183,7 +171,7 @@ class RefreshTokenRepositoryTest extends \PHPUnit\Framework\TestCase
         $this->repository->revokeRefreshToken('test_id');
     }
 
-    public function testRevokeRefreshTokenOnExistToken()
+    public function testRevokeRefreshTokenOnExistToken(): void
     {
         $accessToken = new AccessToken('test_id', new \DateTime(), ['test_scope'], new Client(), 'user_id');
         $existingToken = new RefreshToken('test_id', new \DateTime(), $accessToken);
@@ -208,7 +196,7 @@ class RefreshTokenRepositoryTest extends \PHPUnit\Framework\TestCase
         self::assertTrue($existingToken->isRevoked());
     }
 
-    public function testRevokeRefreshTokenOnExistTokenAndAccessTokenWithoutUserIdentifier()
+    public function testRevokeRefreshTokenOnExistTokenAndAccessTokenWithoutUserIdentifier(): void
     {
         $accessToken = new AccessToken('test_id', new \DateTime(), ['test_scope'], new Client());
         $existingToken = new RefreshToken('test_id', new \DateTime(), $accessToken);
@@ -225,7 +213,7 @@ class RefreshTokenRepositoryTest extends \PHPUnit\Framework\TestCase
         $this->repository->revokeRefreshToken('test_id');
     }
 
-    public function testIsRefreshTokenRevokedOnNonExistingToken()
+    public function testIsRefreshTokenRevokedOnNonExistingToken(): void
     {
         $repository = $this->expectGetRepository(RefreshToken::class);
         $repository->expects(self::once())
@@ -236,7 +224,7 @@ class RefreshTokenRepositoryTest extends \PHPUnit\Framework\TestCase
         self::assertTrue($this->repository->isRefreshTokenRevoked('test_id'));
     }
 
-    public function testIsRefreshTokenRevokedOnNonExistingRevokedToken()
+    public function testIsRefreshTokenRevokedOnNonExistingRevokedToken(): void
     {
         $accessToken = new AccessToken('test_id', new \DateTime(), ['test_scope'], new Client(), 'user_id');
         $existingToken = new RefreshToken('test_id', new \DateTime(), $accessToken);
@@ -255,7 +243,7 @@ class RefreshTokenRepositoryTest extends \PHPUnit\Framework\TestCase
         self::assertTrue($this->repository->isRefreshTokenRevoked('test_id'));
     }
 
-    public function testIsRefreshTokenRevokedOnNonExistingNotRevokedToken()
+    public function testIsRefreshTokenRevokedOnNonExistingNotRevokedToken(): void
     {
         $accessToken = new AccessToken('test_id', new \DateTime(), ['test_scope'], new Client(), 'user_id');
         $existingToken = new RefreshToken('test_id', new \DateTime(), $accessToken);
@@ -273,7 +261,7 @@ class RefreshTokenRepositoryTest extends \PHPUnit\Framework\TestCase
         self::assertFalse($this->repository->isRefreshTokenRevoked('test_id'));
     }
 
-    public function testIsRefreshTokenRevokedOnNonExistingNotRevokedTokenForNotValidUser()
+    public function testIsRefreshTokenRevokedOnNonExistingNotRevokedTokenForNotValidUser(): void
     {
         $accessToken = new AccessToken('test_auth', new \DateTime(), [], $this->createMock(Client::class), 'user_id');
         $existingToken = new RefreshToken('test_id', new \DateTime(), $accessToken);

@@ -9,21 +9,16 @@ use Oro\Bundle\NavigationBundle\Event\ConfigureMenuEvent;
 use Oro\Bundle\OAuth2ServerBundle\EventListener\NavigationListener;
 use Oro\Bundle\OAuth2ServerBundle\Security\ApiFeatureChecker;
 use Oro\Bundle\SecurityBundle\Authentication\TokenAccessorInterface;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
-class NavigationListenerTest extends \PHPUnit\Framework\TestCase
+class NavigationListenerTest extends TestCase
 {
-    /** @var AuthorizationCheckerInterface|\PHPUnit\Framework\MockObject\MockObject */
-    private $authorizationChecker;
-
-    /** @var TokenAccessorInterface|\PHPUnit\Framework\MockObject\MockObject */
-    private $tokenAccessor;
-
-    /** @var ApiFeatureChecker|\PHPUnit\Framework\MockObject\MockObject */
-    private $featureChecker;
-
-    /** @var NavigationListener */
-    private $listener;
+    private AuthorizationCheckerInterface&MockObject $authorizationChecker;
+    private TokenAccessorInterface&MockObject $tokenAccessor;
+    private ApiFeatureChecker&MockObject $featureChecker;
+    private NavigationListener $listener;
 
     #[\Override]
     protected function setUp(): void
@@ -39,7 +34,7 @@ class NavigationListenerTest extends \PHPUnit\Framework\TestCase
         );
     }
 
-    public function testOnNavigationConfigureWithoutSystemTab()
+    public function testOnNavigationConfigureWithoutSystemTab(): void
     {
         $menu = new MenuItem('test', new MenuFactory());
         $event = new ConfigureMenuEvent($this->createMock(FactoryInterface::class), $menu);
@@ -49,7 +44,7 @@ class NavigationListenerTest extends \PHPUnit\Framework\TestCase
         $this->assertNull($menu->getChild('frontend_oauth_applications'));
     }
 
-    public function testOnNavigationConfigureWithSystemTab()
+    public function testOnNavigationConfigureWithSystemTab(): void
     {
         if (!class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {
             self::markTestSkipped('can be tested only with CustomerBundle');
@@ -78,7 +73,7 @@ class NavigationListenerTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals('oro.oauth2server.menu.frontend_oauth_application.label', $menuItem->getLabel());
     }
 
-    public function testOnNavigationConfigureWithSystemTabWhenUserIsNotGrantedToSeeOauthClients()
+    public function testOnNavigationConfigureWithSystemTabWhenUserIsNotGrantedToSeeOauthClients(): void
     {
         if (!class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {
             self::markTestSkipped('can be tested only with CustomerBundle');
@@ -106,7 +101,7 @@ class NavigationListenerTest extends \PHPUnit\Framework\TestCase
         $this->assertNull($menu->getChild('customers_tab')->getChild('frontend_oauth_applications'));
     }
 
-    public function testOnNavigationConfigureWithSystemTabWothoutUserInToken()
+    public function testOnNavigationConfigureWithSystemTabWothoutUserInToken(): void
     {
         if (!class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {
             self::markTestSkipped('can be tested only with CustomerBundle');
@@ -128,7 +123,7 @@ class NavigationListenerTest extends \PHPUnit\Framework\TestCase
         $this->assertNull($menu->getChild('customers_tab')->getChild('frontend_oauth_applications'));
     }
 
-    public function testOnNavigationConfigureWithoutCustomerPortal()
+    public function testOnNavigationConfigureWithoutCustomerPortal(): void
     {
         if (class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {
             self::markTestSkipped('can be tested only without CustomerBundle');

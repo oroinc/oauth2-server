@@ -3,12 +3,12 @@
 namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Formatter;
 
 use Oro\Bundle\OAuth2ServerBundle\Formatter\ScopesFormatter;
+use PHPUnit\Framework\TestCase;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-class ScopesFormatterTest extends \PHPUnit\Framework\TestCase
+class ScopesFormatterTest extends TestCase
 {
-    /** @var ScopesFormatter */
-    private $formatter;
+    private ScopesFormatter $formatter;
 
     #[\Override]
     protected function setUp(): void
@@ -23,7 +23,7 @@ class ScopesFormatterTest extends \PHPUnit\Framework\TestCase
         $this->formatter = new ScopesFormatter($translator);
     }
 
-    public function testFormatForEmptyValue()
+    public function testFormatForEmptyValue(): void
     {
         self::assertEquals(
             'translated_oro.oauth2server.scopes.all',
@@ -31,7 +31,7 @@ class ScopesFormatterTest extends \PHPUnit\Framework\TestCase
         );
     }
 
-    public function testFormat()
+    public function testFormat(): void
     {
         self::assertEquals(
             'val1, val2',
@@ -39,7 +39,7 @@ class ScopesFormatterTest extends \PHPUnit\Framework\TestCase
         );
     }
 
-    public function testGetDefaultValue()
+    public function testGetDefaultValue(): void
     {
         self::assertEquals(
             'translated_oro.oauth2server.scopes.all',

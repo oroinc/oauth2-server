@@ -5,10 +5,11 @@ namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Entity;
 use Oro\Bundle\OAuth2ServerBundle\Entity\AuthCode;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Component\Testing\ReflectionUtil;
+use PHPUnit\Framework\TestCase;
 
-class AuthCodeTest extends \PHPUnit\Framework\TestCase
+class AuthCodeTest extends TestCase
 {
-    public function testConstructorAndGetters()
+    public function testConstructorAndGetters(): void
     {
         $identifier = 'test_id';
         $expiresAt = new \DateTime();
@@ -31,7 +32,7 @@ class AuthCodeTest extends \PHPUnit\Framework\TestCase
         self::assertSame($userIdentifier, $entity->getUserIdentifier());
     }
 
-    public function testUserIdentifierCanBeNull()
+    public function testUserIdentifierCanBeNull(): void
     {
         $entity = new AuthCode(
             'test_id',
@@ -44,7 +45,7 @@ class AuthCodeTest extends \PHPUnit\Framework\TestCase
         self::assertNull($entity->getUserIdentifier());
     }
 
-    public function testRevoke()
+    public function testRevoke(): void
     {
         $entity = new AuthCode(
             'test_id',
@@ -60,7 +61,7 @@ class AuthCodeTest extends \PHPUnit\Framework\TestCase
         self::assertTrue($entity->isRevoked());
     }
 
-    public function testGetId()
+    public function testGetId(): void
     {
         $entity = new AuthCode(
             'test_id',

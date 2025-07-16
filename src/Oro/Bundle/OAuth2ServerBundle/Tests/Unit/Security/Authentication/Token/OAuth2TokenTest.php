@@ -8,10 +8,11 @@ use Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Fixtures\Entity\ExtendedRole;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Oro\Bundle\UserBundle\Entity\Role;
 use Oro\Bundle\UserBundle\Entity\User;
+use PHPUnit\Framework\TestCase;
 
-class OAuth2TokenTest extends \PHPUnit\Framework\TestCase
+class OAuth2TokenTest extends TestCase
 {
-    public function testFullyAuthenticatedToken()
+    public function testFullyAuthenticatedToken(): void
     {
         $user = new User();
         $role = new Role();
@@ -25,7 +26,7 @@ class OAuth2TokenTest extends \PHPUnit\Framework\TestCase
         self::assertSame([$role], $token->getRoles());
     }
 
-    public function testGetRolesForExtendedOrganizationAndRole()
+    public function testGetRolesForExtendedOrganizationAndRole(): void
     {
         $organization1 = new ExtendedOrganization();
         $organization1->setId(1);

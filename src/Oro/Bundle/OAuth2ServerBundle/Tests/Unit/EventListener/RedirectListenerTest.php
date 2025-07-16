@@ -14,8 +14,8 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 class RedirectListenerTest extends TestCase
 {
-    private RedirectListenerInterface|MockObject $innerRedirectListener;
-    private Router|MockObject $router;
+    private RedirectListenerInterface&MockObject $innerRedirectListener;
+    private Router&MockObject $router;
     private RedirectListener $listener;
 
     #[\Override]

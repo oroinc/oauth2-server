@@ -11,6 +11,8 @@ use Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Exception\PasswordGrant
 use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\FailedUserOAuth2Token;
 use Oro\Bundle\OAuth2ServerBundle\Security\Authenticator\OAuth2Authenticator;
 use Oro\Bundle\UserBundle\Exception\BadCredentialsException;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
@@ -18,12 +20,12 @@ use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Http\Event\LoginFailureEvent;
 
-class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
+class PasswordGrantExceptionHandlerTest extends TestCase
 {
-    private EventDispatcherInterface|\PHPUnit\Framework\MockObject\MockObject $eventDispatcher;
-    private ClientManager|\PHPUnit\Framework\MockObject\MockObject $clientManager;
-    private OAuth2Authenticator|\PHPUnit\Framework\MockObject\MockObject $oAuth2Authenticator;
-    private UserProviderInterface|\PHPUnit\Framework\MockObject\MockObject $userProvider;
+    private EventDispatcherInterface&MockObject $eventDispatcher;
+    private ClientManager&MockObject $clientManager;
+    private OAuth2Authenticator&MockObject $oAuth2Authenticator;
+    private UserProviderInterface&MockObject $userProvider;
 
     #[\Override]
     protected function setUp(): void
@@ -42,7 +44,7 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
             ->willReturn($client);
     }
 
-    public function testHandleOnNonPasswordGrant()
+    public function testHandleOnNonPasswordGrant(): void
     {
         $request = (new ServerRequest('GET', ''))->withParsedBody(['grant_type' => 'client']);
         $this->eventDispatcher->expects(self::never())
@@ -59,7 +61,7 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
         $handler->handle($request, OAuthServerException::accessDenied());
     }
 
-    public function testHandleWithPreviousAuthenticationException()
+    public function testHandleWithPreviousAuthenticationException(): void
     {
         $tokenParameters = ['grant_type' => 'password', 'username' => 'testUser'];
         $request = (new ServerRequest('GET', ''))->withParsedBody($tokenParameters);
@@ -108,7 +110,7 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
     }
 
 
-    public function testHandleWithOAuthBadCredentialsException()
+    public function testHandleWithOAuthBadCredentialsException(): void
     {
         $tokenParameters = ['grant_type' => 'password', 'username' => 'testUser'];
         $request = (new ServerRequest('GET', ''))->withParsedBody($tokenParameters);
@@ -147,7 +149,7 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
         $handler->handle($request, $exception);
     }
 
-    public function testHandleWithNonOAuthBadCredentialsException()
+    public function testHandleWithNonOAuthBadCredentialsException(): void
     {
         $tokenParameters = ['grant_type' => 'password', 'username' => 'testUser'];
         $request = (new ServerRequest('GET', ''))->withParsedBody($tokenParameters);
@@ -190,7 +192,7 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
         $handler->handle($request, $exception);
     }
 
-    public function testHandleWithOAuthBadCredentialsExceptionAndFronendRequest()
+    public function testHandleWithOAuthBadCredentialsExceptionAndFronendRequest(): void
     {
         if (!class_exists('Oro\Bundle\FrontendBundle\OroFrontendBundle')) {
             self::markTestSkipped('can be tested only with FrontendBundle');
@@ -243,7 +245,7 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
         $handler->handle($request, $exception);
     }
 
-    public function testHandleWithOAuthBadCredentialsExceptionAndBackendRequest()
+    public function testHandleWithOAuthBadCredentialsExceptionAndBackendRequest(): void
     {
         if (!class_exists('Oro\Bundle\FrontendBundle\OroFrontendBundle')) {
             self::markTestSkipped('can be tested only with FrontendBundle');
@@ -297,7 +299,7 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
         $handler->handle($request, $exception);
     }
 
-    public function testHandleShouldRestoreFrontendHelperStateOnExceptionDuringEventDispatching()
+    public function testHandleShouldRestoreFrontendHelperStateOnExceptionDuringEventDispatching(): void
     {
         if (!class_exists('Oro\Bundle\FrontendBundle\OroFrontendBundle')) {
             self::markTestSkipped('can be tested only with FrontendBundle');
@@ -341,7 +343,7 @@ class PasswordGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
         $handler->handle($request, $exception);
     }
 
-    public function testWithWrongClientId()
+    public function testWithWrongClientId(): void
     {
         if (!class_exists('Oro\Bundle\FrontendBundle\OroFrontendBundle')) {
             self::markTestSkipped('can be tested only with FrontendBundle');

@@ -7,8 +7,9 @@ use Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\LogAuthorizeClientHand
 use Oro\Bundle\UserBundle\Entity\User;
 use Oro\Bundle\UserBundle\Security\UserLoginAttemptLogger;
 use Oro\Component\Testing\ReflectionUtil;
+use PHPUnit\Framework\TestCase;
 
-class LogAuthorizeClientHandlerTest extends \PHPUnit\Framework\TestCase
+class LogAuthorizeClientHandlerTest extends TestCase
 {
     public function testHandleOnAuthorize(): void
     {

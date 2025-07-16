@@ -10,20 +10,17 @@ use Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Fixtures\Entity\ExtendedOrganizatio
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Oro\Bundle\SecurityBundle\Authentication\TokenAccessorInterface;
 use Oro\Bundle\UserBundle\Entity\AbstractUser;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 
 /**
  * @SuppressWarnings(PHPMD.TooManyPublicMethods)
  */
-class ClientOwnerOrganizationsProviderTest extends \PHPUnit\Framework\TestCase
+class ClientOwnerOrganizationsProviderTest extends TestCase
 {
-    /** @var ManagerRegistry|\PHPUnit\Framework\MockObject\MockObject */
-    private $doctrine;
-
-    /** @var TokenAccessorInterface|\PHPUnit\Framework\MockObject\MockObject */
-    private $tokenAccessor;
-
-    /** @var ClientOwnerOrganizationsProvider */
-    private $organizationsProvider;
+    private ManagerRegistry&MockObject $doctrine;
+    private TokenAccessorInterface&MockObject $tokenAccessor;
+    private ClientOwnerOrganizationsProvider $organizationsProvider;
 
     #[\Override]
     protected function setUp(): void
@@ -37,13 +34,7 @@ class ClientOwnerOrganizationsProviderTest extends \PHPUnit\Framework\TestCase
         );
     }
 
-    /**
-     * @param int    $id
-     * @param string $name
-     *
-     * @return Organization|\PHPUnit\Framework\MockObject\MockObject
-     */
-    private function getOrganization($id, $name)
+    private function getOrganization(int $id, string $name): Organization&MockObject
     {
         $organization = $this->createMock(Organization::class);
         $organization->expects(self::any())
@@ -56,7 +47,7 @@ class ClientOwnerOrganizationsProviderTest extends \PHPUnit\Framework\TestCase
         return $organization;
     }
 
-    public function testIsMultiOrganizationSupportedWhenNoOrganizationInSecurityContext()
+    public function testIsMultiOrganizationSupportedWhenNoOrganizationInSecurityContext(): void
     {
         $this->tokenAccessor->expects(self::once())
             ->method('getOrganization')
@@ -65,7 +56,7 @@ class ClientOwnerOrganizationsProviderTest extends \PHPUnit\Framework\TestCase
         self::assertFalse($this->organizationsProvider->isMultiOrganizationSupported());
     }
 
-    public function testIsMultiOrganizationSupportedForCommunityEdition()
+    public function testIsMultiOrganizationSupportedForCommunityEdition(): void
     {
         $this->tokenAccessor->expects(self::once())
             ->method('getOrganization')
@@ -74,7 +65,7 @@ class ClientOwnerOrganizationsProviderTest extends \PHPUnit\Framework\TestCase
         self::assertFalse($this->organizationsProvider->isMultiOrganizationSupported());
     }
 
-    public function testIsMultiOrganizationSupportedForEnterpriseEdition()
+    public function testIsMultiOrganizationSupportedForEnterpriseEdition(): void
     {
         $this->tokenAccessor->expects(self::once())
             ->method('getOrganization')
@@ -83,7 +74,7 @@ class ClientOwnerOrganizationsProviderTest extends \PHPUnit\Framework\TestCase
         self::assertTrue($this->organizationsProvider->isMultiOrganizationSupported());
     }
 
-    public function testGetClientOwnerOrganizationsForCommunityEdition()
+    public function testGetClientOwnerOrganizationsForCommunityEdition(): void
     {
         $ownerEntityClass = 'Test\OwnerEntity';
         $ownerEntityId = 123;
@@ -101,7 +92,7 @@ class ClientOwnerOrganizationsProviderTest extends \PHPUnit\Framework\TestCase
         );
     }
 
-    public function testGetClientOwnerOrganizationsForEnterpriseEditionAndNotGlobalOrganization()
+    public function testGetClientOwnerOrganizationsForEnterpriseEditionAndNotGlobalOrganization(): void
     {
         $ownerEntityClass = 'Test\OwnerEntity';
         $ownerEntityId = 123;
@@ -120,7 +111,7 @@ class ClientOwnerOrganizationsProviderTest extends \PHPUnit\Framework\TestCase
         );
     }
 
-    public function testGetClientOwnerOrganizationsForGlobalOrganizationAndOwnerIsOrganizationAwareUser()
+    public function testGetClientOwnerOrganizationsForGlobalOrganizationAndOwnerIsOrganizationAwareUser(): void
     {
         $ownerEntityClass = 'Test\OwnerEntity';
         $ownerEntityId = 123;
@@ -154,7 +145,7 @@ class ClientOwnerOrganizationsProviderTest extends \PHPUnit\Framework\TestCase
         );
     }
 
-    public function testGetClientOwnerOrganizationsForGlobalOrganizationAndOwnerIsNotOrganizationAwareUser()
+    public function testGetClientOwnerOrganizationsForGlobalOrganizationAndOwnerIsNotOrganizationAwareUser(): void
     {
         $ownerEntityClass = 'Test\OwnerEntity';
         $ownerEntityId = 123;
@@ -181,7 +172,7 @@ class ClientOwnerOrganizationsProviderTest extends \PHPUnit\Framework\TestCase
         );
     }
 
-    public function testGetClientOwnerOrganizationsForGlobalOrganizationAndOwnerDoesNotExist()
+    public function testGetClientOwnerOrganizationsForGlobalOrganizationAndOwnerDoesNotExist(): void
     {
         $ownerEntityClass = 'Test\OwnerEntity';
         $ownerEntityId = 123;
@@ -207,7 +198,7 @@ class ClientOwnerOrganizationsProviderTest extends \PHPUnit\Framework\TestCase
         );
     }
 
-    public function testIsOrganizationSelectorRequiredForEmptyOrganizations()
+    public function testIsOrganizationSelectorRequiredForEmptyOrganizations(): void
     {
         $organizations = [];
 
@@ -217,7 +208,7 @@ class ClientOwnerOrganizationsProviderTest extends \PHPUnit\Framework\TestCase
         self::assertFalse($this->organizationsProvider->isOrganizationSelectorRequired($organizations));
     }
 
-    public function testIsOrganizationSelectorRequiredForSeveralOrganizations()
+    public function testIsOrganizationSelectorRequiredForSeveralOrganizations(): void
     {
         $organizations = [
             $this->getOrganization(10, 'org1'),
@@ -230,7 +221,7 @@ class ClientOwnerOrganizationsProviderTest extends \PHPUnit\Framework\TestCase
         self::assertTrue($this->organizationsProvider->isOrganizationSelectorRequired($organizations));
     }
 
-    public function testIsOrganizationSelectorRequiredForOneOrganizationAndItEqualsToOrganizationInSecurityContext()
+    public function testIsOrgSelectorRequiredForOneOrganizationAndItEqualsToOrganizationInSecurityContext(): void
     {
         $organizations = [
             $this->getOrganization(10, 'org1')
@@ -243,7 +234,7 @@ class ClientOwnerOrganizationsProviderTest extends \PHPUnit\Framework\TestCase
         self::assertFalse($this->organizationsProvider->isOrganizationSelectorRequired($organizations));
     }
 
-    public function testIsOrganizationSelectorRequiredForOneOrganizationAndItNotEqualToOrganizationInSecurityContext()
+    public function testIsOrgSelectorRequiredForOneOrganizationAndItNotEqualToOrganizationInSecurityContext(): void
     {
         $organizations = [
             $this->getOrganization(10, 'org1')
@@ -256,7 +247,7 @@ class ClientOwnerOrganizationsProviderTest extends \PHPUnit\Framework\TestCase
         self::assertTrue($this->organizationsProvider->isOrganizationSelectorRequired($organizations));
     }
 
-    public function testSortOrganizations()
+    public function testSortOrganizations(): void
     {
         $organizations = [
             $this->getOrganization(10, 'org2'),

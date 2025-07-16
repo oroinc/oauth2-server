@@ -9,28 +9,19 @@ use Oro\Bundle\OAuth2ServerBundle\Security\ApiFeatureChecker;
 use Oro\Bundle\OAuth2ServerBundle\Security\EncryptionKeysExistenceChecker;
 use Oro\Bundle\UIBundle\Event\BeforeViewRenderEvent;
 use Oro\Bundle\UserBundle\Entity\User;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Environment;
 
-class AddClientsToViewPageListenerTest extends \PHPUnit\Framework\TestCase
+class AddClientsToViewPageListenerTest extends TestCase
 {
-    /** @var TranslatorInterface|\PHPUnit\Framework\MockObject\MockObject */
-    private $translator;
-
-    /** @var EntityIdAccessor|\PHPUnit\Framework\MockObject\MockObject */
-    private $entityIdAccessor;
-
-    /** @var ClientManager|\PHPUnit\Framework\MockObject\MockObject */
-    private $clientManager;
-
-    /** @var EncryptionKeysExistenceChecker|\PHPUnit\Framework\MockObject\MockObject */
-    private $encryptionKeysExistenceChecker;
-
-    /** @var ApiFeatureChecker|\PHPUnit\Framework\MockObject\MockObject */
-    private $featureChecker;
-
-    /** @var AddClientsToViewPageListener */
-    private $listener;
+    private TranslatorInterface&MockObject $translator;
+    private EntityIdAccessor&MockObject $entityIdAccessor;
+    private ClientManager&MockObject $clientManager;
+    private EncryptionKeysExistenceChecker&MockObject $encryptionKeysExistenceChecker;
+    private ApiFeatureChecker&MockObject $featureChecker;
+    private AddClientsToViewPageListener $listener;
 
     #[\Override]
     protected function setUp(): void
@@ -51,7 +42,7 @@ class AddClientsToViewPageListenerTest extends \PHPUnit\Framework\TestCase
         );
     }
 
-    public function testAddOAuth2ClientsForNotSupportedOwner()
+    public function testAddOAuth2ClientsForNotSupportedOwner(): void
     {
         $environment = $this->createMock(Environment::class);
         $data = ['dataBlocks' => [['title' => 'test']]];
@@ -75,7 +66,7 @@ class AddClientsToViewPageListenerTest extends \PHPUnit\Framework\TestCase
         self::assertEquals($data, $event->getData());
     }
 
-    public function testAddOAuth2ClientsWhenUserHasNoViewPermissionToOauthApplications()
+    public function testAddOAuth2ClientsWhenUserHasNoViewPermissionToOauthApplications(): void
     {
         $environment = $this->createMock(Environment::class);
         $data = ['dataBlocks' => [['title' => 'test']]];
@@ -91,7 +82,7 @@ class AddClientsToViewPageListenerTest extends \PHPUnit\Framework\TestCase
         self::assertEquals($data, $event->getData());
     }
 
-    public function testAddOAuth2ClientsForSupportedOwner()
+    public function testAddOAuth2ClientsForSupportedOwner(): void
     {
         $environment = $this->createMock(Environment::class);
         $data = ['dataBlocks' => [['title' => 'test']]];
@@ -151,7 +142,7 @@ class AddClientsToViewPageListenerTest extends \PHPUnit\Framework\TestCase
         self::assertEquals($expectedData, $event->getData());
     }
 
-    public function testAddOAuth2ClientsForSupportedOwnerWhenNoPublicKey()
+    public function testAddOAuth2ClientsForSupportedOwnerWhenNoPublicKey(): void
     {
         $environment = $this->createMock(Environment::class);
         $data = ['dataBlocks' => [['title' => 'test']]];
@@ -211,7 +202,7 @@ class AddClientsToViewPageListenerTest extends \PHPUnit\Framework\TestCase
         self::assertEquals($expectedData, $event->getData());
     }
 
-    public function testAddOAuth2ClientsForSupportedOwnerWhenNoPrivateKey()
+    public function testAddOAuth2ClientsForSupportedOwnerWhenNoPrivateKey(): void
     {
         $environment = $this->createMock(Environment::class);
         $data = ['dataBlocks' => [['title' => 'test']]];

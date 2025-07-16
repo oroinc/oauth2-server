@@ -12,28 +12,19 @@ use Oro\Bundle\OAuth2ServerBundle\Security\OAuthUserChecker;
 use Oro\Bundle\UserBundle\Entity\User;
 use Oro\Bundle\UserBundle\Security\UserLoaderInterface;
 use Oro\Component\Testing\ReflectionUtil;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\PasswordHasher\PasswordHasherInterface;
 
-class FrontendUserRepositoryTest extends \PHPUnit\Framework\TestCase
+class FrontendUserRepositoryTest extends TestCase
 {
-    /** @var UserLoaderInterface|\PHPUnit\Framework\MockObject\MockObject */
-    private $userLoader;
-
-    /** @var UserLoaderInterface|\PHPUnit\Framework\MockObject\MockObject */
-    private $frontendUserLoader;
-
-    /** @var PasswordHasherFactoryInterface|\PHPUnit\Framework\MockObject\MockObject */
-    private $passwordHasherFactory;
-
-    /** @var OAuthUserChecker|\PHPUnit\Framework\MockObject\MockObject */
-    private $userChecker;
-
-    /** @var CustomerVisitorManager|\PHPUnit\Framework\MockObject\MockObject */
-    private $visitorManager;
-
-    /** @var FrontendUserRepository */
-    private $repository;
+    private UserLoaderInterface&MockObject $userLoader;
+    private UserLoaderInterface&MockObject $frontendUserLoader;
+    private PasswordHasherFactoryInterface&MockObject $passwordHasherFactory;
+    private OAuthUserChecker&MockObject $userChecker;
+    private CustomerVisitorManager&MockObject $visitorManager;
+    private FrontendUserRepository $repository;
 
     #[\Override]
     protected function setUp(): void

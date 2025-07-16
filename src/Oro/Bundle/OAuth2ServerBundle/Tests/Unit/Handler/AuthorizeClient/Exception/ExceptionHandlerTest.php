@@ -5,9 +5,10 @@ namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Handler\AuthorizeClient\Excep
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\Exception\ExceptionHandler;
 use Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\Exception\ExceptionHandlerInterface;
+use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
 
-class ExceptionHandlerTest extends \PHPUnit\Framework\TestCase
+class ExceptionHandlerTest extends TestCase
 {
     public function testHandle(): void
     {

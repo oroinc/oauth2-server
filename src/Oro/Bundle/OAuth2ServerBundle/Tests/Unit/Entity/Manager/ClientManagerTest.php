@@ -10,6 +10,8 @@ use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Oro\Bundle\SecurityBundle\Authentication\TokenAccessorInterface;
 use Oro\Component\Testing\ReflectionUtil;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\PasswordHasher\PasswordHasherInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
@@ -17,22 +19,13 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 /**
  * @SuppressWarnings(PHPMD.TooManyPublicMethods)
  */
-class ClientManagerTest extends \PHPUnit\Framework\TestCase
+class ClientManagerTest extends TestCase
 {
-    /** @var ManagerRegistry|\PHPUnit\Framework\MockObject\MockObject */
-    private $doctrine;
-
-    /** @var PasswordHasherFactoryInterface|\PHPUnit\Framework\MockObject\MockObject */
-    private $passwordHasherFactory;
-
-    /** @var TokenAccessorInterface|\PHPUnit\Framework\MockObject\MockObject */
-    private $tokenAccessor;
-
-    /** @var AuthorizationCheckerInterface|\PHPUnit\Framework\MockObject\MockObject */
-    private $authorizationChecker;
-
-    /** @var ClientManager */
-    private $clientManager;
+    private ManagerRegistry&MockObject $doctrine;
+    private PasswordHasherFactoryInterface&MockObject $passwordHasherFactory;
+    private TokenAccessorInterface&MockObject $tokenAccessor;
+    private AuthorizationCheckerInterface&MockObject $authorizationChecker;
+    private ClientManager $clientManager;
 
     #[\Override]
     protected function setUp(): void
@@ -77,10 +70,7 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
         self::assertTrue(strlen($value) <= $maxLength);
     }
 
-    /**
-     * @return EntityManagerInterface|\PHPUnit\Framework\MockObject\MockObject
-     */
-    private function expectGetEntityManager()
+    private function expectGetEntityManager(): EntityManagerInterface&MockObject
     {
         $em = $this->createMock(EntityManagerInterface::class);
         $this->doctrine->expects(self::once())
@@ -112,7 +102,7 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
             ->willReturn($encodedSecret);
     }
 
-    public function testIsViewGrantedWithoutObject()
+    public function testIsViewGrantedWithoutObject(): void
     {
         $isGranted = true;
 
@@ -124,7 +114,7 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
         self::assertSame($isGranted, $this->clientManager->isViewGranted());
     }
 
-    public function testIsViewGranted()
+    public function testIsViewGranted(): void
     {
         $isGranted = true;
         $client = $this->getClient();
@@ -137,7 +127,7 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
         self::assertSame($isGranted, $this->clientManager->isViewGranted($client));
     }
 
-    public function testIsCreationGranted()
+    public function testIsCreationGranted(): void
     {
         $isGranted = true;
 
@@ -149,7 +139,7 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
         self::assertSame($isGranted, $this->clientManager->isCreationGranted());
     }
 
-    public function testIsModificationGranted()
+    public function testIsModificationGranted(): void
     {
         $isGranted = true;
         $client = $this->getClient();
@@ -162,7 +152,7 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
         self::assertSame($isGranted, $this->clientManager->isModificationGranted($client));
     }
 
-    public function testIsDeletionGranted()
+    public function testIsDeletionGranted(): void
     {
         $isGranted = true;
         $client = $this->getClient();
@@ -175,7 +165,7 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
         self::assertSame($isGranted, $this->clientManager->isDeletionGranted($client));
     }
 
-    public function testUpdateClientWithFlush()
+    public function testUpdateClientWithFlush(): void
     {
         $client = $this->getClient();
         $client->setOrganization($this->createMock(Organization::class));
@@ -192,7 +182,7 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
         $this->clientManager->updateClient($client);
     }
 
-    public function testUpdateNewClient()
+    public function testUpdateNewClient(): void
     {
         $client = $this->getClient();
         $organization = $this->createMock(Organization::class);
@@ -215,7 +205,7 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
         self::assertNull($client->getRedirectUris());
     }
 
-    public function testUpdateExistingClient()
+    public function testUpdateExistingClient(): void
     {
         $client = $this->getClient(123);
         $client->setOrganization($this->createMock(Organization::class));
@@ -231,7 +221,7 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
         self::assertNull($client->getRedirectUris());
     }
 
-    public function testUpdateExistingClientWithPlainSecret()
+    public function testUpdateExistingClientWithPlainSecret(): void
     {
         $plainSecret = 'plain_secret';
         $encodedSecret = 'encoded_secret';
@@ -256,7 +246,7 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
         self::assertNull($client->getRedirectUris());
     }
 
-    public function testUpdateClientWithEmptyArrayInScopes()
+    public function testUpdateClientWithEmptyArrayInScopes(): void
     {
         $client = $this->getClient(123);
         $client->setOrganization($this->createMock(Organization::class));
@@ -267,7 +257,7 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
         self::assertNull($client->getScopes());
     }
 
-    public function testUpdateClientWithEmptyArrayInRedirectUris()
+    public function testUpdateClientWithEmptyArrayInRedirectUris(): void
     {
         $client = $this->getClient(123);
         $client->setOrganization($this->createMock(Organization::class));
@@ -278,7 +268,7 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
         self::assertNull($client->getRedirectUris());
     }
 
-    public function testActivateClient()
+    public function testActivateClient(): void
     {
         $client = $this->getClient();
         $client->setActive(false);
@@ -291,7 +281,7 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
         self::assertTrue($client->isActive());
     }
 
-    public function testDeactivateClient()
+    public function testDeactivateClient(): void
     {
         $client = $this->getClient();
         $client->setActive(true);
@@ -304,7 +294,7 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
         self::assertFalse($client->isActive());
     }
 
-    public function testDeleteClient()
+    public function testDeleteClient(): void
     {
         $client = $this->getClient();
 
@@ -318,7 +308,7 @@ class ClientManagerTest extends \PHPUnit\Framework\TestCase
         $this->clientManager->deleteClient($client);
     }
 
-    public function testGetClient()
+    public function testGetClient(): void
     {
         $clientId = 'test_client';
         $client = $this->getClient(12);

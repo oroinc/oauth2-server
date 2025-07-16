@@ -12,23 +12,16 @@ use Oro\Bundle\OAuth2ServerBundle\League\Repository\FrontendRefreshTokenReposito
 use Oro\Bundle\OAuth2ServerBundle\Security\OAuthUserChecker;
 use Oro\Bundle\UserBundle\Entity\UserInterface;
 use Oro\Bundle\UserBundle\Security\UserLoaderInterface;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 
-class FrontendRefreshTokenRepositoryTest extends \PHPUnit\Framework\TestCase
+class FrontendRefreshTokenRepositoryTest extends TestCase
 {
-    /** @var ManagerRegistry|\PHPUnit\Framework\MockObject\MockObject */
-    private $doctrine;
-
-    /** @var UserLoaderInterface|\PHPUnit\Framework\MockObject\MockObject */
-    private $userLoader;
-
-    /** @var OAuthUserChecker|\PHPUnit\Framework\MockObject\MockObject */
-    private $userChecker;
-
-    /** @var UserLoaderInterface */
-    private $frontendUserLoader;
-
-    /** @var FrontendRefreshTokenRepository */
-    private $repository;
+    private ManagerRegistry&MockObject $doctrine;
+    private UserLoaderInterface&MockObject $userLoader;
+    private OAuthUserChecker&MockObject $userChecker;
+    private UserLoaderInterface $frontendUserLoader;
+    private FrontendRefreshTokenRepository $repository;
 
     #[\Override]
     protected function setUp(): void

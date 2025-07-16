@@ -10,18 +10,15 @@ use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Provider\ClientAdditionalEmailAssociationProvider;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Oro\Bundle\UserBundle\Entity\User;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-class ClientAdditionalEmailAssociationProviderTest extends \PHPUnit\Framework\TestCase
+class ClientAdditionalEmailAssociationProviderTest extends TestCase
 {
-    /** @var ConfigProviderMock */
-    private $entityConfigProvider;
-
-    /** @var ManagerRegistry|\PHPUnit\Framework\MockObject\MockObject */
-    private $doctrine;
-
-    /** @var ClientAdditionalEmailAssociationProvider */
-    private $provider;
+    private ConfigProviderMock $entityConfigProvider;
+    private ManagerRegistry&MockObject $doctrine;
+    private ClientAdditionalEmailAssociationProvider $provider;
 
     #[\Override]
     protected function setUp(): void
@@ -47,12 +44,12 @@ class ClientAdditionalEmailAssociationProviderTest extends \PHPUnit\Framework\Te
         );
     }
 
-    public function testGetAssociationsForNotClientEntity()
+    public function testGetAssociationsForNotClientEntity(): void
     {
         self::assertEquals([], $this->provider->getAssociations(User::class));
     }
 
-    public function testGetAssociations()
+    public function testGetAssociations(): void
     {
         $this->entityConfigProvider->addEntityConfig(User::class, ['label' => 'user_label']);
         $this->entityConfigProvider->addEntityConfig(Organization::class, ['label' => 'organization_label']);
@@ -66,22 +63,22 @@ class ClientAdditionalEmailAssociationProviderTest extends \PHPUnit\Framework\Te
         );
     }
 
-    public function testIsAssociationSupportedWithNotSupportedEntity()
+    public function testIsAssociationSupportedWithNotSupportedEntity(): void
     {
         self::assertFalse($this->provider->isAssociationSupported(new User(), 'test'));
     }
 
-    public function testIsAssociationSupportedWithNotSupportedAssociation()
+    public function testIsAssociationSupportedWithNotSupportedAssociation(): void
     {
         self::assertFalse($this->provider->isAssociationSupported(new Client(), 'test'));
     }
 
-    public function testIsAssociationSupportedWithSupportedAssociation()
+    public function testIsAssociationSupportedWithSupportedAssociation(): void
     {
         self::assertTrue($this->provider->isAssociationSupported(new Client(), 'user'));
     }
 
-    public function testGetAssociationValueOnWrongOwnerType()
+    public function testGetAssociationValueOnWrongOwnerType(): void
     {
         $entity = new Client();
         $entity->setOwnerEntity(Organization::class, 2);
@@ -89,7 +86,7 @@ class ClientAdditionalEmailAssociationProviderTest extends \PHPUnit\Framework\Te
         self::assertNull($this->provider->getAssociationValue($entity, 'user'));
     }
 
-    public function testGetAssociationValueOnCorrectOwnerType()
+    public function testGetAssociationValueOnCorrectOwnerType(): void
     {
         $entity = new Client();
         $ownerId = 123;

@@ -6,15 +6,14 @@ use Oro\Bundle\FormBundle\Event\FormHandler\FormProcessEvent;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
 use Oro\Bundle\OAuth2ServerBundle\EventListener\InitializeClientEntityListener;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\FormInterface;
 
-class InitializeClientEntityListenerTest extends \PHPUnit\Framework\TestCase
+class InitializeClientEntityListenerTest extends TestCase
 {
-    /** @var ClientManager|\PHPUnit\Framework\MockObject\MockObject */
-    private $clientManager;
-
-    /** @var InitializeClientEntityListener */
-    private $listener;
+    private ClientManager&MockObject $clientManager;
+    private InitializeClientEntityListener $listener;
 
     #[\Override]
     protected function setUp(): void
@@ -24,7 +23,7 @@ class InitializeClientEntityListenerTest extends \PHPUnit\Framework\TestCase
         $this->listener = new InitializeClientEntityListener($this->clientManager);
     }
 
-    public function testUpdateClient()
+    public function testUpdateClient(): void
     {
         $client = $this->createMock(Client::class);
 

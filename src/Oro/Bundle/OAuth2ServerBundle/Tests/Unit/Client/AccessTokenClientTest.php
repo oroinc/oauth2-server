@@ -17,11 +17,12 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 class AccessTokenClientTest extends TestCase
 {
-    private HttpKernelInterface|MockObject $httpKernel;
-    private AuthorizationServer|MockObject $authorizationServer;
-    private RequestStack|MockObject $requestStack;
+    private HttpKernelInterface&MockObject $httpKernel;
+    private AuthorizationServer&MockObject $authorizationServer;
+    private RequestStack&MockObject $requestStack;
     private AccessTokenClient $client;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->httpKernel = $this->createMock(HttpKernelInterface::class);

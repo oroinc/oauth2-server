@@ -4,11 +4,12 @@ namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Handler\GetAccessToken\Succes
 
 use Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Success\SuccessHandler;
 use Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Success\SuccessHandlerInterface;
+use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
 
-class SuccessHandlerTest extends \PHPUnit\Framework\TestCase
+class SuccessHandlerTest extends TestCase
 {
-    public function testHandle()
+    public function testHandle(): void
     {
         $request = $this->createMock(ServerRequestInterface::class);
 

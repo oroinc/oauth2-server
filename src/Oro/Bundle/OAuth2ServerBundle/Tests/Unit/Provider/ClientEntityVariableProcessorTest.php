@@ -8,17 +8,14 @@ use Oro\Bundle\EntityBundle\Twig\Sandbox\TemplateData;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Provider\ClientEntityVariableProcessor;
 use Oro\Bundle\UserBundle\Entity\User;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 
-class ClientEntityVariableProcessorTest extends \PHPUnit\Framework\TestCase
+class ClientEntityVariableProcessorTest extends TestCase
 {
-    /** @var ManagerRegistry|\PHPUnit\Framework\MockObject\MockObject */
-    private $doctrine;
-
-    /** @var TemplateData|\PHPUnit\Framework\MockObject\MockObject */
-    private $data;
-
-    /** @var ClientEntityVariableProcessor */
-    private $processor;
+    private ManagerRegistry&MockObject $doctrine;
+    private TemplateData&MockObject $data;
+    private ClientEntityVariableProcessor $processor;
 
     #[\Override]
     protected function setUp(): void
@@ -29,7 +26,7 @@ class ClientEntityVariableProcessorTest extends \PHPUnit\Framework\TestCase
         $this->processor = new ClientEntityVariableProcessor($this->doctrine);
     }
 
-    public function testProcessForOwnerEntity()
+    public function testProcessForOwnerEntity(): void
     {
         $ownerClass = User::class;
         $ownerId = 123;
@@ -66,7 +63,7 @@ class ClientEntityVariableProcessorTest extends \PHPUnit\Framework\TestCase
         $this->processor->process($variable, $definition, $this->data);
     }
 
-    public function testProcessWhenOwnerEntityIsDifferentThanDefinedInVariable()
+    public function testProcessWhenOwnerEntityIsDifferentThanDefinedInVariable(): void
     {
         $ownerClass = User::class;
         $ownerId = 123;
@@ -95,7 +92,7 @@ class ClientEntityVariableProcessorTest extends \PHPUnit\Framework\TestCase
         $this->processor->process($variable, $definition, $this->data);
     }
 
-    public function testProcessWhenOwnerEntityIsNull()
+    public function testProcessWhenOwnerEntityIsNull(): void
     {
         $entity = new Client();
 

@@ -14,10 +14,10 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 class OauthLoginTemplateListenerTest extends TestCase
 {
-    private ClientManager|MockObject $clientManager;
-
+    private ClientManager&MockObject $clientManager;
     private OauthLoginTemplateListener $listener;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->clientManager = $this->createMock(ClientManager::class);

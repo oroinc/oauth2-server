@@ -3,23 +3,22 @@
 namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Handler\GetAccessToken\Exception;
 
 use League\OAuth2\Server\Exception\OAuthServerException;
-use Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\Exception\LogAuthorizeClientHandler;
 use Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Exception\AuthCodeGrantExceptionHandler;
 use Oro\Bundle\OAuth2ServerBundle\Provider\AuthCodeLogAttemptHelper;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
 
-class AuthCodeGrantExceptionHandlerTest extends \PHPUnit\Framework\TestCase
+class AuthCodeGrantExceptionHandlerTest extends TestCase
 {
-    /** @var AuthCodeLogAttemptHelper|\PHPUnit\Framework\MockObject\MockObject */
-    private $logAttemptHelper;
-
-    /** @var LogAuthorizeClientHandler */
-    private $handler;
+    private AuthCodeLogAttemptHelper&MockObject $logAttemptHelper;
+    private AuthCodeGrantExceptionHandler $handler;
 
     #[\Override]
     protected function setUp(): void
     {
         $this->logAttemptHelper = $this->createMock(AuthCodeLogAttemptHelper::class);
+
         $this->handler = new AuthCodeGrantExceptionHandler($this->logAttemptHelper);
     }
 

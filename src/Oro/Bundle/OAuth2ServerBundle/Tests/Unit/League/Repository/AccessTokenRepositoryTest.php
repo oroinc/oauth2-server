@@ -13,17 +13,14 @@ use Oro\Bundle\OAuth2ServerBundle\League\Entity\AccessTokenEntity;
 use Oro\Bundle\OAuth2ServerBundle\League\Entity\ClientEntity;
 use Oro\Bundle\OAuth2ServerBundle\League\Entity\ScopeEntity;
 use Oro\Bundle\OAuth2ServerBundle\League\Repository\AccessTokenRepository;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 
-class AccessTokenRepositoryTest extends \PHPUnit\Framework\TestCase
+class AccessTokenRepositoryTest extends TestCase
 {
-    /** @var ManagerRegistry|\PHPUnit\Framework\MockObject\MockObject */
-    private $doctrine;
-
-    /** @var ClientManager|\PHPUnit\Framework\MockObject\MockObject */
-    private $clientManager;
-
-    /** @var AccessTokenRepository */
-    private $repository;
+    private ManagerRegistry&MockObject $doctrine;
+    private ClientManager&MockObject $clientManager;
+    private AccessTokenRepository $repository;
 
     #[\Override]
     protected function setUp(): void
@@ -34,10 +31,7 @@ class AccessTokenRepositoryTest extends \PHPUnit\Framework\TestCase
         $this->repository = new AccessTokenRepository($this->doctrine, $this->clientManager);
     }
 
-    /**
-     * @return EntityManagerInterface|\PHPUnit\Framework\MockObject\MockObject
-     */
-    private function expectGetEntityManager()
+    private function expectGetEntityManager(): EntityManagerInterface&MockObject
     {
         $em = $this->createMock(EntityManagerInterface::class);
         $this->doctrine->expects(self::atLeast(1))
@@ -48,14 +42,10 @@ class AccessTokenRepositoryTest extends \PHPUnit\Framework\TestCase
         return $em;
     }
 
-    /**
-     * @param string                                                               $entityClass
-     * @param EntityManagerInterface|\PHPUnit\Framework\MockObject\MockObject|null $em
-     *
-     * @return EntityRepository|\PHPUnit\Framework\MockObject\MockObject
-     */
-    private function expectGetRepository($entityClass, $em = null)
-    {
+    private function expectGetRepository(
+        string $entityClass,
+        EntityManagerInterface|MockObject|null $em = null
+    ): EntityRepository&MockObject {
         if (null === $em) {
             $em = $this->expectGetEntityManager();
         }
@@ -69,7 +59,7 @@ class AccessTokenRepositoryTest extends \PHPUnit\Framework\TestCase
         return $repository;
     }
 
-    public function testGetNewToken()
+    public function testGetNewToken(): void
     {
         $client = new ClientEntity();
         $scope1 = new ScopeEntity();
@@ -85,7 +75,7 @@ class AccessTokenRepositoryTest extends \PHPUnit\Framework\TestCase
         self::assertSame($userIdentifier, $accessToken->getUserIdentifier());
     }
 
-    public function testGetNewTokenWithoutUserIdentifier()
+    public function testGetNewTokenWithoutUserIdentifier(): void
     {
         $client = new ClientEntity();
         $scopes = [];
@@ -96,7 +86,7 @@ class AccessTokenRepositoryTest extends \PHPUnit\Framework\TestCase
         self::assertNull($accessToken->getUserIdentifier());
     }
 
-    public function testPersistNewAccessTokenOnExistToken()
+    public function testPersistNewAccessTokenOnExistToken(): void
     {
         $this->expectException(UniqueTokenIdentifierConstraintViolationException::class);
         $this->expectExceptionMessage('Could not create unique access token identifier');
@@ -115,7 +105,7 @@ class AccessTokenRepositoryTest extends \PHPUnit\Framework\TestCase
         $this->repository->persistNewAccessToken($accessTokenEntity);
     }
 
-    public function testPersistNewAccessToken()
+    public function testPersistNewAccessToken(): void
     {
         $scope = new ScopeEntity();
         $scope->setIdentifier('test_scope');
@@ -169,7 +159,7 @@ class AccessTokenRepositoryTest extends \PHPUnit\Framework\TestCase
         self::assertNotNull($client->getLastUsedAt());
     }
 
-    public function testRevokeAccessTokenOnNonExistToken()
+    public function testRevokeAccessTokenOnNonExistToken(): void
     {
         $repository = $this->expectGetRepository(AccessToken::class);
         $repository->expects(self::once())
@@ -180,7 +170,7 @@ class AccessTokenRepositoryTest extends \PHPUnit\Framework\TestCase
         $this->repository->revokeAccessToken('test_id');
     }
 
-    public function testRevokeAccessTokenOnExistToken()
+    public function testRevokeAccessTokenOnExistToken(): void
     {
         $existingToken = new AccessToken('test_id', new \DateTime(), [], new Client());
 
@@ -200,7 +190,7 @@ class AccessTokenRepositoryTest extends \PHPUnit\Framework\TestCase
         self::assertTrue($existingToken->isRevoked());
     }
 
-    public function testIsAccessTokenRevokedOnNonExistingToken()
+    public function testIsAccessTokenRevokedOnNonExistingToken(): void
     {
         $repository = $this->expectGetRepository(AccessToken::class);
         $repository->expects(self::once())
@@ -211,7 +201,7 @@ class AccessTokenRepositoryTest extends \PHPUnit\Framework\TestCase
         self::assertTrue($this->repository->isAccessTokenRevoked('test_id'));
     }
 
-    public function testIsAccessTokenRevokedOnNonExistingRevokedToken()
+    public function testIsAccessTokenRevokedOnNonExistingRevokedToken(): void
     {
         $existingToken = new AccessToken('test_id', new \DateTime(), [], new Client());
         $existingToken->revoke();
@@ -225,7 +215,7 @@ class AccessTokenRepositoryTest extends \PHPUnit\Framework\TestCase
         self::assertTrue($this->repository->isAccessTokenRevoked('test_id'));
     }
 
-    public function testIsAccessTokenRevokedOnNonExistingNotRevokedToken()
+    public function testIsAccessTokenRevokedOnNonExistingNotRevokedToken(): void
     {
         $existingToken = new AccessToken('test_id', new \DateTime(), [], new Client());
 

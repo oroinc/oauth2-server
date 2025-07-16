@@ -16,14 +16,13 @@ use Oro\Bundle\DataGridBundle\Event\BuildBefore;
 use Oro\Bundle\OAuth2ServerBundle\Datagrid\EventListener\OrganizationClientDatagridListener;
 use Oro\Bundle\OAuth2ServerBundle\Provider\ClientOwnerOrganizationsProvider;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 
-class OrganizationClientDatagridListenerTest extends \PHPUnit\Framework\TestCase
+class OrganizationClientDatagridListenerTest extends TestCase
 {
-    /** @var ClientOwnerOrganizationsProvider|\PHPUnit\Framework\MockObject\MockObject */
-    private $organizationsProvider;
-
-    /** @var OrganizationClientDatagridListener */
-    private $listener;
+    private ClientOwnerOrganizationsProvider&MockObject $organizationsProvider;
+    private OrganizationClientDatagridListener $listener;
 
     #[\Override]
     protected function setUp(): void
@@ -69,7 +68,7 @@ class OrganizationClientDatagridListenerTest extends \PHPUnit\Framework\TestCase
             ->willReturn($queryParameters);
     }
 
-    public function testOnBuildBeforeWhenMultiOrganizationIsNotSupported()
+    public function testOnBuildBeforeWhenMultiOrganizationIsNotSupported(): void
     {
         $config = DatagridConfiguration::create([
             'source' => [
@@ -94,7 +93,7 @@ class OrganizationClientDatagridListenerTest extends \PHPUnit\Framework\TestCase
         self::assertSame($initialConfig, $config->toArray());
     }
 
-    public function testOnBuildBeforeWhenMultiOrganizationIsSupported()
+    public function testOnBuildBeforeWhenMultiOrganizationIsSupported(): void
     {
         $config = DatagridConfiguration::create([
             'source' => [
@@ -128,7 +127,7 @@ class OrganizationClientDatagridListenerTest extends \PHPUnit\Framework\TestCase
         self::assertSame($expectedConfig, $config->toArray());
     }
 
-    public function testOnBuildAfterWhenMultiOrganizationIsNotSupported()
+    public function testOnBuildAfterWhenMultiOrganizationIsNotSupported(): void
     {
         $config = DatagridConfiguration::create([
             'source' => [
@@ -162,7 +161,7 @@ class OrganizationClientDatagridListenerTest extends \PHPUnit\Framework\TestCase
         self::assertSame($initialConfig, $config->toArray());
     }
 
-    public function testOnBuildAfterWhenMultiOrganizationIsSupportedAndClientOwnerBelongsToOneOrganization()
+    public function testOnBuildAfterWhenMultiOrganizationIsSupportedAndClientOwnerBelongsToOneOrganization(): void
     {
         $config = DatagridConfiguration::create([
             'source'  => [
@@ -229,7 +228,7 @@ class OrganizationClientDatagridListenerTest extends \PHPUnit\Framework\TestCase
     /**
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
-    public function testOnBuildAfterWhenMultiOrganizationIsSupportedAndClientOwnerBelongsToSeveralOrganizations()
+    public function testOnBuildAfterWhenMultiOrganizationIsSupportedAndClientOwnerBelongsToSeveralOrganizations(): void
     {
         $config = DatagridConfiguration::create([
             'source'  => [

@@ -15,10 +15,11 @@ use PHPUnit\Framework\TestCase;
 
 class RefreshTokenDataProviderTest extends TestCase
 {
-    private DecryptedTokenProvider|MockObject $decryptedTokenProvider;
-    private ObjectRepository|MockObject $repository;
+    private DecryptedTokenProvider&MockObject $decryptedTokenProvider;
+    private ObjectRepository&MockObject $repository;
     private RefreshTokenDataProvider $provider;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->decryptedTokenProvider = $this->createMock(DecryptedTokenProvider::class);

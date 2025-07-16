@@ -7,17 +7,16 @@ use Oro\Bundle\FeatureToggleBundle\Checker\FeatureChecker;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Security\ApiFeatureChecker;
 use Oro\Bundle\UserBundle\Entity\User;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 
 /**
  * @SuppressWarnings(PHPMD.TooManyPublicMethods)
  */
-class ApiFeatureCheckerTest extends \PHPUnit\Framework\TestCase
+class ApiFeatureCheckerTest extends TestCase
 {
-    /** @var FeatureChecker|\PHPUnit\Framework\MockObject\MockObject */
-    private $featureChecker;
-
-    /** @var ApiFeatureChecker */
-    private $apiFeatureChecker;
+    private FeatureChecker&MockObject $featureChecker;
+    private ApiFeatureChecker $apiFeatureChecker;
 
     #[\Override]
     protected function setUp(): void
@@ -27,7 +26,7 @@ class ApiFeatureCheckerTest extends \PHPUnit\Framework\TestCase
         $this->apiFeatureChecker = new ApiFeatureChecker($this->featureChecker);
     }
 
-    public function testIsEnabledByClientOwnerClassForBackendEnabled()
+    public function testIsEnabledByClientOwnerClassForBackendEnabled(): void
     {
         $this->featureChecker->expects(self::once())
             ->method('isFeatureEnabled')
@@ -36,7 +35,7 @@ class ApiFeatureCheckerTest extends \PHPUnit\Framework\TestCase
         self::assertTrue($this->apiFeatureChecker->isEnabledByClientOwnerClass(User::class));
     }
 
-    public function testIsEnabledByClientOwnerClassForBackendDisabled()
+    public function testIsEnabledByClientOwnerClassForBackendDisabled(): void
     {
         $this->featureChecker->expects(self::once())
             ->method('isFeatureEnabled')
@@ -45,7 +44,7 @@ class ApiFeatureCheckerTest extends \PHPUnit\Framework\TestCase
         self::assertFalse($this->apiFeatureChecker->isEnabledByClientOwnerClass(User::class));
     }
 
-    public function testIsEnabledByClientOwnerClassForFrontendEnabled()
+    public function testIsEnabledByClientOwnerClassForFrontendEnabled(): void
     {
         if (!class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {
             self::markTestSkipped('can be tested only with CustomerBundle');
@@ -58,7 +57,7 @@ class ApiFeatureCheckerTest extends \PHPUnit\Framework\TestCase
         self::assertTrue($this->apiFeatureChecker->isEnabledByClientOwnerClass(CustomerUser::class));
     }
 
-    public function testIsEnabledByClientOwnerClassForFrontendDisabled()
+    public function testIsEnabledByClientOwnerClassForFrontendDisabled(): void
     {
         if (!class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {
             self::markTestSkipped('can be tested only with CustomerBundle');
@@ -71,7 +70,7 @@ class ApiFeatureCheckerTest extends \PHPUnit\Framework\TestCase
         self::assertFalse($this->apiFeatureChecker->isEnabledByClientOwnerClass(CustomerUser::class));
     }
 
-    public function testIsEnabledByClientForBackendEnabled()
+    public function testIsEnabledByClientForBackendEnabled(): void
     {
         $client = new Client();
         $this->featureChecker->expects(self::once())
@@ -81,7 +80,7 @@ class ApiFeatureCheckerTest extends \PHPUnit\Framework\TestCase
         self::assertTrue($this->apiFeatureChecker->isEnabledByClient($client));
     }
 
-    public function testIsEnabledByClientForBackendDisabled()
+    public function testIsEnabledByClientForBackendDisabled(): void
     {
         $client = new Client();
         $this->featureChecker->expects(self::once())
@@ -91,7 +90,7 @@ class ApiFeatureCheckerTest extends \PHPUnit\Framework\TestCase
         self::assertFalse($this->apiFeatureChecker->isEnabledByClient($client));
     }
 
-    public function testIsEnabledByClientForFrontendEnabled()
+    public function testIsEnabledByClientForFrontendEnabled(): void
     {
         $client = new Client();
         $client->setFrontend(true);
@@ -102,7 +101,7 @@ class ApiFeatureCheckerTest extends \PHPUnit\Framework\TestCase
         self::assertTrue($this->apiFeatureChecker->isEnabledByClient($client));
     }
 
-    public function testIsEnabledByClientForFrontendDisabled()
+    public function testIsEnabledByClientForFrontendDisabled(): void
     {
         $client = new Client();
         $client->setFrontend(true);
@@ -113,7 +112,7 @@ class ApiFeatureCheckerTest extends \PHPUnit\Framework\TestCase
         self::assertFalse($this->apiFeatureChecker->isEnabledByClient($client));
     }
 
-    public function testIsBackendApiEnabledForEnabled()
+    public function testIsBackendApiEnabledForEnabled(): void
     {
         $this->featureChecker->expects(self::once())
             ->method('isFeatureEnabled')
@@ -122,7 +121,7 @@ class ApiFeatureCheckerTest extends \PHPUnit\Framework\TestCase
         self::assertTrue($this->apiFeatureChecker->isBackendApiEnabled());
     }
 
-    public function testIsBackendApiEnabledForDisabled()
+    public function testIsBackendApiEnabledForDisabled(): void
     {
         $this->featureChecker->expects(self::once())
             ->method('isFeatureEnabled')
@@ -131,7 +130,7 @@ class ApiFeatureCheckerTest extends \PHPUnit\Framework\TestCase
         self::assertFalse($this->apiFeatureChecker->isBackendApiEnabled());
     }
 
-    public function testIsFrontendApiEnabledForEnabled()
+    public function testIsFrontendApiEnabledForEnabled(): void
     {
         $this->featureChecker->expects(self::once())
             ->method('isFeatureEnabled')
@@ -140,7 +139,7 @@ class ApiFeatureCheckerTest extends \PHPUnit\Framework\TestCase
         self::assertTrue($this->apiFeatureChecker->isFrontendApiEnabled());
     }
 
-    public function testIsFrontendApiEnabledForDisabled()
+    public function testIsFrontendApiEnabledForDisabled(): void
     {
         $this->featureChecker->expects(self::once())
             ->method('isFeatureEnabled')

@@ -24,8 +24,6 @@ class EmailTemplateContextCollectWebsiteAwareEventListenerTest extends TestCase
         if (!class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {
             self::markTestSkipped('can be tested only with CustomerBundle');
         }
-
-        parent::setUpBeforeClass();
     }
 
     #[\Override]

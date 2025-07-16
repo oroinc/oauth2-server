@@ -4,12 +4,13 @@ namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Handler\GetAccessToken\Except
 
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Exception\LogExceptionHandler;
+use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 
-class LogExceptionHandlerTest extends \PHPUnit\Framework\TestCase
+class LogExceptionHandlerTest extends TestCase
 {
-    public function testHandle()
+    public function testHandle(): void
     {
         $exception = OAuthServerException::accessDenied();
 

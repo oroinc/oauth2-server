@@ -5,11 +5,11 @@ namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\League\Repository;
 use Oro\Bundle\OAuth2ServerBundle\League\Entity\ClientEntity;
 use Oro\Bundle\OAuth2ServerBundle\League\Entity\ScopeEntity;
 use Oro\Bundle\OAuth2ServerBundle\League\Repository\ScopeRepository;
+use PHPUnit\Framework\TestCase;
 
-class ScopeRepositoryTest extends \PHPUnit\Framework\TestCase
+class ScopeRepositoryTest extends TestCase
 {
-    /** @var ScopeRepository */
-    private $repository;
+    private ScopeRepository $repository;
 
     #[\Override]
     protected function setUp(): void
@@ -17,7 +17,7 @@ class ScopeRepositoryTest extends \PHPUnit\Framework\TestCase
         $this->repository = new ScopeRepository();
     }
 
-    public function testGetScopeEntityByIdentifier()
+    public function testGetScopeEntityByIdentifier(): void
     {
         $identifier = 'test_id';
 
@@ -27,7 +27,7 @@ class ScopeRepositoryTest extends \PHPUnit\Framework\TestCase
         self::assertEquals($expectedScopeEntity, $this->repository->getScopeEntityByIdentifier($identifier));
     }
 
-    public function testFinalizeScopes()
+    public function testFinalizeScopes(): void
     {
         $scopes = [new ScopeEntity(), new ScopeEntity()];
 

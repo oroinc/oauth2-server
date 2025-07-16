@@ -17,6 +17,7 @@ use Oro\Bundle\TranslationBundle\Form\Extension\TranslatableChoiceTypeExtension;
 use Oro\Bundle\TranslationBundle\Translation\IdentityTranslator;
 use Oro\Component\Testing\ReflectionUtil;
 use Oro\Component\Testing\Unit\PreloadedExtension;
+use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
@@ -38,11 +39,8 @@ use Symfony\Component\Validator\Validator\RecursiveValidator;
  */
 class ClientTypeTest extends TypeTestCase
 {
-    /** @var ClientOwnerOrganizationsProvider|\PHPUnit\Framework\MockObject\MockObject */
-    private $organizationsProvider;
-
-    /** @var ManagerRegistry|\PHPUnit\Framework\MockObject\MockObject */
-    private $doctrine;
+    private ClientOwnerOrganizationsProvider&MockObject $organizationsProvider;
+    private ManagerRegistry&MockObject $doctrine;
 
     #[\Override]
     protected function setUp(): void
