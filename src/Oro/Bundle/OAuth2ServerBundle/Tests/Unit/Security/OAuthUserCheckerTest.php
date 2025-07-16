@@ -23,11 +23,9 @@ class OAuthUserCheckerTest extends TestCase
         $translator->expects($this->any())
             ->method('trans')
             ->with(self::anything(), self::anything(), 'security')
-            ->willReturnCallback(
-                function ($string) {
-                    return '__' . $string . '_translated_';
-                }
-            );
+            ->willReturnCallback(function ($string) {
+                return '__' . $string . '_translated_';
+            });
         $this->userChecker = $this->createMock(UserCheckerInterface::class);
 
         $this->oauthUserChecker = new OAuthUserChecker($this->userChecker, $translator);
