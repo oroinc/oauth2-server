@@ -1,6 +1,6 @@
 @regression
 @fixture-OroOAuth2ServerBundle:manage_notifications_for_oauth_applications.yml
-
+@ticket-BB-25327
 Feature: Manage Backoffice OAuth Applications
   In order to use OAuth authorization
   As an Administrator
