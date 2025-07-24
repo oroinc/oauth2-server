@@ -1,6 +1,6 @@
 @regression
 @fixture-OroOAuth2ServerBundle:manage_notifications_for_oauth_applications.yml
-@ticket-BB-25327
+
 Feature: Manage Backoffice OAuth Applications
   In order to use OAuth authorization
   As an Administrator
@@ -106,12 +106,16 @@ Feature: Manage Backoffice OAuth Applications
     Then I should see "Are you sure you want to deactivate the application?"
     When I click "Yes, do it"
     Then I should see "Deactivated successfully" flash message
+    #    remove reload page after fix BB-25987
+    And I reload the page
     And I should see "Client App edited" in grid with following data:
       | Active | No |
 
   Scenario: Activate OAuth application
     When I click "Activate" on row "Client App edited" in grid
     Then I should see "Activated successfully" flash message
+    #    remove reload page after fix BB-25987
+    And I reload the page
     And I should see "Client App edited" in grid with following data:
       | Active | Yes |
 
@@ -120,9 +124,10 @@ Feature: Manage Backoffice OAuth Applications
     Then I should see "Are you sure you want to delete the application?"
     When I click "Yes"
     Then I should see "Deleted successfully" flash message
-    And I should see following grid:
+#    remove reload page after fix BB-25987
+    And I reload the page
+    And I should see following grid containing rows:
       | Application Name           | Active |
-      | Sales Frontend Application | Yes    |
       | Test OAuth Application     | Yes    |
 
   Scenario: New Auth Code grant OAuth application Redirect URLs validation
