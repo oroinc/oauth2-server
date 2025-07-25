@@ -9,6 +9,7 @@ use Oro\Bundle\OAuth2ServerBundle\Entity\Cleaner\AccessTokenCleaner;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Cleaner\AuthCodeCleaner;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Cleaner\ClientCleaner;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Cleaner\RefreshTokenCleaner;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -23,11 +24,12 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  * * OAuth 2.0 clients that belong to removed users
  * * outdated OAuth 2.0 auth codes
  */
+#[AsCommand(
+    name: 'oro:cron:oauth-server:cleanup',
+    description: 'Removes outdated OAuth tokens, codes and applications.'
+)]
 class CleanupCommand extends Command implements CronCommandScheduleDefinitionInterface
 {
-    /** @var string */
-    protected static $defaultName = 'oro:cron:oauth-server:cleanup';
-
     private ClientCleaner $clientCleaner;
     private AccessTokenCleaner $accessTokenCleaner;
     private RefreshTokenCleaner $refreshTokenCleaner;
@@ -57,7 +59,6 @@ class CleanupCommand extends Command implements CronCommandScheduleDefinitionInt
     protected function configure()
     {
         $this
-            ->setDescription('Removes outdated OAuth tokens, codes and applications.')
             ->setHelp(
                 <<<'HELP'
 The <info>%command.name%</info> command removes outdated OAuth 2.0 access tokens, refresh tokens

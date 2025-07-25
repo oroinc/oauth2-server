@@ -16,7 +16,7 @@ oro_oauth2_server_auth_token_options:
 
 oro_oauth2_server_client:
     resource: "@OroOAuth2ServerBundle/Controller/ClientController.php"
-    type: annotation
+    type: attribute
     prefix: /oauth2
 
 oro_oauth2_server_authenticate:
