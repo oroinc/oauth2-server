@@ -353,7 +353,6 @@ class FrontendAuthorizationCodeGrantVisitorOAuthServerTest extends OAuthServerTe
 
     public function testShoppingListWithGuestOauthToken(): void
     {
-
         if (!class_exists('Oro\Bundle\ShoppingListBundle\OroShoppingListBundle')) {
             self::markTestSkipped('can be tested only with ShoppingListBundle');
         }
@@ -449,7 +448,6 @@ class FrontendAuthorizationCodeGrantVisitorOAuthServerTest extends OAuthServerTe
 
     public function testShoppingListWithGuestOauthTokenWhenAccessTokenRequestForUserIsSentViaPost(): void
     {
-
         if (!class_exists('Oro\Bundle\ShoppingListBundle\OroShoppingListBundle')) {
             self::markTestSkipped('can be tested only with ShoppingListBundle');
         }

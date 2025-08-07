@@ -15,19 +15,19 @@ class CheckKeysPermissionsCommandTest extends WebTestCase
     use TempDirExtension;
 
     private CryptKeyFile $oAuth2PrivateKey;
-    private string $originalOAuth2PrivateKeyPath;
+    private string $initialOAuth2PrivateKeyPath;
 
     protected function setUp(): void
     {
         $this->initClient();
 
         $this->oAuth2PrivateKey = self::getContainer()->get('oro_oauth2_server.league.private_key');
-        $this->originalOAuth2PrivateKeyPath = $this->oAuth2PrivateKey->getKeyPath();
+        $this->initialOAuth2PrivateKeyPath = $this->oAuth2PrivateKey->getKeyPath();
     }
 
     protected function tearDown(): void
     {
-        $this->setOAuth2KeyPath($this->oAuth2PrivateKey, $this->originalOAuth2PrivateKeyPath);
+        $this->setOAuth2KeyPath($this->oAuth2PrivateKey, $this->initialOAuth2PrivateKeyPath);
     }
 
     private function setOAuth2KeyPath(CryptKeyFile $key, string $path): void

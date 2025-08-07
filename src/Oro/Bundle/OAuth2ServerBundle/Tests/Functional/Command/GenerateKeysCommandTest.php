@@ -14,8 +14,8 @@ class GenerateKeysCommandTest extends WebTestCase
 
     private CryptKeyFile $oAuth2PrivateKey;
     private CryptKeyFile $oAuth2PublicKey;
-    private string $originalOAuth2PrivateKeyPath;
-    private string $originalOAuth2PublicKeyPath;
+    private string $initialOAuth2PrivateKeyPath;
+    private string $initialOAuth2PublicKeyPath;
 
     protected function setUp(): void
     {
@@ -23,14 +23,14 @@ class GenerateKeysCommandTest extends WebTestCase
 
         $this->oAuth2PrivateKey = self::getContainer()->get('oro_oauth2_server.league.private_key');
         $this->oAuth2PublicKey = self::getContainer()->get('oro_oauth2_server.league.public_key');
-        $this->originalOAuth2PrivateKeyPath = $this->oAuth2PrivateKey->getKeyPath();
-        $this->originalOAuth2PublicKeyPath = $this->oAuth2PublicKey->getKeyPath();
+        $this->initialOAuth2PrivateKeyPath = $this->oAuth2PrivateKey->getKeyPath();
+        $this->initialOAuth2PublicKeyPath = $this->oAuth2PublicKey->getKeyPath();
     }
 
     protected function tearDown(): void
     {
-        $this->setOAuth2KeyPath($this->oAuth2PrivateKey, $this->originalOAuth2PrivateKeyPath);
-        $this->setOAuth2KeyPath($this->oAuth2PublicKey, $this->originalOAuth2PublicKeyPath);
+        $this->setOAuth2KeyPath($this->oAuth2PrivateKey, $this->initialOAuth2PrivateKeyPath);
+        $this->setOAuth2KeyPath($this->oAuth2PublicKey, $this->initialOAuth2PublicKeyPath);
     }
 
     private function setOAuth2KeyPath(CryptKeyFile $key, string $path): void
