@@ -4,9 +4,9 @@ namespace Oro\Bundle\OAuth2ServerBundle\DependencyInjection;
 
 use League\OAuth2\Server\CryptKey;
 use League\OAuth2\Server\Grant\ClientCredentialsGrant;
-use League\OAuth2\Server\Grant\PasswordGrant;
 use League\OAuth2\Server\Grant\RefreshTokenGrant;
 use Oro\Bundle\OAuth2ServerBundle\League\Grant\AuthCodeGrant;
+use Oro\Bundle\OAuth2ServerBundle\League\Grant\PasswordGrant;
 use Oro\Bundle\OAuth2ServerBundle\League\Repository\FrontendAuthCodeRepository;
 use Oro\Bundle\OAuth2ServerBundle\League\Repository\FrontendRefreshTokenRepository;
 use Oro\Bundle\OAuth2ServerBundle\League\Repository\FrontendUserRepository;
@@ -43,6 +43,7 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
     private const FRONTEND_USER_LOADER_SERVICE = 'oro_customer.security.user_loader';
     private const CUSTOMER_VISITOR_MANAGER_SERVICE = 'oro_customer.customer_visitor_manager';
     private const CUSTOMER_LOGIN_SOURCES = 'oro_customer_user.login_sources';
+    private const FEATURE_CHECK_SERVICE = 'oro_featuretoggle.checker.feature_checker';
 
     #[\Override]
     public function load(array $configs, ContainerBuilder $container): void
@@ -255,7 +256,8 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
     {
         return new Definition(PasswordGrant::class, [
             new Reference(self::USER_REPOSITORY_SERVICE),
-            new Reference(self::REFRESH_TOKEN_REPOSITORY_SERVICE)
+            new Reference(self::REFRESH_TOKEN_REPOSITORY_SERVICE),
+            new Reference(self::FEATURE_CHECK_SERVICE)
         ]);
     }
 
