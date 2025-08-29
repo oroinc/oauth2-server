@@ -6,6 +6,7 @@ services:
         arguments:
             - '%oro_oauth2_server.supported_grant_types%'
             - '@oro_oauth2_server.api_feature_checker'
+            - '@oro_featuretoggle.checker.feature_checker'
         calls:
             - [setContainer, ['@Psr\Container\ContainerInterface']]
         tags:
