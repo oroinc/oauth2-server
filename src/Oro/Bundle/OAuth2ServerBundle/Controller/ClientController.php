@@ -5,6 +5,7 @@ namespace Oro\Bundle\OAuth2ServerBundle\Controller;
 use Doctrine\Persistence\ManagerRegistry;
 use Oro\Bundle\CustomerBundle\OroCustomerBundle;
 use Oro\Bundle\EntityBundle\Tools\EntityRoutingHelper;
+use Oro\Bundle\FeatureToggleBundle\Checker\FeatureChecker;
 use Oro\Bundle\FormBundle\Model\UpdateHandlerFacade;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
@@ -26,6 +27,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * This controller covers widget-related functionality for OAuth 2.0 Client entity.
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
 class ClientController extends AbstractController
 {
@@ -46,8 +48,10 @@ class ClientController extends AbstractController
      * @param string[]          $supportedGrantTypes
      * @param ApiFeatureChecker $featureChecker
      */
-    public function __construct(array $supportedGrantTypes, ApiFeatureChecker $featureChecker)
-    {
+    public function __construct(
+        array $supportedGrantTypes,
+        ApiFeatureChecker $featureChecker
+    ) {
         $this->supportedGrantTypes = $supportedGrantTypes;
         $this->featureChecker = $featureChecker;
     }
@@ -64,7 +68,8 @@ class ClientController extends AbstractController
             FormFactoryInterface::class,
             TranslatorInterface::class,
             EncryptionKeysExistenceChecker::class,
-            'doctrine' => ManagerRegistry::class
+            'doctrine' => ManagerRegistry::class,
+            'oro_featuretoggle.checker.feature_checker' => FeatureChecker::class,
         ]);
     }
 
@@ -146,11 +151,20 @@ class ClientController extends AbstractController
         $entity = new Client();
         $entity->setFrontend(self::SUPPORTED_CLIENT_TYPES[$type]['isFrontend']);
 
+        $types = $this->supportedGrantTypes;
+        if ($type === 'backoffice' && !$this->getFeatureChecker()->isFeatureEnabled('user_login_password')) {
+            $passwordTypeId = $this->getPasswordGrantTypeId($types);
+
+            if (null !== $passwordTypeId) {
+                unset($types[$passwordTypeId]);
+            }
+        }
+
         $response = $this->update(
             $request,
             $entity,
             true,
-            $this->supportedGrantTypes,
+            $types,
             $this->getTranslator()->trans('oro.oauth2server.client.created_message')
         );
 
@@ -198,11 +212,21 @@ class ClientController extends AbstractController
         $this->checkClientApplicableForType($entity, $type);
         $this->checkModificationAccess($entity);
 
+        $types = $this->supportedGrantTypes;
+        if ($type === 'backoffice' && !$this->getFeatureChecker()->isFeatureEnabled('user_login_password')) {
+            $passwordTypeId = $this->getPasswordGrantTypeId($types);
+
+
+            if (null !== $passwordTypeId) {
+                unset($types[$passwordTypeId]);
+            }
+        }
+
         return $this->update(
             $request,
             $entity,
             true,
-            $this->supportedGrantTypes,
+            $types,
             $this->getTranslator()->trans('oro.oauth2server.client.updated_message')
         );
     }
@@ -456,6 +480,12 @@ class ClientController extends AbstractController
         if ($client->isFrontend() !== $isFrontend) {
             throw $this->createNotFoundException();
         }
+
+        if (!$client->isFrontend()
+            && !$this->getFeatureChecker()->isFeatureEnabled('user_login_password')
+        ) {
+            throw $this->createNotFoundException();
+        }
     }
 
     private function isEncryptionKeysExist(): bool
@@ -465,5 +495,23 @@ class ClientController extends AbstractController
         return
             $encryptionKeysExistenceChecker->isPrivateKeyExist()
             && $encryptionKeysExistenceChecker->isPublicKeyExist();
+    }
+
+    private function getFeatureChecker(): FeatureChecker
+    {
+        return $this->container->get('oro_featuretoggle.checker.feature_checker');
+    }
+
+    private function getPasswordGrantTypeId(array $types): ?int
+    {
+        $passwordTypeId = null;
+        foreach ($types as $id => $grantType) {
+            if ($grantType === 'password') {
+                $passwordTypeId = $id;
+                break;
+            }
+        }
+
+        return $passwordTypeId;
     }
 }

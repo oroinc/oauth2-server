@@ -434,3 +434,10 @@ services:
             - '@oro_user.logger.user_login_attempt'
             - '@?oro_customer.security.user_loader'
             - '@?oro_customer.logger.customer_user_login_attempt'
+
+    oro_oauth2_server.event_listener.password_applications_grid_listener:
+        class: Oro\Bundle\OAuth2ServerBundle\EventListener\PasswordApplicationsGridListener
+        arguments:
+            - '@oro_featuretoggle.checker.feature_checker'
+        tags:
+            - { name: kernel.event_listener, event: oro_datagrid.datagrid.build.before.oauth-client-backend-grid, method: onBuildBefore }
