@@ -3,7 +3,7 @@
 namespace Oro\Bundle\OAuth2ServerBundle\EventListener;
 
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
+use Symfony\Bridge\Twig\Attribute\Template;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
 
@@ -43,8 +43,8 @@ class OauthLoginTemplateListener
         }
 
         $templateReference = $this->getTemplateReference($request);
-        $template = $templateReference->getTemplate();
-        $templateReference->setTemplate(substr_replace($template, '@OroOAuth2Server', 0, strpos($template, '/')));
+        $template = $templateReference->template;
+        $templateReference->template = substr_replace($template, '@OroOAuth2Server', 0, strpos($template, '/'));
         $request->attributes->set('_oauth_login', true);
 
         $client = $this->clientManager->getClient($parameters['client_id']);
@@ -60,8 +60,7 @@ class OauthLoginTemplateListener
         }
 
         if (is_string($template)) {
-            $parsedTemplate = new Template();
-            $parsedTemplate->setTemplate($template);
+            $parsedTemplate = new Template($template);
             $request->attributes->set('_template', $parsedTemplate);
 
             return $parsedTemplate;

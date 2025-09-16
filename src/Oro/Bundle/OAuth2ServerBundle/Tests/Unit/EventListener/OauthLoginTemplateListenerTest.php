@@ -147,7 +147,7 @@ class OauthLoginTemplateListenerTest extends TestCase
         self::assertTrue($request->attributes->get('_oauth_login'));
         self::assertEquals(
             '@OroOAuth2Server/Some/template.html.twig',
-            $request->attributes->get('_template')->getTemplate()
+            $request->attributes->get('_template')->template
         );
     }
 }
