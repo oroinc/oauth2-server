@@ -65,12 +65,22 @@
             {{ ('oro.oauth2server.grant_types.' ~ grant)|trans }}
         {%- endfor -%}
     {% endset %}
+    {% if entity.allApis %}
+        {% set apis = 'oro.oauth2server.client.apis.all'|trans %}
+    {% else %}
+        {% set apis %}
+            {%- for api in entity.apis -%}
+                {%- if not loop.first %}, {% endif %}{{ oro_oauth2_api_view_label(entity.frontend, api) }}
+            {%- endfor -%}
+        {% endset %}
+    {% endif %}
     {% set data %}
         <div class="widget-content">
             <div class="row-fluid form-horizontal">
                 <div class="responsive-block">
                     {{ UI.renderProperty('oro.oauth2server.client.identifier.label'|trans, entity.identifier) }}
                     {{ UI.renderProperty('oro.oauth2server.client.name.label'|trans, entity.name) }}
+                    {{ UI.renderProperty('oro.oauth2server.client.apis.label'|trans, apis) }}
                     {{ UI.renderProperty('oro.oauth2server.client.grants.label'|trans, grants) }}
                     {% if 'authorization_code' in entity.grants %}
                         {{ UI.renderHtmlProperty('oro.oauth2server.client.redirect_uris.label'|trans, entity.redirectUris|join('\n')|nl2br) }}

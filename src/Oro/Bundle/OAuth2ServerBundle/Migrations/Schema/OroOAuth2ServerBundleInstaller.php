@@ -13,7 +13,7 @@ class OroOAuth2ServerBundleInstaller implements Installation
      */
     public function getMigrationVersion(): string
     {
-        return 'v1_6';
+        return 'v1_7';
     }
 
     /**
@@ -46,6 +46,8 @@ class OroOAuth2ServerBundleInstaller implements Installation
         $table->addColumn('secret', 'string', ['length' => 128, 'notnull' => false]);
         $table->addColumn('salt', 'string', ['length' => 50]);
         $table->addColumn('grants', 'simple_array', ['comment' => '(DC2Type:simple_array)']);
+        $table->addColumn('all_apis', 'boolean', ['default' => '1']);
+        $table->addColumn('apis', 'simple_array', ['notnull' => false, 'comment' => '(DC2Type:simple_array)']);
         $table->addColumn('scopes', 'simple_array', ['notnull' => false, 'comment' => '(DC2Type:simple_array)']);
         $table->addColumn('redirect_uris', 'simple_array', ['notnull' => false, 'comment' => '(DC2Type:simple_array)']);
         $table->addColumn('active', 'boolean', ['default' => '1']);

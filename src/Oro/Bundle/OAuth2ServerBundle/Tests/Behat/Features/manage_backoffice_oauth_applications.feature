@@ -31,6 +31,7 @@ Feature: Manage Backoffice OAuth Applications
     When I click "View"
     Then I should see OAuth Application with:
       | Application Name | Client App         |
+      | Supported APIs   | All                |
       | Grant Type       | Client Credentials |
       | User             | John Doe           |
     And I should not see "Redirect URLs"
@@ -45,8 +46,54 @@ Feature: Manage Backoffice OAuth Applications
     Then I should see "OAuth Application deleted" flash message
     And I should see "Test OAuth Application" in grid with following data:
       | Application Name | Test OAuth Application |
+      | Supported APIs   | All                    |
+      | Grant Type       | Client Credentials     |
+      | Active           | Yes                    |
+
+  Scenario: Create Client Credentials grant OAuth application for specific APIs
+    When I click "Create OAuth Application"
+    And I fill form with:
+      | Application Name | Client App (API)   |
       | Grant Type       | Client Credentials |
-      | Active           | Yes               |
+      | User             | John Doe           |
+    And I uncheck "Support all APIs"
+    And I check "JSON:API"
+    And I click "Save and Close"
+    Then I should see "OAuth application has been created." flash message
+    And I should see "Please copy Client Secret and save it somewhere safe. For security reasons, we cannot show it to you again."
+    And I should see "Client ID"
+    And I should see "Client Secret"
+
+  Scenario: View OAuth application for specific APIs
+    When I click "View"
+    Then I should see OAuth Application with:
+      | Application Name | Client App (API)   |
+      | Supported APIs   | JSON:API           |
+      | Grant Type       | Client Credentials |
+      | User             | John Doe           |
+    And I should not see "Redirect URLs"
+    And I should not see "Confidential Client"
+    And I should not see "Skip User Consent"
+
+  Scenario: View grid for OAuth application for specific APIs
+    When I go to System/User Management/OAuth Applications
+    Then I should see "Client App (API)" in grid with following data:
+      | Application Name | Client App (API)   |
+      | Supported APIs   | JSON:API           |
+      | Grant Type       | Client Credentials |
+      | Active           | Yes                |
+
+  Scenario: Delete OAuth application from grid
+    When I click delete "Client App (API)" in grid
+    Then I should see "Delete Confirmation"
+    And I should see "Are you sure you want to delete the application?"
+    When I click "Yes"
+    Then I should see "Deleted successfully" flash message
+    And I should see "Test OAuth Application" in grid with following data:
+      | Application Name | Test OAuth Application |
+      | Supported APIs   | All                    |
+      | Grant Type       | Client Credentials     |
+      | Active           | Yes                    |
 
   Scenario: New OAuth application name validation
     When I go to System/User Management/OAuth Applications

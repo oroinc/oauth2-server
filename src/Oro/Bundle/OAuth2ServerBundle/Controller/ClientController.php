@@ -7,6 +7,7 @@ use Oro\Bundle\CustomerBundle\OroCustomerBundle;
 use Oro\Bundle\EntityBundle\Tools\EntityRoutingHelper;
 use Oro\Bundle\FeatureToggleBundle\Checker\FeatureChecker;
 use Oro\Bundle\FormBundle\Model\UpdateHandlerFacade;
+use Oro\Bundle\OAuth2ServerBundle\Client\AccessTokenClient;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
 use Oro\Bundle\OAuth2ServerBundle\Form\Type\ClientType;
@@ -14,6 +15,7 @@ use Oro\Bundle\OAuth2ServerBundle\Form\Type\SystemClientType;
 use Oro\Bundle\OAuth2ServerBundle\Security\ApiFeatureChecker;
 use Oro\Bundle\OAuth2ServerBundle\Security\EncryptionKeysExistenceChecker;
 use Oro\Bundle\SecurityBundle\Attribute\CsrfProtection;
+use Oro\Bundle\UserBundle\Entity\User;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormFactoryInterface;
@@ -70,6 +72,7 @@ class ClientController extends AbstractController
             EncryptionKeysExistenceChecker::class,
             'doctrine' => ManagerRegistry::class,
             'oro_featuretoggle.checker.feature_checker' => FeatureChecker::class,
+            AccessTokenClient::class
         ]);
     }
 
@@ -150,6 +153,7 @@ class ClientController extends AbstractController
 
         $entity = new Client();
         $entity->setFrontend(self::SUPPORTED_CLIENT_TYPES[$type]['isFrontend']);
+        $entity->setAllApis(true);
 
         $types = $this->supportedGrantTypes;
         if ($type === 'backoffice' && !$this->getFeatureChecker()->isFeatureEnabled('user_login_password')) {
@@ -165,17 +169,36 @@ class ClientController extends AbstractController
             $entity,
             true,
             $types,
-            $this->getTranslator()->trans('oro.oauth2server.client.created_message')
+            $type,
+            $this->getTranslator()->trans('oro.oauth2server.client.created_message'),
         );
 
         // change the Redirect response to custom template render to be able to show client secret information.
         if ($response instanceof RedirectResponse) {
+            $parameters = ['entity' => $entity, 'type' => $type];
+
+            // generate initial access token for client_credentials grant application
+            if (\in_array('client_credentials', $entity->getGrants())) {
+                try {
+                    $accessTokenData = $this->container->get(AccessTokenClient::class)->getAccessToken([
+                        'client_id' => $entity->getIdentifier(),
+                        'client_secret' => $entity->getPlainSecret(),
+                        'grant_type' => 'client_credentials'
+                    ]);
+                    $parameters = array_merge(
+                        $parameters,
+                        [
+                            'accessToken' => $accessTokenData['access_token'],
+                            'expiresIn' => round($accessTokenData['expires_in'] / 60)
+                        ]
+                    );
+                } catch (\Exception $e) {
+                }
+            }
+
             $response = $this->render(
                 '@OroOAuth2Server/Client/createResult.html.twig',
-                [
-                    'entity' => $entity,
-                    'type'   => $type
-                ]
+                $parameters
             );
         }
 
@@ -227,6 +250,7 @@ class ClientController extends AbstractController
             $entity,
             true,
             $types,
+            $type,
             $this->getTranslator()->trans('oro.oauth2server.client.updated_message')
         );
     }
@@ -255,12 +279,15 @@ class ClientController extends AbstractController
             }
             $entity->setOwnerEntity($ownerEntityClass, $ownerEntityId);
         }
+        $type = User::class === $ownerEntityClass ? 'backoffice' : 'frontend';
+        $entity->setAllApis(true);
 
         return $this->update(
             $request,
             $entity,
             false,
             self::CLIENT_CREDENTIALS_GRANT_TYPES,
+            $type,
             null,
             $ownerEntityClass,
             $ownerEntityId
@@ -290,7 +317,8 @@ class ClientController extends AbstractController
             $request,
             $entity,
             false,
-            self::CLIENT_CREDENTIALS_GRANT_TYPES
+            self::CLIENT_CREDENTIALS_GRANT_TYPES,
+            $entity->isFrontend() ? 'frontend' : 'backoffice'
         );
     }
 
@@ -361,15 +389,16 @@ class ClientController extends AbstractController
     private function update(
         Request $request,
         Client $entity,
-        $isSystemOAuthApplication,
-        $grantTypes,
-        $message = null,
-        $ownerEntityClass = null,
-        $ownerEntityId = null
-    ) {
+        bool $isSystemOAuthApplication,
+        array $grantTypes,
+        string $type,
+        ?string $message = null,
+        ?string $ownerEntityClass = null,
+        ?int $ownerEntityId = null
+    ): array|RedirectResponse {
         return $this->container->get(UpdateHandlerFacade::class)->update(
             $entity,
-            $this->getForm($entity, $isSystemOAuthApplication, $grantTypes),
+            $this->getForm($entity, $isSystemOAuthApplication, $grantTypes, $type),
             $message,
             $request,
             null,
@@ -377,15 +406,12 @@ class ClientController extends AbstractController
         );
     }
 
-    /**
-     * @param Client   $entity
-     * @param bool     $isSystemOAuthApplication
-     * @param string[] $grantTypes
-     *
-     * @return FormInterface
-     */
-    private function getForm(Client $entity, $isSystemOAuthApplication, $grantTypes): FormInterface
-    {
+    private function getForm(
+        Client $entity,
+        bool $isSystemOAuthApplication,
+        array $grantTypes,
+        string $type
+    ): FormInterface {
         return $this->container->get(FormFactoryInterface::class)
             ->createNamed(
                 'oro_oauth2_client',
@@ -393,7 +419,8 @@ class ClientController extends AbstractController
                 $entity,
                 [
                     'grant_types' => $grantTypes,
-                    'show_grants' => $isSystemOAuthApplication
+                    'show_grants' => $isSystemOAuthApplication,
+                    'type' => $type
                 ]
             );
     }

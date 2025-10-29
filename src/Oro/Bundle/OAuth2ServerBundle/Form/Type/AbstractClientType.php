@@ -3,11 +3,13 @@
 namespace Oro\Bundle\OAuth2ServerBundle\Form\Type;
 
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
+use Oro\Bundle\OAuth2ServerBundle\Provider\ApiDocViewProvider;
 use Oro\Bundle\OAuth2ServerBundle\Provider\ClientOwnerOrganizationsProvider;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\UrlType;
@@ -28,10 +30,16 @@ abstract class AbstractClientType extends AbstractType
 {
     /** @var ClientOwnerOrganizationsProvider */
     private $organizationsProvider;
+    private ApiDocViewProvider $apiDocViewProvider;
 
     public function __construct(ClientOwnerOrganizationsProvider $organizationsProvider)
     {
         $this->organizationsProvider = $organizationsProvider;
+    }
+
+    public function setApiDocViewProvider(ApiDocViewProvider $apiDocViewProvider)
+    {
+        $this->apiDocViewProvider = $apiDocViewProvider;
     }
 
     /**
@@ -48,12 +56,24 @@ abstract class AbstractClientType extends AbstractType
                 $this->addConfidentialField($event);
                 $this->addSkipAuthorizeClientAllowedField($event);
             })
+            ->add('allApis', CheckboxType::class, [
+                'label' => 'oro.oauth2server.client.all_apis.label',
+                'tooltip' => 'oro.oauth2server.client.all_apis.description',
+                'required' => false
+            ])
+            ->add('apis', ChoiceType::class, [
+                'choices' => $this->getApiViews($options['type']),
+                'label' => 'oro.oauth2server.client.apis.label',
+                'required' => false,
+                'multiple' => true,
+                'expanded' => true
+            ])
             ->add('name', TextType::class, [
-                'label'   => 'oro.oauth2server.client.name.label',
+                'label' => 'oro.oauth2server.client.name.label',
                 'tooltip' => 'oro.oauth2server.client.name.description'
             ])
             ->add('active', CheckboxType::class, [
-                'label'   => 'oro.oauth2server.client.active.label',
+                'label' => 'oro.oauth2server.client.active.label',
                 'tooltip' => 'oro.oauth2server.client.active.description'
             ]);
 
@@ -91,7 +111,9 @@ abstract class AbstractClientType extends AbstractType
             })
             ->setAllowedTypes('show_grants', 'bool')
             ->setDefault('multiple_grants', false)
-            ->setAllowedTypes('multiple_grants', 'bool');
+            ->setAllowedTypes('multiple_grants', 'bool')
+            ->setDefault('type', 'backoffice')
+            ->setAllowedTypes('type', 'string');
     }
 
     /**
@@ -112,6 +134,19 @@ abstract class AbstractClientType extends AbstractType
             ),
             $grantTypes
         );
+    }
+
+    private function getApiViews(string $type): array
+    {
+        $result = [];
+        $views = $this->apiDocViewProvider->getViews('frontend' === $type);
+        foreach ($views as $name => $label) {
+            if ($label) {
+                $result[$label] = $name;
+            }
+        }
+
+        return $result;
     }
 
     /**
@@ -136,9 +171,9 @@ abstract class AbstractClientType extends AbstractType
             );
             if ($this->organizationsProvider->isOrganizationSelectorRequired($organizations)) {
                 $event->getForm()->add('organization', EntityType::class, [
-                    'label'                => 'oro.organization.entity_label',
-                    'class'                => Organization::class,
-                    'choices'              => $this->organizationsProvider->sortOrganizations($organizations),
+                    'label' => 'oro.organization.entity_label',
+                    'class' => Organization::class,
+                    'choices' => $this->organizationsProvider->sortOrganizations($organizations),
                     'translatable_options' => false
                 ]);
             }
@@ -157,8 +192,8 @@ abstract class AbstractClientType extends AbstractType
         }
 
         $event->getForm()->add('identifier', TextType::class, [
-            'label'    => 'oro.oauth2server.client.identifier.label',
-            'tooltip'  => 'oro.oauth2server.client.identifier.description',
+            'label' => 'oro.oauth2server.client.identifier.label',
+            'tooltip' => 'oro.oauth2server.client.identifier.description',
             'required' => false,
             'disabled' => true
         ]);
@@ -215,14 +250,14 @@ abstract class AbstractClientType extends AbstractType
             }
             $form
                 ->add('grants', GrantsType::class, [
-                    'label'      => 'oro.oauth2server.client.grants.label',
-                    'tooltip'    => 'oro.oauth2server.client.grants.description',
-                    'required'   => true,
-                    'expanded'   => true,
-                    'multiple'   => $multipleGrantTypes,
-                    'choices'    => $this->getGrantTypes($grantTypes),
+                    'label' => 'oro.oauth2server.client.grants.label',
+                    'tooltip' => 'oro.oauth2server.client.grants.description',
+                    'required' => true,
+                    'expanded' => true,
+                    'multiple' => $multipleGrantTypes,
+                    'choices' => $this->getGrantTypes($grantTypes),
                     'empty_data' => $defaultGrantType,
-                    'disabled'   => $disabled
+                    'disabled' => $disabled
 
                 ]);
         } elseif (\in_array('client_credentials', $grantTypes, true)) {
@@ -252,18 +287,18 @@ abstract class AbstractClientType extends AbstractType
             'redirectUris',
             CollectionType::class,
             [
-                'label'          => 'oro.oauth2server.client.redirect_uris.label',
-                'tooltip'        => 'oro.oauth2server.client.redirect_uris.description',
-                'add_label'      => 'oro.oauth2server.client.redirect_uris.add',
-                'entry_type'     => UrlType::class,
-                'entry_options'  => [
+                'label' => 'oro.oauth2server.client.redirect_uris.label',
+                'tooltip' => 'oro.oauth2server.client.redirect_uris.description',
+                'add_label' => 'oro.oauth2server.client.redirect_uris.add',
+                'entry_type' => UrlType::class,
+                'entry_options' => [
                     'default_protocol' => null,
-                    'constraints'      => [new Url(), new NotBlank()]
+                    'constraints' => [new Url(), new NotBlank()]
                 ],
                 'error_bubbling' => false,
-                'allow_add'      => true,
-                'allow_delete'   => true,
-                'prototype'      => true
+                'allow_add' => true,
+                'allow_delete' => true,
+                'prototype' => true
             ]
         );
     }
@@ -288,7 +323,7 @@ abstract class AbstractClientType extends AbstractType
             'confidential',
             CheckboxType::class,
             [
-                'label'   => 'oro.oauth2server.client.confidential.label',
+                'label' => 'oro.oauth2server.client.confidential.label',
                 'tooltip' => 'oro.oauth2server.client.confidential.description'
             ]
         );
@@ -314,7 +349,7 @@ abstract class AbstractClientType extends AbstractType
             'skipAuthorizeClientAllowed',
             CheckboxType::class,
             [
-                'label'   => 'oro.oauth2server.client.skip_authorize_client_allowed.label',
+                'label' => 'oro.oauth2server.client.skip_authorize_client_allowed.label',
                 'tooltip' => 'oro.oauth2server.client.skip_authorize_client_allowed.description'
             ]
         );

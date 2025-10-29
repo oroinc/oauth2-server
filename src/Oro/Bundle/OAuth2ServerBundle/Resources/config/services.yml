@@ -143,6 +143,8 @@ services:
         public: false
         arguments:
             - '@oro_oauth2_server.client_owner_organizations_provider'
+        calls:
+            - [setApiDocViewProvider, ['@oro_oauth2_server.provider.api_doc_view_provider']]
         tags: [form.type]
 
     oro_oauth2_server.form.type.system_client:
@@ -151,6 +153,8 @@ services:
         arguments:
             - '@oro_oauth2_server.client_owner_organizations_provider'
             - '@doctrine'
+        calls:
+            - [setApiDocViewProvider, ['@oro_oauth2_server.provider.api_doc_view_provider']]
         tags: [form.type]
 
     Oro\Bundle\OAuth2ServerBundle\Validator\Constraints\UniqueClientNameValidator:
@@ -224,7 +228,7 @@ services:
         public: false
 
     oro_oauth2_server.league.authorization_server:
-        class: League\OAuth2\Server\AuthorizationServer
+        class: Oro\Bundle\OAuth2ServerBundle\Server\AuthorizationServer
         public: true
         arguments:
             - '@oro_oauth2_server.league.repository.client_repository'
@@ -441,3 +445,34 @@ services:
             - '@oro_featuretoggle.checker.feature_checker'
         tags:
             - { name: kernel.event_listener, event: oro_datagrid.datagrid.build.before.oauth-client-backend-grid, method: onBuildBefore }
+
+    oro_oauth2_server.event_listener.guest_access_request_listener:
+        class: Oro\Bundle\OAuth2ServerBundle\EventListener\OldApiAccessRequestListener
+        arguments:
+            - "@=container.hasParameter('web_backend_prefix') ? '^' ~ parameter('web_backend_prefix') ~ '/api/rest.*' : '^/api/rest.*'"
+            - '@oro_oauth2_server.api.oauth2_token_access_checker'
+        tags:
+            - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest, priority: 5 }
+
+    oro_oauth2_server.provider.api_doc_view_provider:
+        class: Oro\Bundle\OAuth2ServerBundle\Provider\ApiDocViewProvider
+        arguments:
+            - !abstract '$views defined in Oro\Bundle\OAuth2ServerBundle\DependencyInjection\Compiler\ApiDocViewProviderCompilerPass'
+
+    oro_oauth2_server.twig.oauth2server_extension:
+        class: Oro\Bundle\OAuth2ServerBundle\Twig\OroOauth2ServerExtension
+        public: false
+        arguments:
+            - '@oro_oauth2_server.provider.api_doc_view_provider'
+        tags:
+            - { name: twig.extension }
+
+    oro_oauth2_server.client.access_token:
+        class: Oro\Bundle\OAuth2ServerBundle\Client\AccessTokenClient
+        arguments:
+            - '@http_kernel'
+            - '@oro_oauth2_server.league.authorization_server'
+            - '@request_stack'
+
+    Oro\Bundle\OAuth2ServerBundle\Client\AccessTokenClient:
+        alias: oro_oauth2_server.client.access_token
