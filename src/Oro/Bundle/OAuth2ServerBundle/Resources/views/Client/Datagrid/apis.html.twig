@@ -1,0 +1,10 @@
+{%- if record.getValue('allApis') -%}
+    {{- 'oro.oauth2server.client.apis.all'|trans -}}
+{%- else -%}
+    {%- set apis -%}
+        {%- for api in record.getValue('apis') -%}
+            {%- if not loop.first %}, {% endif %}{{ oro_oauth2_api_view_label(record.getValue('frontend'), api) }}
+        {%- endfor -%}
+    {%- endset -%}
+    {{- apis -}}
+{%- endif -%}

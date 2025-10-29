@@ -20,6 +20,13 @@ oro:
             grants:
                 label: Grant Type
                 description: The grant type supported by the application. For details see <a href="https://oauth.net/2/grant-types/" target="_blank" class="no-hash">OAuth 2.0 Grant Types</a>.
+            all_apis:
+                label: Support all APIs
+                description: Whether the application should support all available APIs.
+            apis:
+                label: Supported APIs
+                description: The list of APIs the application supports.
+                all: All
             scopes:
                 label: Scopes
                 description: The scopes to which the application can have access.
@@ -40,14 +47,14 @@ oro:
                 description: The ID of the entity the application belongs to.
             organization:
                 label: Organization
-                description: The organization the client issued to.
+                description: The organization the application issued to.
             redirect_uris:
                 label: Redirect URLs
                 description: The list of URLs to which it is allowed to redirect the user back to.
                 add: Add URL
             frontend:
                 label: Storefront
-                description: Indicates that client should work with the storefront.
+                description: Indicates that the application should work with the storefront.
             last_used_at:
                 label: Last Used At
                 description: The date when the application token was last received.
@@ -78,6 +85,7 @@ oro:
             created_warning_message: Please copy <strong>Client Secret</strong> and save it somewhere safe. For security reasons, we cannot show it to you again.
             datagrid:
                 entity_hint: OAuth Applications
+            client_credentials_grant_access_token_message: 'Temporary access token (the token will expire in %expiresIn% minutes):'
         scopes:
             all: all
         grant_types:

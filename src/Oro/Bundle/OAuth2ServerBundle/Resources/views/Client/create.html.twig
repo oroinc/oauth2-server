@@ -50,6 +50,8 @@
                     form.organization is defined ? form_row(form.organization) : '',
                     form_row(form.name),
                     form_row(form.active),
+                    form_row(form.allApis, {'group_attr': {'id': 'all-api-types-field'}}),
+                    form_row(form.apis, {'group_attr': {'id': 'api-types-field', 'class': 'hide'}}),
                     grantsRow,
                     form.owner is defined ? form_row(form.owner, {'group_attr': {'id': 'client-owner', 'class': 'hide'}}) : '',
                     form.redirectUris is defined ? form_row_collection(form.redirectUris, {'group_attr': {'id': 'client-redirect-uris', 'class': 'hide'}}) : '',
@@ -76,5 +78,9 @@
     <div {{ UI.renderPageComponentAttributes({
         view: 'orooauth2server/js/views/client-grant-view',
         options: options
+    }) }}></div>
+    <div {{ UI.renderPageComponentAttributes({
+        view: 'orooauth2server/js/views/api-types-view',
+        options: {_sourceElement: '#all-api-types-field', apiTypesField: '#api-types-field'}
     }) }}></div>
 {% endblock content_data %}

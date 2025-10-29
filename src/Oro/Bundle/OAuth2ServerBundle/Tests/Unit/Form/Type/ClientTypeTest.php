@@ -11,6 +11,7 @@ use Oro\Bundle\FormBundle\Tests\Unit\Stub\TooltipFormExtensionStub;
 use Oro\Bundle\FormBundle\Validator\ConstraintFactory;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Form\Type\ClientType;
+use Oro\Bundle\OAuth2ServerBundle\Provider\ApiDocViewProvider;
 use Oro\Bundle\OAuth2ServerBundle\Provider\ClientOwnerOrganizationsProvider;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Oro\Bundle\TranslationBundle\Form\Extension\TranslatableChoiceTypeExtension;
@@ -44,11 +45,15 @@ class ClientTypeTest extends TypeTestCase
     /** @var ManagerRegistry|\PHPUnit\Framework\MockObject\MockObject */
     private $doctrine;
 
+    /** @var ApiDocViewProvider|\PHPUnit\Framework\MockObject\MockObject */
+    private $apiDocViewProvider;
+
     #[\Override]
     protected function setUp(): void
     {
         $this->organizationsProvider = $this->createMock(ClientOwnerOrganizationsProvider::class);
         $this->doctrine = $this->createMock(ManagerRegistry::class);
+        $this->apiDocViewProvider = $this->createMock(ApiDocViewProvider::class);
 
         parent::setUp();
     }
@@ -62,10 +67,13 @@ class ClientTypeTest extends TypeTestCase
             new ConstraintValidatorFactory()
         );
 
+        $clientType = new ClientType($this->organizationsProvider);
+        $clientType->setApiDocViewProvider($this->apiDocViewProvider);
+
         return [
             new PreloadedExtension(
                 [
-                    new ClientType($this->organizationsProvider),
+                    $clientType,
                     new EntityType($this->doctrine)
                 ],
                 [
