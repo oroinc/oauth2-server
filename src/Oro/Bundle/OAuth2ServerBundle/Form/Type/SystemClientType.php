@@ -6,6 +6,7 @@ use Doctrine\Common\Util\ClassUtils;
 use Doctrine\Persistence\ManagerRegistry;
 use Oro\Bundle\CustomerBundle\Form\Type\CustomerUserSelectType;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
+use Oro\Bundle\OAuth2ServerBundle\Provider\ApiDocViewProvider;
 use Oro\Bundle\OAuth2ServerBundle\Provider\ClientOwnerOrganizationsProvider;
 use Oro\Bundle\UserBundle\Form\Type\OrganizationUserAclSelectType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -19,13 +20,12 @@ class SystemClientType extends AbstractClientType
 {
     public const OWNER_FIELD = 'owner';
 
-    /** @var ManagerRegistry */
-    private $doctrine;
-
-    public function __construct(ClientOwnerOrganizationsProvider $organizationsProvider, ManagerRegistry $doctrine)
-    {
-        parent::__construct($organizationsProvider);
-        $this->doctrine = $doctrine;
+    public function __construct(
+        ClientOwnerOrganizationsProvider $organizationsProvider,
+        ApiDocViewProvider $apiDocViewProvider,
+        private readonly ManagerRegistry $doctrine,
+    ) {
+        parent::__construct($organizationsProvider, $apiDocViewProvider);
     }
 
     #[\Override]

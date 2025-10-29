@@ -91,12 +91,21 @@ datagrids:
                     - client.ownerEntityClass
                     - client.frontend
                     - client.lastUsedAt
+                    - client.allApis
+                    - client.apis
                 where:
                     and:
                         - client.frontend = :frontend
             bind_parameters:
                 - frontend
         columns:
+            apis:
+                label: oro.oauth2server.client.apis.label
+                inline_editing:
+                    enable: false
+                type: twig
+                frontend_type: html
+                template: '@OroOAuth2Server/Client/Datagrid/apis.html.twig'
             grants:
                 label: oro.oauth2server.client.grants.label
                 inline_editing:

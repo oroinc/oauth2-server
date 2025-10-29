@@ -99,7 +99,7 @@ class OAuth2Authenticator implements AuthenticatorInterface
         $user = $this->getUser($client, $serverRequest);
         $this->validateUser($user, $organization);
 
-        return $this->createPassport($user, $organization);
+        return $this->createPassport($user, $organization, $client);
     }
 
     #[\Override]
@@ -109,7 +109,10 @@ class OAuth2Authenticator implements AuthenticatorInterface
         $organization = $passport->getAttribute('organization');
 
         if ($user instanceof AbstractUser) {
-            return new OAuth2Token($user, $organization);
+            $token = new OAuth2Token($user, $organization);
+            $token->setAttribute('client', $passport->getAttribute('client'));
+
+            return $token;
         }
 
         return new AnonymousCustomerUserToken(
@@ -253,7 +256,7 @@ class OAuth2Authenticator implements AuthenticatorInterface
         }
     }
 
-    private function createPassport(object $user, Organization $organization): Passport
+    private function createPassport(object $user, Organization $organization, Client $client): Passport
     {
         $passport = new SelfValidatingPassport(
             new UserBadge($user->getUserIdentifier(), function () use ($user) {
@@ -262,6 +265,7 @@ class OAuth2Authenticator implements AuthenticatorInterface
         );
 
         $passport->setAttribute('organization', $organization);
+        $passport->setAttribute('client', $client);
 
         return $passport;
     }

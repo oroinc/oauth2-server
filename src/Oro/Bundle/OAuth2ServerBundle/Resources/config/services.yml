@@ -162,6 +162,7 @@ services:
         public: false
         arguments:
             - '@oro_oauth2_server.client_owner_organizations_provider'
+            - '@oro_oauth2_server.provider.api_doc_view_provider'
         tags: [form.type]
 
     oro_oauth2_server.form.type.system_client:
@@ -169,6 +170,7 @@ services:
         class: Oro\Bundle\OAuth2ServerBundle\Form\Type\SystemClientType
         arguments:
             - '@oro_oauth2_server.client_owner_organizations_provider'
+            - '@oro_oauth2_server.provider.api_doc_view_provider'
             - '@doctrine'
         tags: [form.type]
 
@@ -548,3 +550,24 @@ services:
             - '@oro_featuretoggle.checker.feature_checker'
         tags:
             - { name: kernel.event_listener, event: oro_datagrid.datagrid.build.before.oauth-client-backend-grid, method: onBuildBefore }
+
+    oro_oauth2_server.event_listener.guest_access_request_listener:
+        class: Oro\Bundle\OAuth2ServerBundle\EventListener\OldApiAccessRequestListener
+        arguments:
+            - "@=container.hasParameter('web_backend_prefix') ? '^' ~ parameter('web_backend_prefix') ~ '/api/rest.*' : '^/api/rest.*'"
+            - '@oro_oauth2_server.api.oauth2_token_access_checker'
+        tags:
+            - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest, priority: 5 }
+
+    oro_oauth2_server.provider.api_doc_view_provider:
+        class: Oro\Bundle\OAuth2ServerBundle\Provider\ApiDocViewProvider
+        arguments:
+            - !abstract '$views defined in Oro\Bundle\OAuth2ServerBundle\DependencyInjection\Compiler\ApiDocViewProviderCompilerPass'
+
+    oro_oauth2_server.twig.oauth2server_extension:
+        class: Oro\Bundle\OAuth2ServerBundle\Twig\OroOauth2ServerExtension
+        public: false
+        arguments:
+            - '@oro_oauth2_server.provider.api_doc_view_provider'
+        tags:
+            - { name: twig.extension }

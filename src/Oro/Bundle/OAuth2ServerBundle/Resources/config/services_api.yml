@@ -7,3 +7,30 @@ services:
         tags:
             - { name: oro.api.documentation_provider, requestType: frontend, priority: 200 }
 
+    oro_oauth2_server.api.oauth2_token_access_checker:
+        class: Oro\Bundle\OAuth2ServerBundle\Api\OAuth2TokenAccessChecker
+        arguments:
+            - '@oro_security.token_accessor'
+            - '@oro_oauth2_server.provider.api_doc_view_provider'
+
+    oro_oauth2_server.api.validate_access_by_oauth2_token:
+        class: Oro\Bundle\OAuth2ServerBundle\Api\Processor\ValidateAccessByOAuth2Token
+        arguments:
+            - '@oro_oauth2_server.api.oauth2_token_access_checker'
+        tags:
+            - { name: oro.api.processor, action: get, group: initialize, priority: 240 }
+            - { name: oro.api.processor, action: get_list, group: initialize, priority: 240 }
+            - { name: oro.api.processor, action: delete, group: initialize, priority: 240 }
+            - { name: oro.api.processor, action: delete_list, group: initialize, priority: 240 }
+            - { name: oro.api.processor, action: create, group: initialize, priority: 240 }
+            - { name: oro.api.processor, action: update, group: initialize, priority: 240 }
+            - { name: oro.api.processor, action: update_list, group: initialize, priority: 240 }
+            - { name: oro.api.processor, action: get_subresource, group: initialize, priority: 240 }
+            - { name: oro.api.processor, action: delete_subresource, group: initialize, priority: 240 }
+            - { name: oro.api.processor, action: add_subresource, group: initialize, priority: 240 }
+            - { name: oro.api.processor, action: update_subresource, group: initialize, priority: 240 }
+            - { name: oro.api.processor, action: get_relationship, group: initialize, priority: 240 }
+            - { name: oro.api.processor, action: delete_relationship, group: initialize, priority: 240 }
+            - { name: oro.api.processor, action: add_relationship, group: initialize, priority: 240 }
+            - { name: oro.api.processor, action: update_relationship, group: initialize, priority: 240 }
+            - { name: oro.api.processor, action: options, group: initialize, priority: 240 }

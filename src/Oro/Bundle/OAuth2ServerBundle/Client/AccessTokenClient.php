@@ -23,6 +23,22 @@ class AccessTokenClient
     }
 
     /**
+     * @return array Example:
+     *     [
+     *         'token_type' => 'Bearer',
+     *         'expires_in' => 3600,
+     *         'access_token' => 'token',
+     *         'refresh_token' => 'token'
+     *     ]
+     */
+    public function getAccessToken(array $requestBody): array
+    {
+        $response = $this->sendRequest($requestBody);
+
+        return json_decode((string)$response->getContent(), true, 2, JSON_THROW_ON_ERROR);
+    }
+
+    /**
      * @param string $clientIdentifier OAuth2 client identifier.
      * @param string $authCode Authorization code.
      * @param string $codeVerifier Authorization code verifier.

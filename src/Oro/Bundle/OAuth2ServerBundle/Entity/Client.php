@@ -79,6 +79,15 @@ class Client
     #[ORM\Column(name: 'scopes', type: Types::SIMPLE_ARRAY, nullable: true)]
     private $scopes;
 
+    #[ORM\Column(name: 'all_apis', type: Types::BOOLEAN, options: ['default' => true])]
+    private ?bool $allApis = true;
+
+    /**
+     * @var string[]
+     */
+    #[ORM\Column(name: 'apis', type: Types::SIMPLE_ARRAY, nullable: true)]
+    private ?array $apis;
+
     /**
      * @var string[]|null
      */
@@ -464,6 +473,30 @@ class Client
     public function setSkipAuthorizeClientAllowed(bool $skipAuthorizeClientAllowed): self
     {
         $this->skipAuthorizeClientAllowed = $skipAuthorizeClientAllowed;
+
+        return $this;
+    }
+
+    public function getApis(): array
+    {
+        return $this->apis;
+    }
+
+    public function setApis(array $apis): self
+    {
+        $this->apis = $apis;
+
+        return $this;
+    }
+
+    public function isAllApis(): bool
+    {
+        return $this->allApis;
+    }
+
+    public function setAllApis(bool $allApis): self
+    {
+        $this->allApis = $allApis;
 
         return $this;
     }

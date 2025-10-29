@@ -94,6 +94,27 @@
                             }
                         }) -}}
                     </div>
+                    {% if accessToken is defined %}
+                        <div>
+                            <p>&nbsp;</p>
+                            {% set access_token_id = 'access-token-'|uniqid %}
+                            <p><strong>{{ 'oro.oauth2server.client.client_credentials_grant_access_token_message'|trans({'%expiresIn%': expiresIn}) }}</strong> &nbsp; {{- UI.clientLink({
+                                    aCss: 'btn btn-icon',
+                                    iCss: 'fa-copy',
+                                    title: 'oro.ui.button.copy_to_clipboard.label'|trans,
+                                    labelInIcon: false,
+                                    pageComponent: {
+                                        view: {
+                                            view: 'oroui/js/app/views/element-value-copy-to-clipboard-view',
+                                            elementSelector: '#' ~ access_token_id
+                                        }
+                                    }
+                                }) -}}</p>
+
+                            <textarea style="width:100%" id="{{ access_token_id }}" disabled="disabled">{{ accessToken }}</textarea>
+
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>

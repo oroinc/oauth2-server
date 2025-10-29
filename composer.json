@@ -27,11 +27,22 @@
             "url": "https://packagist.oroinc.com"
         }
     },
+    "scripts": {
+        "oauth-server-generate-keys": [
+            "console oro:oauth-server:generate-keys"
+        ]
+    },
     "minimum-stability": "dev",
     "prefer-stable": true,
     "extra": {
         "branch-alias": {
             "dev-master": "6.1-dev"
-        }
+        },
+        "oro-post-install-cmd": [
+            "@oauth-server-generate-keys"
+        ],
+        "oro-post-update-cmd": [
+            "@oauth-server-generate-keys"
+        ]
     }
 }

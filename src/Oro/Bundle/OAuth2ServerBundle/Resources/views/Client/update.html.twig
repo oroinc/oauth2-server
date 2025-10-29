@@ -49,6 +49,8 @@
                     form_row(form.identifier),
                     form_row(form.name),
                     form_row(form.active),
+                    form_row(form.allApis, {'group_attr': {'id': 'all-api-types-field'}}),
+                    form_row(form.apis, {'group_attr': {'id': 'api-types-field', 'class': 'hide'}}),
                     grantsRow,
                     form.redirectUris is defined ? form_row_collection(form.redirectUris) : '',
                     form.confidential is defined ? form_row(form.confidential) : '',
@@ -64,4 +66,8 @@
         'dataBlocks': dataBlocks,
     } %}
     {{ parent() }}
+    <div {{ UI.renderPageComponentAttributes({
+        view: 'orooauth2server/js/views/api-types-view',
+        options: {_sourceElement: '#all-api-types-field', apiTypesField: '#api-types-field'}
+    }) }}></div>
 {% endblock content_data %}
