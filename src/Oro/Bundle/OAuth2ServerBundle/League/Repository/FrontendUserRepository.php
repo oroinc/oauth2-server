@@ -54,6 +54,9 @@ class FrontendUserRepository extends UserRepository
             if ('password' === $grantType) {
                 $userEntity = new UserEntity();
                 $visitor = $this->customerVisitorManager->findOrCreate();
+                if (!$visitor->getSessionId()) {
+                    $visitor->setSessionId($this->visitorManager->generateSessionId());
+                }
                 $userEntity->setIdentifier(
                     VisitorIdentifierUtil::encodeIdentifier(0, $visitor->getSessionId())
                 );
