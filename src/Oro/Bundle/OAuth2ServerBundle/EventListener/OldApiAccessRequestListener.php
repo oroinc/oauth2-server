@@ -12,10 +12,13 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
  */
 class OldApiAccessRequestListener
 {
+    private readonly string $apiPattern;
+
     public function __construct(
-        private readonly string $apiPattern,
+        string $apiPattern,
         private readonly OAuth2TokenAccessChecker $accessChecker
     ) {
+        $this->apiPattern = '{' . $apiPattern . '}';
     }
 
     public function onKernelRequest(RequestEvent $event): void
@@ -24,8 +27,7 @@ class OldApiAccessRequestListener
             return;
         }
 
-        $requestPathInfo = $event->getRequest()->getPathInfo();
-        if (preg_match('{' . $this->apiPattern . '}', $requestPathInfo) !== 1) {
+        if (preg_match($this->apiPattern, $event->getRequest()->getPathInfo()) !== 1) {
             return;
         }
 
