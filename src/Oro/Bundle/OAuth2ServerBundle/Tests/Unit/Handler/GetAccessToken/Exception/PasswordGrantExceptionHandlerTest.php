@@ -16,9 +16,9 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
-use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Http\Event\LoginFailureEvent;
+use Symfony\Component\Security\Http\SecurityRequestAttributes;
 
 class PasswordGrantExceptionHandlerTest extends TestCase
 {
@@ -83,7 +83,7 @@ class PasswordGrantExceptionHandlerTest extends TestCase
         );
 
         $symfonyRequest = new Request();
-        $symfonyRequest->attributes->set(Security::LAST_USERNAME, 'testUser');
+        $symfonyRequest->attributes->set(SecurityRequestAttributes::LAST_USERNAME, 'testUser');
         $symfonyRequest->attributes->set('user', $this->userProvider->loadUserByIdentifier('testUser'));
 
         $this->eventDispatcher->expects(self::once())
@@ -123,7 +123,7 @@ class PasswordGrantExceptionHandlerTest extends TestCase
         $expectedException->setToken($token);
 
         $symfonyRequest = new Request();
-        $symfonyRequest->attributes->set(Security::LAST_USERNAME, 'testUser');
+        $symfonyRequest->attributes->set(SecurityRequestAttributes::LAST_USERNAME, 'testUser');
         $symfonyRequest->attributes->set('user', $this->userProvider->loadUserByIdentifier('testUser'));
 
         $this->eventDispatcher->expects(self::once())
@@ -166,7 +166,7 @@ class PasswordGrantExceptionHandlerTest extends TestCase
         $expectedException->setToken($token);
 
         $symfonyRequest = new Request();
-        $symfonyRequest->attributes->set(Security::LAST_USERNAME, 'testUser');
+        $symfonyRequest->attributes->set(SecurityRequestAttributes::LAST_USERNAME, 'testUser');
         $symfonyRequest->attributes->set('user', $this->userProvider->loadUserByIdentifier('testUser'));
 
         $this->eventDispatcher->expects(self::once())
@@ -212,7 +212,7 @@ class PasswordGrantExceptionHandlerTest extends TestCase
         $expectedException->setToken($token);
 
         $symfonyRequest = new Request();
-        $symfonyRequest->attributes->set(Security::LAST_USERNAME, 'testUser');
+        $symfonyRequest->attributes->set(SecurityRequestAttributes::LAST_USERNAME, 'testUser');
         $symfonyRequest->attributes->set('user', $this->userProvider->loadUserByIdentifier('testUser'));
 
         $this->eventDispatcher->expects(self::once())
@@ -265,7 +265,7 @@ class PasswordGrantExceptionHandlerTest extends TestCase
         $expectedException->setToken($token);
 
         $symfonyRequest = new Request();
-        $symfonyRequest->attributes->set(Security::LAST_USERNAME, 'testUser');
+        $symfonyRequest->attributes->set(SecurityRequestAttributes::LAST_USERNAME, 'testUser');
         $symfonyRequest->attributes->set('user', $this->userProvider->loadUserByIdentifier('testUser'));
 
         $this->eventDispatcher->expects(self::once())
@@ -360,7 +360,7 @@ class PasswordGrantExceptionHandlerTest extends TestCase
         $expectedException->setToken($token);
 
         $symfonyRequest = new Request();
-        $symfonyRequest->attributes->set(Security::LAST_USERNAME, 'user');
+        $symfonyRequest->attributes->set(SecurityRequestAttributes::LAST_USERNAME, 'user');
         $symfonyRequest->attributes->set('user', $this->userProvider->loadUserByIdentifier('user'));
 
         $this->eventDispatcher->expects(self::once())

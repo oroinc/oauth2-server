@@ -14,10 +14,10 @@ use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
-use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Http\Event\LoginFailureEvent;
+use Symfony\Component\Security\Http\SecurityRequestAttributes;
 
 /**
  * The handler that dispatches the "security.authentication.failure" event in case of an exception occurred
@@ -71,7 +71,7 @@ class PasswordGrantExceptionHandler implements ExceptionHandlerInterface
         $this->emulateRequestInFrontendHelper($request);
 
         $httpRequest = new Request();
-        $httpRequest->attributes->set(Security::LAST_USERNAME, $username);
+        $httpRequest->attributes->set(SecurityRequestAttributes::LAST_USERNAME, $username);
         $httpRequest->attributes->set('user', $this->getUser($username));
 
         try {

@@ -11,7 +11,7 @@ use Symfony\Component\Form\Exception\TransformationFailedException;
 class GrantTypeTransformer implements DataTransformerInterface
 {
     #[\Override]
-    public function transform($value)
+    public function transform($value): mixed
     {
         if (null === $value || [] === $value) {
             return '';
@@ -36,7 +36,7 @@ class GrantTypeTransformer implements DataTransformerInterface
     }
 
     #[\Override]
-    public function reverseTransform($value)
+    public function reverseTransform($value): mixed
     {
         if (null === $value || '' === $value) {
             return [];
