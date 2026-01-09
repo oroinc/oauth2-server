@@ -15,9 +15,11 @@ class EmailTemplateContextCollectWebsiteAwareEventListener
     public function onContextCollect(EmailTemplateContextCollectEvent $event): void
     {
         $templateParams = $event->getTemplateParams();
-        if (!isset($templateParams['entity']) ||
+        if (
+            !isset($templateParams['entity']) ||
             !$templateParams['entity'] instanceof Client ||
-            $event->getTemplateContextParameter('website') !== null) {
+            $event->getTemplateContextParameter('website') !== null
+        ) {
             return;
         }
 

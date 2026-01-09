@@ -37,7 +37,8 @@ class FrontendUserRepository extends UserRepository
         $grantType,
         ClientEntityInterface $clientEntity
     ) {
-        if ($this->isFrontendClient($clientEntity)
+        if (
+            $this->isFrontendClient($clientEntity)
             && self::VISITOR_USERNAME === $username
             && self::VISITOR_PASSWORD === $password
         ) {

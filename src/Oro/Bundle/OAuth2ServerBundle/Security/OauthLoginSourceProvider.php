@@ -33,7 +33,8 @@ class OauthLoginSourceProvider implements
         }
 
         $request = $this->requestStack->getCurrentRequest();
-        if ($request !== null
+        if (
+            $request !== null
             && is_a($authenticator, UsernamePasswordOrganizationAuthenticator::class)
             && $request->attributes->get('_oauth_login', false)
         ) {

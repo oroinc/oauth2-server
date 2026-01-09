@@ -33,7 +33,8 @@ class NavigationListener
 
     public function onNavigationConfigure(ConfigureMenuEvent $event)
     {
-        if (!class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')
+        if (
+            !class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')
             || !$this->featureChecker->isFrontendApiEnabled()
         ) {
             return;

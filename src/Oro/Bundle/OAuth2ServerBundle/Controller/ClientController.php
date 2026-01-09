@@ -429,7 +429,8 @@ class ClientController extends AbstractController
     private function checkTypeEnabled(string $type): void
     {
         if ($type === 'frontend') {
-            if (!class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')
+            if (
+                !class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')
                 || !$this->featureChecker->isFrontendApiEnabled()
             ) {
                 throw $this->createNotFoundException();
@@ -446,7 +447,8 @@ class ClientController extends AbstractController
             throw $this->createNotFoundException();
         }
 
-        if (!$client->isFrontend()
+        if (
+            !$client->isFrontend()
             && !$this->featureToggleChecker->isFeatureEnabled('user_login_password')
         ) {
             throw $this->createNotFoundException();

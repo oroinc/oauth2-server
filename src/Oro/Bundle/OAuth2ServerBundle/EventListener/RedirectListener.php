@@ -36,7 +36,7 @@ class RedirectListener implements RedirectListenerInterface
 
             try {
                 $match = $this->router->matchRequest($event->getRequest());
-            } catch (ResourceNotFoundException|MethodNotAllowedException $e) {
+            } catch (ResourceNotFoundException | MethodNotAllowedException $e) {
                 $match = [];
             }
 

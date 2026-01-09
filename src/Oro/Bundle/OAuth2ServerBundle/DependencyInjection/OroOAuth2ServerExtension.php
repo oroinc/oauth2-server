@@ -282,7 +282,8 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
         $oauthFirewalls = [];
         $configs = $container->getExtensionConfig($this->getAlias());
         foreach ($configs as $config) {
-            if (!empty($config['resource_server']['oauth_firewalls'])
+            if (
+                !empty($config['resource_server']['oauth_firewalls'])
                 && \is_array($config['resource_server']['oauth_firewalls'])
             ) {
                 $oauthFirewalls[] = $config['resource_server']['oauth_firewalls'];

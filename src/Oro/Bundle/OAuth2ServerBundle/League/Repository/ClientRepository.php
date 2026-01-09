@@ -137,7 +137,8 @@ class ClientRepository implements ClientRepositoryInterface
 
         // "refresh_token" grant should be supported for clients that support
         // "password" and "authorization_code" grants
-        if ('refresh_token' === $grant
+        if (
+            'refresh_token' === $grant
             && (
                 \in_array('password', $grants, true)
                 || \in_array('authorization_code', $grants, true)

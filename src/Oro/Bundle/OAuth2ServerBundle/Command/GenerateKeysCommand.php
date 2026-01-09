@@ -60,8 +60,10 @@ HELP
         $privateKeyPath = $this->privateKey->getKeyPath();
         $publicKeyPath = $this->publicKey->getKeyPath();
 
-        if (!$this->encryptionKeysExistenceChecker->isPrivateKeyExist() &&
-            !$this->encryptionKeysExistenceChecker->isPublicKeyExist()) {
+        if (
+            !$this->encryptionKeysExistenceChecker->isPrivateKeyExist() &&
+            !$this->encryptionKeysExistenceChecker->isPublicKeyExist()
+        ) {
             assert(extension_loaded('openssl'));
 
             $this->generatePrivateKey($privateKeyPath);
