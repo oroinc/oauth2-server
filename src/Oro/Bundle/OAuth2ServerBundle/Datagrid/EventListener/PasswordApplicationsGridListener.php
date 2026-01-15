@@ -1,6 +1,6 @@
 <?php
 
-namespace Oro\Bundle\OAuth2ServerBundle\EventListener;
+namespace Oro\Bundle\OAuth2ServerBundle\Datagrid\EventListener;
 
 use Oro\Bundle\DataGridBundle\Event\BuildBefore;
 use Oro\Bundle\FeatureToggleBundle\Checker\FeatureChecker;

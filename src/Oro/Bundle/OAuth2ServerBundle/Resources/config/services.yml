@@ -544,8 +544,8 @@ services:
         tags:
             - { name: kernel.event_listener, event: kernel.view, method: onKernelView }
 
-    oro_oauth2_server.event_listener.password_applications_grid_listener:
-        class: Oro\Bundle\OAuth2ServerBundle\EventListener\PasswordApplicationsGridListener
+    oro_oauth2_server.event_listener.datagrid.password_applications_grid_listener:
+        class: Oro\Bundle\OAuth2ServerBundle\Datagrid\EventListener\PasswordApplicationsGridListener
         arguments:
             - '@oro_featuretoggle.checker.feature_checker'
         tags:
