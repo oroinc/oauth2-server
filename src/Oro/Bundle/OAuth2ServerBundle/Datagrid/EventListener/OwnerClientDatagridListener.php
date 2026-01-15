@@ -59,7 +59,7 @@ class OwnerClientDatagridListener
             return;
         }
 
-        $isFrontend = (bool)$event->getDatagrid()->getParameters()->get('frontend');
+        $isFrontend = $event->getDatagrid()->getParameters()->get('frontend');
         $ownerClass = $isFrontend ? CustomerUser::class : User::class;
         $owners = $this->getOwners($ownerClass, array_unique($ownerIds));
         if (count($owners) === 0) {
