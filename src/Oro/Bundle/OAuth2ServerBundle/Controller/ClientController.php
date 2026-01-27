@@ -129,8 +129,7 @@ class ClientController extends AbstractController
     }
 
     /**
-     *
-     *
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @param Request $request
      * @param string  $type
      *
@@ -156,7 +155,11 @@ class ClientController extends AbstractController
         $entity->setAllApis(true);
 
         $types = $this->supportedGrantTypes;
-        if ($type === 'backoffice' && !$this->getFeatureChecker()->isFeatureEnabled('user_login_password')) {
+        if (($type === 'backoffice' && !$this->getFeatureChecker()->isFeatureEnabled('user_login_password'))
+            || ($type !== 'backoffice'
+                && !$this->getFeatureChecker()->isFeatureEnabled('customer_user_login_password')
+            )
+        ) {
             $passwordTypeId = $this->getPasswordGrantTypeId($types);
 
             if (null !== $passwordTypeId) {
@@ -236,7 +239,11 @@ class ClientController extends AbstractController
         $this->checkModificationAccess($entity);
 
         $types = $this->supportedGrantTypes;
-        if ($type === 'backoffice' && !$this->getFeatureChecker()->isFeatureEnabled('user_login_password')) {
+        if (($type === 'backoffice' && !$this->getFeatureChecker()->isFeatureEnabled('user_login_password'))
+            || ($type !== 'backoffice'
+                && !$this->getFeatureChecker()->isFeatureEnabled('customer_user_login_password')
+            )
+        ) {
             $passwordTypeId = $this->getPasswordGrantTypeId($types);
 
 
@@ -508,8 +515,10 @@ class ClientController extends AbstractController
             throw $this->createNotFoundException();
         }
 
-        if (!$client->isFrontend()
-            && !$this->getFeatureChecker()->isFeatureEnabled('user_login_password')
+        if ((!$client->isFrontend() && !$this->getFeatureChecker()->isFeatureEnabled('user_login_password'))
+            || ($client->isFrontend()
+                && !$this->getFeatureChecker()->isFeatureEnabled('customer_user_login_password')
+            )
         ) {
             throw $this->createNotFoundException();
         }
