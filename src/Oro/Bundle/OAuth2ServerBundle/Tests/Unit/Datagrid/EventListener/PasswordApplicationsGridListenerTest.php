@@ -23,7 +23,7 @@ class PasswordApplicationsGridListenerTest extends TestCase
         $this->passwordApplicationsGridListener = new PasswordApplicationsGridListener($this->featureChecker);
     }
 
-    public function testOnBuildBeforeOnFrontentGrid(): void
+    public function testOnBuildBeforeOnFrontentGridOnEnabledFeature(): void
     {
         $parameters = new ParameterBag(['frontend' => true]);
         $datagrid = $this->createMock(DatagridInterface::class);
@@ -34,11 +34,41 @@ class PasswordApplicationsGridListenerTest extends TestCase
             ->method('getParameters')
             ->willReturn($parameters);
 
-        $this->featureChecker->expects(self::never())
-            ->method('isFeatureEnabled');
+        $this->featureChecker->expects(self::once())
+            ->method('isFeatureEnabled')
+            ->with('customer_user_login_password')
+            ->willReturn(true);
 
         $config->expects(self::never())
             ->method('getOrmQuery');
+
+        $this->passwordApplicationsGridListener->onBuildBefore($event);
+    }
+
+    public function testOnBuildBeforeOnFrontentGridOnDisabledFeature(): void
+    {
+        $parameters = new ParameterBag(['frontend' => true]);
+        $datagrid = $this->createMock(DatagridInterface::class);
+        $config = $this->createMock(DatagridConfiguration::class);
+        $query = $this->createMock(OrmQueryConfiguration::class);
+        $event = new BuildBefore($datagrid, $config);
+
+        $datagrid->expects(self::once())
+            ->method('getParameters')
+            ->willReturn($parameters);
+
+        $this->featureChecker->expects(self::once())
+            ->method('isFeatureEnabled')
+            ->with('customer_user_login_password')
+            ->willReturn(false);
+
+        $config->expects(self::once())
+            ->method('getOrmQuery')
+            ->willReturn($query);
+
+        $query->expects(self::once())
+            ->method('addAndWhere')
+            ->with('client.grants != \'password\'');
 
         $this->passwordApplicationsGridListener->onBuildBefore($event);
     }

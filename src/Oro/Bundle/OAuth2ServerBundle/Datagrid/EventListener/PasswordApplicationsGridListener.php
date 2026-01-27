@@ -17,12 +17,12 @@ class PasswordApplicationsGridListener
 
     public function onBuildBefore(BuildBefore $event): void
     {
-        // do not disable password grant for frontend applications
-        if ($event->getDatagrid()->getParameters()->get('frontend', false)) {
+        $isFrontend = $event->getDatagrid()->getParameters()->get('frontend', false);
+        if ($isFrontend && $this->featureChecker->isFeatureEnabled('customer_user_login_password')) {
             return;
         }
 
-        if ($this->featureChecker->isFeatureEnabled('user_login_password')) {
+        if (!$isFrontend && $this->featureChecker->isFeatureEnabled('user_login_password')) {
             return;
         }
 

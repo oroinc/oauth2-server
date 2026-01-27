@@ -31,8 +31,8 @@ class PasswordGrant extends LeaguePasswordGrant
     protected function validateUser(ServerRequestInterface $request, ClientEntityInterface $client)
     {
         if (
-            !$client->isFrontend()
-            && !$this->featureChecker->isFeatureEnabled('user_login_password')
+            (!$client->isFrontend() && !$this->featureChecker->isFeatureEnabled('user_login_password'))
+            || ($client->isFrontend() && !$this->featureChecker->isFeatureEnabled('customer_user_login_password'))
         ) {
             throw OAuthServerException::invalidCredentials();
         }
