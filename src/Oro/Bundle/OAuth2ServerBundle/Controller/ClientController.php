@@ -42,7 +42,7 @@ class ClientController extends AbstractController
     public function __construct(
         private array $supportedGrantTypes,
         private ApiFeatureChecker $featureChecker,
-        private FeatureChecker $featureToogleChecker
+        private FeatureChecker $featureToggleChecker
     ) {
     }
 
@@ -131,7 +131,11 @@ class ClientController extends AbstractController
         $entity->setAllApis(true);
 
         $types = $this->supportedGrantTypes;
-        if ($type === 'backoffice' && !$this->featureToogleChecker->isFeatureEnabled('user_login_password')) {
+        if (($type === 'backoffice' && !$this->featureToggleChecker->isFeatureEnabled('user_login_password'))
+            || ($type !== 'backoffice'
+                && !$this->featureToggleChecker->isFeatureEnabled('customer_user_login_password')
+            )
+        ) {
             $passwordTypeId = $this->getPasswordGrantTypeId($types);
 
             if (null !== $passwordTypeId) {
@@ -199,7 +203,11 @@ class ClientController extends AbstractController
         $this->checkModificationAccess($entity);
 
         $types = $this->supportedGrantTypes;
-        if ($type === 'backoffice' && !$this->featureToogleChecker->isFeatureEnabled('user_login_password')) {
+        if (($type === 'backoffice' && !$this->featureToggleChecker->isFeatureEnabled('user_login_password'))
+            || ($type !== 'backoffice'
+                && !$this->featureToggleChecker->isFeatureEnabled('customer_user_login_password')
+            )
+        ) {
             $passwordTypeId = $this->getPasswordGrantTypeId($types);
 
             if (null !== $passwordTypeId) {
@@ -446,8 +454,10 @@ class ClientController extends AbstractController
             throw $this->createNotFoundException();
         }
 
-        if (!$client->isFrontend()
-            && !$this->featureToogleChecker->isFeatureEnabled('user_login_password')
+        if ((!$client->isFrontend() && !$this->featureToggleChecker->isFeatureEnabled('user_login_password'))
+            || ($client->isFrontend()
+                && !$this->featureToggleChecker->isFeatureEnabled('customer_user_login_password')
+            )
         ) {
             throw $this->createNotFoundException();
         }
