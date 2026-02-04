@@ -7,6 +7,17 @@ use PHPUnit\Framework\TestCase;
 
 class ClientEntityTest extends TestCase
 {
+    public function testIdentifier(): void
+    {
+        $identifier = 'test';
+
+        $entity = new ClientEntity();
+        self::assertNull($entity->getIdentifier());
+
+        $entity->setIdentifier($identifier);
+        self::assertSame($identifier, $entity->getIdentifier());
+    }
+
     public function testName(): void
     {
         $name = 'test';
@@ -32,6 +43,18 @@ class ClientEntityTest extends TestCase
         self::assertSame($uris[0], $entity->getRedirectUri());
     }
 
+    public function testConfidential(): void
+    {
+        $entity = new ClientEntity();
+        self::assertFalse($entity->isConfidential());
+
+        $entity->setConfidential(true);
+        self::assertTrue($entity->isConfidential());
+
+        $entity->setConfidential(false);
+        self::assertFalse($entity->isConfidential());
+    }
+
     public function testFrontend(): void
     {
         $entity = new ClientEntity();
@@ -54,5 +77,17 @@ class ClientEntityTest extends TestCase
 
         $entity->setPlainTextPkceAllowed(false);
         self::assertFalse($entity->isPlainTextPkceAllowed());
+    }
+
+    public function testSkipAuthorizeClientAllowed(): void
+    {
+        $entity = new ClientEntity();
+        self::assertFalse($entity->isSkipAuthorizeClientAllowed());
+
+        $entity->setSkipAuthorizeClientAllowed(true);
+        self::assertTrue($entity->isSkipAuthorizeClientAllowed());
+
+        $entity->setSkipAuthorizeClientAllowed(false);
+        self::assertFalse($entity->isSkipAuthorizeClientAllowed());
     }
 }

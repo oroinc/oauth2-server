@@ -2,7 +2,7 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient;
 
-use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
+use Oro\Bundle\OAuth2ServerBundle\League\Entity\ClientEntity;
 use Oro\Bundle\UserBundle\Entity\UserInterface;
 
 /**
@@ -10,5 +10,5 @@ use Oro\Bundle\UserBundle\Entity\UserInterface;
  */
 interface AuthorizeClientHandlerInterface
 {
-    public function handle(Client $client, UserInterface $user, bool $isAuthorized): void;
+    public function handle(ClientEntity $clientEntity, UserInterface $user, bool $isAuthorized): void;
 }

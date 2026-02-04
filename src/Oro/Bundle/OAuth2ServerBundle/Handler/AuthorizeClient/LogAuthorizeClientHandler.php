@@ -2,7 +2,7 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient;
 
-use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
+use Oro\Bundle\OAuth2ServerBundle\League\Entity\ClientEntity;
 use Oro\Bundle\UserBundle\Entity\UserInterface;
 use Oro\Bundle\UserBundle\Security\UserLoginAttemptLogger;
 
@@ -11,33 +11,25 @@ use Oro\Bundle\UserBundle\Security\UserLoginAttemptLogger;
  */
 class LogAuthorizeClientHandler implements AuthorizeClientHandlerInterface
 {
-    private UserLoginAttemptLogger $userLoginAttemptLogger;
-
-    public function __construct(UserLoginAttemptLogger $userLoginAttemptLogger)
-    {
-        $this->userLoginAttemptLogger = $userLoginAttemptLogger;
+    public function __construct(
+        private readonly UserLoginAttemptLogger $userLoginAttemptLogger
+    ) {
     }
 
     #[\Override]
-    public function handle(Client $client, UserInterface $user, bool $isAuthorized): void
+    public function handle(ClientEntity $clientEntity, UserInterface $user, bool $isAuthorized): void
     {
         if ($isAuthorized) {
             $this->userLoginAttemptLogger->logSuccessLoginAttempt(
                 $user,
                 'OAuthCode',
-                ['OAuthApp' => [
-                    'id'         => $client->getId(),
-                    'identifier' => $client->getIdentifier()
-                ]]
+                ['OAuthApp' => ['identifier' => $clientEntity->getIdentifier()]]
             );
         } else {
             $this->userLoginAttemptLogger->logFailedLoginAttempt(
                 $user,
                 'OAuthCode',
-                ['OAuthApp' => [
-                    'id'         => $client->getId(),
-                    'identifier' => $client->getIdentifier()
-                ]]
+                ['OAuthApp' => ['identifier' => $clientEntity->getIdentifier()]]
             );
         }
     }

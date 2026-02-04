@@ -8,7 +8,7 @@ use League\OAuth2\Server\Exception\OAuthServerException;
 use League\OAuth2\Server\Repositories\ClientRepositoryInterface;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
-use Oro\Bundle\OAuth2ServerBundle\League\Entity\ClientEntity;
+use Oro\Bundle\OAuth2ServerBundle\League\Factory\ClientEntityFactoryInterface;
 use Oro\Bundle\OAuth2ServerBundle\Security\ApiFeatureChecker;
 use Oro\Bundle\OAuth2ServerBundle\Security\OAuthUserChecker;
 use Oro\Bundle\UserBundle\Entity\UserInterface;
@@ -19,24 +19,14 @@ use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
  */
 class ClientRepository implements ClientRepositoryInterface
 {
-    private PasswordHasherFactoryInterface $passwordHasherFactory;
-    private ApiFeatureChecker $featureChecker;
-    private ClientManager $clientManager;
-    private OAuthUserChecker $userChecker;
-    private ManagerRegistry $doctrine;
-
     public function __construct(
-        ClientManager $clientManager,
-        PasswordHasherFactoryInterface $passwordHasherFactory,
-        ApiFeatureChecker $featureChecker,
-        OAuthUserChecker $userChecker,
-        ManagerRegistry $doctrine
+        private readonly ClientManager $clientManager,
+        private readonly ClientEntityFactoryInterface $clientEntityFactory,
+        private readonly PasswordHasherFactoryInterface $passwordHasherFactory,
+        private readonly ApiFeatureChecker $featureChecker,
+        private readonly OAuthUserChecker $userChecker,
+        private readonly ManagerRegistry $doctrine
     ) {
-        $this->clientManager = $clientManager;
-        $this->passwordHasherFactory = $passwordHasherFactory;
-        $this->featureChecker = $featureChecker;
-        $this->userChecker = $userChecker;
-        $this->doctrine = $doctrine;
     }
 
     #[\Override]
@@ -52,14 +42,7 @@ class ClientRepository implements ClientRepositoryInterface
             return null;
         }
 
-        $clientEntity = new ClientEntity();
-        $clientEntity->setIdentifier($client->getIdentifier());
-        $clientEntity->setRedirectUri(\array_map('strval', $client->getRedirectUris()));
-        $clientEntity->setFrontend($client->isFrontend());
-        $clientEntity->setConfidential($client->isConfidential());
-        $clientEntity->setPlainTextPkceAllowed($client->isPlainTextPkceAllowed());
-
-        return $clientEntity;
+        return $this->clientEntityFactory->createClientEntity($client);
     }
 
     #[\Override]

@@ -31,6 +31,11 @@ class OAuth2TokenAccessChecker
             return true;
         }
 
+        return $this->isAccessGrantedByClient($requestType, $client);
+    }
+
+    public function isAccessGrantedByClient(RequestType $requestType, Client $client): bool
+    {
         if ($client->isAllApis()) {
             return true;
         }

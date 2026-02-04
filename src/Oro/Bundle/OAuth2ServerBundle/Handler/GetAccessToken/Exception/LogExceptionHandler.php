@@ -3,25 +3,40 @@
 namespace Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Exception;
 
 use League\OAuth2\Server\Exception\OAuthServerException;
+use Oro\Bundle\OAuth2ServerBundle\League\Exception\ExtendedOAuthServerException;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
 
 /**
  * The handler that logs exceptions occurred when getting of OAuth access token.
  */
 class LogExceptionHandler implements ExceptionHandlerInterface
 {
-    /** @var LoggerInterface */
-    private $logger;
-
-    public function __construct(LoggerInterface $logger)
-    {
-        $this->logger = $logger;
+    public function __construct(
+        private readonly LoggerInterface $logger
+    ) {
     }
 
     #[\Override]
     public function handle(ServerRequestInterface $request, OAuthServerException $exception): void
     {
-        $this->logger->info($exception->getMessage(), ['exception' => $exception]);
+        $level = LogLevel::INFO;
+        $context = [
+            'exception' => $exception,
+            'errorType' => $exception->getErrorType()
+        ];
+        $hint = $exception->getHint();
+        if ($hint) {
+            $context['hint'] = $hint;
+        }
+        if ($exception instanceof ExtendedOAuthServerException) {
+            $requestedLevel = $exception->getLogLevel();
+            if ($requestedLevel) {
+                $level = $requestedLevel;
+            }
+            $context = array_merge($context, $exception->getLogContext());
+        }
+        $this->logger->log($level, $exception->getMessage(), $context);
     }
 }

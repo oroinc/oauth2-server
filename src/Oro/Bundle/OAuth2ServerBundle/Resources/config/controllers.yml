@@ -6,11 +6,11 @@ services:
         arguments:
             - '%oro_oauth2_server.supported_grant_types%'
             - '@oro_oauth2_server.api_feature_checker'
-            - '@oro_featuretoggle.checker.feature_checker'
         calls:
             - [setContainer, ['@Psr\Container\ContainerInterface']]
         tags:
             - { name: container.service_subscriber }
+            - { name: container.service_subscriber, id: oro_oauth2_server.api_feature_checker, key: Oro\Bundle\OAuth2ServerBundle\Security\ApiFeatureChecker }
 
     Oro\Bundle\OAuth2ServerBundle\Controller\AuthorizeClientController:
         calls:
@@ -25,3 +25,25 @@ services:
             - [setContainer, ['@Psr\Container\ContainerInterface']]
         tags:
             - { name: container.service_subscriber }
+            - { name: container.service_subscriber, id: oro_oauth2_server.handler.get_access_token.success_handler, key: Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Success\SuccessHandler }
+            - { name: container.service_subscriber, id: oro_oauth2_server.handler.get_access_token.exception_handler, key: Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Exception\ExceptionHandler }
+
+    Oro\Bundle\OAuth2ServerBundle\Controller\ProtectedResourceController:
+        arguments:
+            - !abstract '$authorizationServerRoutes defined in Oro\Bundle\OAuth2ServerBundle\DependencyInjection\OroOAuth2ServerExtension'
+            - '@oro_oauth2_server.protected_resource_provider'
+            - '@router'
+            - '@logger'
+
+    Oro\Bundle\OAuth2ServerBundle\Controller\MetadataController:
+        arguments:
+            -
+                issuer: oro_oauth2_server_metadata
+                authorization_endpoint: oro_oauth2_server_authenticate
+                token_endpoint: oro_oauth2_server_auth_token
+            - '@router'
+
+    Oro\Bundle\OAuth2ServerBundle\Controller\WellKnownMetadataController:
+        arguments:
+            - !abstract '$metadataControllers defined in Oro\Bundle\OAuth2ServerBundle\DependencyInjection\OroOAuth2ServerExtension'
+            - !abstract '$container defined in Oro\Bundle\OAuth2ServerBundle\DependencyInjection\OroOAuth2ServerExtension'

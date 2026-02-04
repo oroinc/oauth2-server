@@ -1,3 +1,11 @@
+oauth2_authorization_server_metadata:
+    pattern: '^%web_backend_prefix%/oauth2-server$'
+    stateless: true
+    security: false
+oauth2_frontend_authorization_server_metadata:
+    pattern: '^/oauth2-server$'
+    stateless: true
+    security: false
 oauth2_frontend_authorization_authenticate_visitor:
     pattern: '^/oauth2-token/authorize-visitor$'
     stateless: true

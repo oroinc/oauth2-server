@@ -7,14 +7,13 @@ use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Routing\Loader\YamlFileLoader;
 
 /**
- * Loads the storefront related routes.
+ * Loads the storefront related routes and the back-office related routes for case when the storefront exists.
  */
 class FrontendRoutesListener
 {
     public function onCollectionAutoload(RouteCollectionEvent $event): void
     {
         $loader = new YamlFileLoader(new FileLocator(__DIR__ . '/../Resources/config/oro'));
-        $frontendRoutes = $loader->load('frontend_routes.yml');
-        $event->getCollection()->addCollection($frontendRoutes);
+        $event->getCollection()->addCollection($loader->load('frontend_routes.yml'));
     }
 }

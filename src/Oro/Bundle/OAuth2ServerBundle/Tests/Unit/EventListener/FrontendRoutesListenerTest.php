@@ -24,6 +24,13 @@ class FrontendRoutesListenerTest extends TestCase
         self::assertSame(
             [
                 'existing',
+                'oro_oauth2_server_auth_token',
+                'oro_oauth2_server_auth_token_options',
+                'oro_oauth2_server_protected_resource',
+                'oro_oauth2_server_metadata_well_known_alias',
+                'oro_oauth2_server_metadata',
+                'oro_oauth2_server_authenticate',
+                'oro_oauth2_server_frontend_metadata',
                 'oro_oauth2_server_frontend_authenticate',
                 'oro_oauth2_server_frontend_authenticate_visitor'
             ],

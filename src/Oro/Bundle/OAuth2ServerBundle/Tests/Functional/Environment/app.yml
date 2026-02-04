@@ -5,3 +5,8 @@ oro_oauth2_server:
                 - 'https://oauth.test.com'
             allow_headers:
                 - 'X-Foo'
+    protected_resources:
+        '/test/invalid-path':
+            name: 'Test Resource (path does not match route path)'
+            route: 'oro_user_index'
+            supported_scopes: ['scope:test']

@@ -14,7 +14,7 @@ use Symfony\Component\Security\Http\Authenticator\AuthenticatorInterface;
 /**
  * Detects the OAuth login source.
  */
-class OauthLoginSourceProvider implements
+class OAuthLoginSourceProvider implements
     LoginSourceProviderForSuccessRequestInterface,
     LoginSourceProviderForFailedRequestInterface
 {

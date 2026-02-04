@@ -49,7 +49,7 @@ layout:
             id: login_label
             optionName: text
             optionValue:
-                label: oro.oauth2server.auth_code.login_message
+                label: '=data["appName"] ? "oro.oauth2server.auth_code.login_message" : ""'
                 parameters:
                     '%app_name%': '=data["appName"]'
         - '@setOption':

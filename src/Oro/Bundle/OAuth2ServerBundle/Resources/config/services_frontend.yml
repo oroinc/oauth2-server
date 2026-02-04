@@ -11,10 +11,20 @@ services:
             - { name: container.service_subscriber, id: oro_customer.customer_visitor_manager, key: Oro\Bundle\CustomerBundle\Entity\CustomerVisitorManager }
             - { name: container.service_subscriber, id: oro_oauth2_server.visitor_access_token_parser, key: Oro\Bundle\OAuth2ServerBundle\Security\VisitorAccessTokenParser }
 
+    oro_oauth2_server.frontend_metadata_controller:
+        class: Oro\Bundle\OAuth2ServerBundle\Controller\MetadataController
+        public: true
+        arguments:
+            -
+                issuer: oro_oauth2_server_frontend_metadata
+                authorization_endpoint: oro_oauth2_server_frontend_authenticate
+                token_endpoint: oro_oauth2_server_auth_token
+            - '@router'
+
     oro_oauth2_server.listener.frontend_routes_listener:
         class: Oro\Bundle\OAuth2ServerBundle\EventListener\FrontendRoutesListener
         tags:
-            - { name: kernel.event_listener, event: oro_distribution.route_collection.expose, method: onCollectionAutoload }
+            - { name: kernel.event_listener, event: oro_distribution.route_collection.expose, method: onCollectionAutoload, priority: 200 }
 
     oro_oauth2_server.guest_access.provider.guest_access_urls_provider:
         class: Oro\Bundle\OAuth2ServerBundle\Provider\GuestAccessAllowedUrlsProvider
@@ -40,11 +50,12 @@ services:
             - { name: kernel.event_listener, event: Oro\Bundle\EmailBundle\Event\EmailTemplateContextCollectEvent, method: onContextCollect }
 
     oro_oauth2_server.event_listener.view.listener:
-        class: Oro\Bundle\OAuth2ServerBundle\EventListener\OauthLoginLayoutListener
+        class: Oro\Bundle\OAuth2ServerBundle\EventListener\OAuthLoginLayoutListener
         decorates: oro_layout.view.listener
         arguments:
-            - '@oro_oauth2_server.client_manager'
             - '@.inner'
+            - '@oro_oauth2_server.league.repository.client_repository'
+            - '@Psr\Http\Message\ServerRequestFactoryInterface'
         calls:
             - [addRoute, ['oro_customer_customer_user_security_login']]
             - [addRoute, ['oro_customer_frontend_customer_user_reset_request']]

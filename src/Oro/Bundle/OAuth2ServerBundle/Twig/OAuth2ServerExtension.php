@@ -10,7 +10,7 @@ use Twig\TwigFunction;
  * Provides the following Twig functions:
  *   - oro_oauth2_api_view_label - to get the label of a specific API view
  */
-class OroOauth2ServerExtension extends AbstractExtension
+class OAuth2ServerExtension extends AbstractExtension
 {
     public function __construct(
         private readonly ApiDocViewProvider $apiDocViewProvider

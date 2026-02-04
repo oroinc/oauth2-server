@@ -198,11 +198,15 @@ services:
     Oro\Bundle\OAuth2ServerBundle\Security\EncryptionKeysExistenceChecker:
         alias: oro_oauth2_server.encryption_keys_existence_checker
 
+    oro_oauth2_server.client_entity_factory:
+        class: Oro\Bundle\OAuth2ServerBundle\League\Factory\ClientEntityFactory
+
     oro_oauth2_server.league.repository.client_repository:
         class: Oro\Bundle\OAuth2ServerBundle\League\Repository\ClientRepository
         public: false
         arguments:
             - '@oro_oauth2_server.client_manager'
+            - '@oro_oauth2_server.client_entity_factory'
             - '@security.password_hasher_factory'
             - '@oro_oauth2_server.api_feature_checker'
             - '@oro_oauth2_server.security.user_checker'
@@ -333,9 +337,6 @@ services:
         arguments:
             - '@oro_featuretoggle.checker.feature_checker'
 
-    Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Exception\ExceptionHandler:
-        alias: oro_oauth2_server.handler.get_access_token.exception_handler
-
     oro_oauth2_server.handler.get_access_token.exception_handler:
         class: Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Exception\ExceptionHandler
         arguments:
@@ -343,11 +344,10 @@ services:
 
     oro_oauth2_server.handler.get_access_token.log_exception_handler:
         class: Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Exception\LogExceptionHandler
-        public: false
         arguments:
             - '@logger'
         tags:
-            - { name: oro_oauth2_server.get_access_token_exception_handler }
+            - { name: oro_oauth2_server.get_access_token_exception_handler, priority: 10 }
 
     oro_oauth2_server.handler.get_access_token.auth_code_grant_exception_handler:
         class: Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Exception\AuthCodeGrantExceptionHandler
@@ -358,7 +358,6 @@ services:
 
     oro_oauth2_server.handler.get_access_token.password_grant_exception_handler:
         class: Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Exception\PasswordGrantExceptionHandler
-        public: false
         arguments:
             - '@event_dispatcher'
             - '@oro_oauth2_server.client_manager'
@@ -377,9 +376,6 @@ services:
             - '@?oro_customer.logger.customer_user_login_attempt'
         tags:
             - { name: oro_oauth2_server.get_access_token_exception_handler }
-
-    Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Success\SuccessHandler:
-        alias: oro_oauth2_server.handler.get_access_token.success_handler
 
     oro_oauth2_server.handler.get_access_token.success_handler:
         class: Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Success\SuccessHandler
@@ -441,7 +437,14 @@ services:
         arguments:
             - !tagged_iterator oro_oauth2_server.authorize_client_exception_handler
 
-    oro_oauth2_server.handler.authorize_client.exception_log_handler:
+    oro_oauth2_server.handler.authorize_client.log_exception_handler:
+        class: Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\Exception\LogExceptionHandler
+        arguments:
+            - '@logger'
+        tags:
+            - { name: oro_oauth2_server.authorize_client_exception_handler, priority: 10 }
+
+    oro_oauth2_server.handler.authorize_client.log_authorize_client_handler:
         class: Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\Exception\LogAuthorizeClientHandler
         arguments:
             - '@oro_oauth2_server.auth_code_log_attempt.helper'
@@ -456,7 +459,7 @@ services:
             - '@logger'
 
     oro_oauth2_server.security.oauth_login_source_provider:
-        class: Oro\Bundle\OAuth2ServerBundle\Security\OauthLoginSourceProvider
+        class: Oro\Bundle\OAuth2ServerBundle\Security\OAuthLoginSourceProvider
         arguments:
             - '@request_stack'
         tags:
@@ -491,13 +494,13 @@ services:
 
     oro_oauth2_server.oauth_notification_alert_manager:
         class: Oro\Bundle\NotificationBundle\NotificationAlert\NotificationAlertManager
+        public: true
         arguments:
             - !php/const \Oro\Bundle\OAuth2ServerBundle\NotificationAlert\OAuth2PrivateKeyNotificationAlert::SOURCE_TYPE
             - !php/const \Oro\Bundle\OAuth2ServerBundle\NotificationAlert\OAuth2PrivateKeyNotificationAlert::RESOURCE_TYPE
             - '@doctrine'
             - '@oro_security.token_accessor'
             - '@logger'
-        public: true
 
     oro_oauth2_server.listener.check_keys_permissions:
         class: Oro\Bundle\OAuth2ServerBundle\EventListener\CheckKeysPermissionsListener
@@ -534,9 +537,10 @@ services:
         decorates: oro_api.security.http.entry_point.api
 
     oro_oauth2_server.event_listener.login_controller_listener:
-        class: Oro\Bundle\OAuth2ServerBundle\EventListener\OauthLoginTemplateListener
+        class: Oro\Bundle\OAuth2ServerBundle\EventListener\OAuthLoginTemplateListener
         arguments:
-            - '@oro_oauth2_server.client_manager'
+            - '@oro_oauth2_server.league.repository.client_repository'
+            - '@Psr\Http\Message\ServerRequestFactoryInterface'
         calls:
             - [addRoute, ['oro_user_security_login']]
             - [addRoute, ['oro_user_reset_request']]
@@ -565,9 +569,14 @@ services:
             - !abstract '$views defined in Oro\Bundle\OAuth2ServerBundle\DependencyInjection\Compiler\ApiDocViewProviderCompilerPass'
 
     oro_oauth2_server.twig.oauth2server_extension:
-        class: Oro\Bundle\OAuth2ServerBundle\Twig\OroOauth2ServerExtension
+        class: Oro\Bundle\OAuth2ServerBundle\Twig\OAuth2ServerExtension
         public: false
         arguments:
             - '@oro_oauth2_server.provider.api_doc_view_provider'
         tags:
             - { name: twig.extension }
+
+    oro_oauth2_server.protected_resource_provider:
+        class: Oro\Bundle\OAuth2ServerBundle\ProtectedResource\ProtectedResourceProvider
+        arguments:
+            - !abstract '$resources defined in Oro\Bundle\OAuth2ServerBundle\DependencyInjection\OroOAuth2ServerExtension'

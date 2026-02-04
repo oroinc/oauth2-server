@@ -1,26 +1,4 @@
-oro_oauth2_server_auth_token:
-    path: '/oauth2-token'
-    methods: [POST]
-    defaults:
-        _controller: Oro\Bundle\OAuth2ServerBundle\Controller\AuthorizationTokenController::tokenAction
-    options:
-        frontend: true
-
-oro_oauth2_server_auth_token_options:
-    path: '/oauth2-token'
-    methods: [OPTIONS]
-    defaults:
-        _controller: Oro\Bundle\OAuth2ServerBundle\Controller\AuthorizationTokenController::optionsAction
-    options:
-        frontend: true
-
 oro_oauth2_server_client:
     resource: "@OroOAuth2ServerBundle/Controller/ClientController.php"
     type: attribute
     prefix: /oauth2
-
-oro_oauth2_server_authenticate:
-    path: '/oauth2-token/authorize'
-    defaults:
-        type: backoffice
-        _controller: Oro\Bundle\OAuth2ServerBundle\Controller\AuthorizeClientController::authorizeAction

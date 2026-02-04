@@ -40,9 +40,7 @@ class ClientController extends AbstractController
     private const CLIENT_CREDENTIALS_GRANT_TYPES = ['client_credentials'];
 
     public function __construct(
-        private array $supportedGrantTypes,
-        private ApiFeatureChecker $featureChecker,
-        private FeatureChecker $featureToggleChecker
+        private readonly array $supportedGrantTypes
     ) {
     }
 
@@ -57,7 +55,9 @@ class ClientController extends AbstractController
             TranslatorInterface::class,
             EncryptionKeysExistenceChecker::class,
             ManagerRegistry::class,
-            AccessTokenClient::class
+            AccessTokenClient::class,
+            ApiFeatureChecker::class,
+            FeatureChecker::class
         ]);
     }
 
@@ -131,14 +131,8 @@ class ClientController extends AbstractController
         $entity->setAllApis(true);
 
         $types = $this->supportedGrantTypes;
-        if (
-            ($type === 'backoffice' && !$this->featureToggleChecker->isFeatureEnabled('user_login_password'))
-            || ($type !== 'backoffice'
-                && !$this->featureToggleChecker->isFeatureEnabled('customer_user_login_password')
-            )
-        ) {
+        if (!$this->isLoginPasswordFeatureEnabled($type !== 'backoffice')) {
             $passwordTypeId = $this->getPasswordGrantTypeId($types);
-
             if (null !== $passwordTypeId) {
                 unset($types[$passwordTypeId]);
             }
@@ -204,14 +198,8 @@ class ClientController extends AbstractController
         $this->checkModificationAccess($entity);
 
         $types = $this->supportedGrantTypes;
-        if (
-            ($type === 'backoffice' && !$this->featureToggleChecker->isFeatureEnabled('user_login_password'))
-            || ($type !== 'backoffice'
-                && !$this->featureToggleChecker->isFeatureEnabled('customer_user_login_password')
-            )
-        ) {
+        if (!$this->isLoginPasswordFeatureEnabled($type !== 'backoffice')) {
             $passwordTypeId = $this->getPasswordGrantTypeId($types);
-
             if (null !== $passwordTypeId) {
                 unset($types[$passwordTypeId]);
             }
@@ -240,7 +228,7 @@ class ClientController extends AbstractController
         $ownerEntityClass = $entityRoutingHelper->getEntityClassName($request);
         $ownerEntityId = (int)$entityRoutingHelper->getEntityId($request);
         if ($ownerEntityClass && $ownerEntityId) {
-            if (!$this->featureChecker->isEnabledByClientOwnerClass($ownerEntityClass)) {
+            if (!$this->getApiFeatureChecker()->isEnabledByClientOwnerClass($ownerEntityClass)) {
                 throw $this->createNotFoundException();
             }
             $entity->setOwnerEntity($ownerEntityClass, $ownerEntityId);
@@ -422,9 +410,19 @@ class ClientController extends AbstractController
         return $this->container->get(TranslatorInterface::class);
     }
 
+    private function getFeatureChecker(): FeatureChecker
+    {
+        return $this->container->get(FeatureChecker::class);
+    }
+
+    private function getApiFeatureChecker(): ApiFeatureChecker
+    {
+        return $this->container->get(ApiFeatureChecker::class);
+    }
+
     private function checkClientEnabled(Client $entity): void
     {
-        if (!$this->featureChecker->isEnabledByClient($entity)) {
+        if (!$this->getApiFeatureChecker()->isEnabledByClient($entity)) {
             throw $this->createNotFoundException();
         }
     }
@@ -441,30 +439,30 @@ class ClientController extends AbstractController
         if ($type === 'frontend') {
             if (
                 !class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')
-                || !$this->featureChecker->isFrontendApiEnabled()
+                || !$this->getApiFeatureChecker()->isFrontendApiEnabled()
             ) {
                 throw $this->createNotFoundException();
             }
-        } elseif (!$this->featureChecker->isBackendApiEnabled()) {
+        } elseif (!$this->getApiFeatureChecker()->isBackendApiEnabled()) {
             throw $this->createNotFoundException();
         }
     }
 
     private function checkClientApplicableForType(Client $client, string $type): void
     {
-        $isFrontend = $type === 'frontend';
-        if ($client->isFrontend() !== $isFrontend) {
+        if ($client->isFrontend() !== ($type === 'frontend')) {
             throw $this->createNotFoundException();
         }
+        if (!$this->isLoginPasswordFeatureEnabled($client->isFrontend())) {
+            throw $this->createNotFoundException();
+        }
+    }
 
-        if (
-            (!$client->isFrontend() && !$this->featureToggleChecker->isFeatureEnabled('user_login_password'))
-            || ($client->isFrontend()
-                && !$this->featureToggleChecker->isFeatureEnabled('customer_user_login_password')
-            )
-        ) {
-            throw $this->createNotFoundException();
-        }
+    private function isLoginPasswordFeatureEnabled(bool $frontend): bool
+    {
+        return $frontend
+            ? $this->getFeatureChecker()->isFeatureEnabled('customer_user_login_password')
+            : $this->getFeatureChecker()->isFeatureEnabled('user_login_password');
     }
 
     private function isEncryptionKeysExist(): bool

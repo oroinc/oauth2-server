@@ -1,0 +1,39 @@
+oro_oauth2_server_auth_token:
+    path: '/oauth2-token'
+    methods: [POST]
+    defaults:
+        _controller: Oro\Bundle\OAuth2ServerBundle\Controller\AuthorizationTokenController::tokenAction
+
+oro_oauth2_server_auth_token_options:
+    path: '/oauth2-token'
+    methods: [OPTIONS]
+    defaults:
+        _controller: Oro\Bundle\OAuth2ServerBundle\Controller\AuthorizationTokenController::optionsAction
+
+oro_oauth2_server_protected_resource:
+    path: '/.well-known/oauth-protected-resource/{resourcePath}'
+    methods: [GET]
+    defaults:
+        _controller: Oro\Bundle\OAuth2ServerBundle\Controller\ProtectedResourceController::resourceAction
+    requirements:
+        resourcePath: .+
+
+oro_oauth2_server_metadata_well_known_alias:
+    path: '/.well-known/oauth-authorization-server/{metadataPath}'
+    methods: [GET]
+    defaults:
+        _controller: Oro\Bundle\OAuth2ServerBundle\Controller\WellKnownMetadataController::metadataAction
+    requirements:
+        metadataPath: .+
+
+oro_oauth2_server_metadata:
+    path: '/oauth2-server'
+    methods: [GET]
+    defaults:
+        _controller: Oro\Bundle\OAuth2ServerBundle\Controller\MetadataController::metadataAction
+
+oro_oauth2_server_authenticate:
+    path: '/oauth2-token/authorize'
+    defaults:
+        type: backoffice
+        _controller: Oro\Bundle\OAuth2ServerBundle\Controller\AuthorizeClientController::authorizeAction

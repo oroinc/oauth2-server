@@ -2,62 +2,57 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Handler\AuthorizeClient;
 
-use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\LogAuthorizeClientHandler;
-use Oro\Bundle\UserBundle\Entity\User;
+use Oro\Bundle\OAuth2ServerBundle\League\Entity\ClientEntity;
+use Oro\Bundle\UserBundle\Entity\UserInterface;
 use Oro\Bundle\UserBundle\Security\UserLoginAttemptLogger;
-use Oro\Component\Testing\ReflectionUtil;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 class LogAuthorizeClientHandlerTest extends TestCase
 {
+    private UserLoginAttemptLogger&MockObject $userLoginAttemptLogger;
+    private LogAuthorizeClientHandler $handler;
+
+    #[\Override]
+    protected function setUp(): void
+    {
+        $this->userLoginAttemptLogger = $this->createMock(UserLoginAttemptLogger::class);
+
+        $this->handler = new LogAuthorizeClientHandler($this->userLoginAttemptLogger);
+    }
+
     public function testHandleOnAuthorize(): void
     {
-        $client = new Client();
-        ReflectionUtil::setId($client, 123);
-        $client->setIdentifier('test_identifier');
-        $user = new User();
+        $clientEntity = new ClientEntity();
+        $clientEntity->setIdentifier('test_identifier');
+        $user = $this->createMock(UserInterface::class);
 
-        $userLoginAttemptLogger = $this->createMock(UserLoginAttemptLogger::class);
-        $userLoginAttemptLogger->expects(self::once())
+        $this->userLoginAttemptLogger->expects(self::once())
             ->method('logSuccessLoginAttempt')
             ->with(
-                $user,
+                self::identicalTo($user),
                 'OAuthCode',
-                [
-                    'OAuthApp' => [
-                        'id'         => 123,
-                        'identifier' => 'test_identifier',
-                    ]
-                ]
+                ['OAuthApp' => ['identifier' => 'test_identifier']]
             );
 
-        $handler = new LogAuthorizeClientHandler($userLoginAttemptLogger);
-        $handler->handle($client, $user, true);
+        $this->handler->handle($clientEntity, $user, true);
     }
 
     public function testHandleOnNotAuthorize(): void
     {
-        $client = new Client();
-        ReflectionUtil::setId($client, 123);
-        $client->setIdentifier('test_identifier');
-        $user = new User();
+        $clientEntity = new ClientEntity();
+        $clientEntity->setIdentifier('test_identifier');
+        $user = $this->createMock(UserInterface::class);
 
-        $userLoginAttemptLogger = $this->createMock(UserLoginAttemptLogger::class);
-        $userLoginAttemptLogger->expects(self::once())
+        $this->userLoginAttemptLogger->expects(self::once())
             ->method('logFailedLoginAttempt')
             ->with(
-                $user,
+                self::identicalTo($user),
                 'OAuthCode',
-                [
-                    'OAuthApp' => [
-                        'id'         => 123,
-                        'identifier' => 'test_identifier',
-                    ]
-                ]
+                ['OAuthApp' => ['identifier' => 'test_identifier']]
             );
 
-        $handler = new LogAuthorizeClientHandler($userLoginAttemptLogger);
-        $handler->handle($client, $user, false);
+        $this->handler->handle($clientEntity, $user, false);
     }
 }
