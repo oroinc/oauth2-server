@@ -36,6 +36,11 @@ security:
                 login_path: oro_oauth2_server_login_form
             logout:
                 path: oro_user_security_logout
+        oauth2_authorization_server_well_known_resource:
+            pattern: '^/.well-known/(oauth-protected-resource|oauth-authorization-server)/*'
+            methods: [GET]
+            security: false
+            stateless: true
         oauth2_authorization_server:
             pattern:   '^/oauth2-token$'
             stateless: true

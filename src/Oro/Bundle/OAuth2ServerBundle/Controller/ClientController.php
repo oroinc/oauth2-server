@@ -155,13 +155,8 @@ class ClientController extends AbstractController
         $entity->setAllApis(true);
 
         $types = $this->supportedGrantTypes;
-        if (($type === 'backoffice' && !$this->getFeatureChecker()->isFeatureEnabled('user_login_password'))
-            || ($type !== 'backoffice'
-                && !$this->getFeatureChecker()->isFeatureEnabled('customer_user_login_password')
-            )
-        ) {
+        if (!$this->isLoginPasswordFeatureEnabled($type !== 'backoffice')) {
             $passwordTypeId = $this->getPasswordGrantTypeId($types);
-
             if (null !== $passwordTypeId) {
                 unset($types[$passwordTypeId]);
             }
@@ -239,14 +234,8 @@ class ClientController extends AbstractController
         $this->checkModificationAccess($entity);
 
         $types = $this->supportedGrantTypes;
-        if (($type === 'backoffice' && !$this->getFeatureChecker()->isFeatureEnabled('user_login_password'))
-            || ($type !== 'backoffice'
-                && !$this->getFeatureChecker()->isFeatureEnabled('customer_user_login_password')
-            )
-        ) {
+        if (!$this->isLoginPasswordFeatureEnabled($type !== 'backoffice')) {
             $passwordTypeId = $this->getPasswordGrantTypeId($types);
-
-
             if (null !== $passwordTypeId) {
                 unset($types[$passwordTypeId]);
             }
@@ -510,18 +499,19 @@ class ClientController extends AbstractController
 
     private function checkClientApplicableForType(Client $client, string $type): void
     {
-        $isFrontend = $type === 'frontend';
-        if ($client->isFrontend() !== $isFrontend) {
+        if ($client->isFrontend() !== ($type === 'frontend')) {
             throw $this->createNotFoundException();
         }
+        if (!$this->isLoginPasswordFeatureEnabled($client->isFrontend())) {
+            throw $this->createNotFoundException();
+        }
+    }
 
-        if ((!$client->isFrontend() && !$this->getFeatureChecker()->isFeatureEnabled('user_login_password'))
-            || ($client->isFrontend()
-                && !$this->getFeatureChecker()->isFeatureEnabled('customer_user_login_password')
-            )
-        ) {
-            throw $this->createNotFoundException();
-        }
+    private function isLoginPasswordFeatureEnabled(bool $frontend): bool
+    {
+        return $frontend
+            ? $this->getFeatureChecker()->isFeatureEnabled('customer_user_login_password')
+            : $this->getFeatureChecker()->isFeatureEnabled('user_login_password');
     }
 
     private function isEncryptionKeysExist(): bool

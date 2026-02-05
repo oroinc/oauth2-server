@@ -3,8 +3,10 @@
 namespace Oro\Bundle\OAuth2ServerBundle\League\Grant;
 
 use DateInterval;
+use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Grant\AuthCodeGrant as LeagueAuthCodeGrant;
 use League\OAuth2\Server\ResponseTypes\ResponseTypeInterface;
+use Oro\Bundle\OAuth2ServerBundle\League\Repository\ExtendedClientRepositoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
@@ -28,5 +30,52 @@ class AuthCodeGrant extends LeagueAuthCodeGrant
         }
 
         return parent::respondToAccessTokenRequest($request, $responseType, $accessTokenTTL);
+    }
+
+    #[\Override]
+    protected function getClientEntityOrFail($clientId, ServerRequestInterface $request)
+    {
+        if ($this->clientRepository instanceof ExtendedClientRepositoryInterface) {
+            $client = $this->clientRepository->findClientEntity($clientId, $request);
+            if ($client instanceof ClientEntityInterface) {
+                return $client;
+            }
+        }
+
+        return parent::getClientEntityOrFail($clientId, $request);
+    }
+
+    #[\Override]
+    protected function getClientCredentials(ServerRequestInterface $request)
+    {
+        [$clientId, $clientSecret] = parent::getClientCredentials($request);
+        if ($this->clientRepository instanceof ExtendedClientRepositoryInterface
+            && $this->clientRepository->isSpecialClientIdentifier($clientId)
+        ) {
+            $clientIdExtractedFromAuthCode = $this->tryToGetClientIdFromAuthCode($request);
+            if ($clientIdExtractedFromAuthCode) {
+                $clientId = $clientIdExtractedFromAuthCode;
+            }
+        }
+
+        return [$clientId, $clientSecret];
+    }
+
+    private function tryToGetClientIdFromAuthCode(ServerRequestInterface $request): ?string
+    {
+        $encryptedAuthCode = $this->getRequestParameter('code', $request);
+        if (!\is_string($encryptedAuthCode)) {
+            return null;
+        }
+
+        try {
+            $authCodePayload = \json_decode($this->decrypt($encryptedAuthCode), flags: JSON_THROW_ON_ERROR);
+        } catch (\Throwable) {
+            return null;
+        }
+
+        return \is_object($authCodePayload) && \property_exists($authCodePayload, 'client_id')
+            ? $authCodePayload->client_id
+            : null;
     }
 }

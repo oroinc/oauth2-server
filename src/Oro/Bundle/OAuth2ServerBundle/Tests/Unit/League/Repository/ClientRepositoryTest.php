@@ -8,6 +8,7 @@ use League\OAuth2\Server\Exception\OAuthServerException;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
 use Oro\Bundle\OAuth2ServerBundle\League\Entity\ClientEntity;
+use Oro\Bundle\OAuth2ServerBundle\League\Factory\ClientEntityFactory;
 use Oro\Bundle\OAuth2ServerBundle\League\Repository\ClientRepository;
 use Oro\Bundle\OAuth2ServerBundle\Security\ApiFeatureChecker;
 use Oro\Bundle\OAuth2ServerBundle\Security\OAuthUserChecker;
@@ -54,6 +55,7 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
             $this->userChecker,
             $this->doctrine
         );
+        $this->clientRepository->setClientEntityFactory(new ClientEntityFactory());
     }
 
     private function getOrganization(bool $enabled = true): Organization
@@ -95,10 +97,12 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
     public function testGetClientEntityWhenGrantSupported()
     {
         $clientIdentifier = 'test_client';
+        $clientName = 'test client';
         $grantType = 'test_grant';
         $clientGrants = ['another_grant', $grantType];
         $client = new Client();
         $client->setIdentifier($clientIdentifier);
+        $client->setName($clientName);
         $client->setRedirectUris([]);
         $client->setGrants($clientGrants);
         $client->setOrganization($this->getOrganization());
@@ -118,6 +122,7 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         $clientEntity = $this->clientRepository->getClientEntity($clientIdentifier);
         self::assertInstanceOf(ClientEntity::class, $clientEntity);
         self::assertEquals($clientIdentifier, $clientEntity->getIdentifier());
+        self::assertEquals($clientName, $clientEntity->getName());
         self::assertEquals([], $clientEntity->getRedirectUri());
         self::assertFalse($clientEntity->isFrontend());
     }
@@ -145,11 +150,13 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
     public function testGetClientEntityWhenPasswordGrantShouldSupportRefreshTokenGrant()
     {
         $clientIdentifier = 'test_client';
+        $clientName = 'test client';
         $clientGrants = ['password'];
         $clientEncodedSecret = 'client_encoded_secret';
         $clientSecretSalt = 'client_secret_salt';
         $client = new Client();
         $client->setIdentifier($clientIdentifier);
+        $client->setName($clientName);
         $client->setRedirectUris([]);
         $client->setGrants($clientGrants);
         $client->setSecret($clientEncodedSecret, $clientSecretSalt);
@@ -170,6 +177,7 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         $clientEntity = $this->clientRepository->getClientEntity($clientIdentifier);
         self::assertInstanceOf(ClientEntity::class, $clientEntity);
         self::assertEquals($clientIdentifier, $clientEntity->getIdentifier());
+        self::assertEquals($clientName, $clientEntity->getName());
         self::assertEquals([], $clientEntity->getRedirectUri());
         self::assertFalse($clientEntity->isFrontend());
     }
@@ -177,11 +185,13 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
     public function testGetClientEntityWhenAuthorizationCodeGrantShouldSupportRefreshTokenGrant()
     {
         $clientIdentifier = 'test_client';
+        $clientName = 'test client';
         $clientGrants = ['authorization_code'];
         $clientEncodedSecret = 'client_encoded_secret';
         $clientSecretSalt = 'client_secret_salt';
         $client = new Client();
         $client->setIdentifier($clientIdentifier);
+        $client->setName($clientName);
         $client->setRedirectUris([]);
         $client->setGrants($clientGrants);
         $client->setSecret($clientEncodedSecret, $clientSecretSalt);
@@ -202,6 +212,7 @@ class ClientRepositoryTest extends \PHPUnit\Framework\TestCase
         $clientEntity = $this->clientRepository->getClientEntity($clientIdentifier);
         self::assertInstanceOf(ClientEntity::class, $clientEntity);
         self::assertEquals($clientIdentifier, $clientEntity->getIdentifier());
+        self::assertEquals($clientName, $clientEntity->getName());
         self::assertEquals([], $clientEntity->getRedirectUri());
         self::assertFalse($clientEntity->isFrontend());
     }

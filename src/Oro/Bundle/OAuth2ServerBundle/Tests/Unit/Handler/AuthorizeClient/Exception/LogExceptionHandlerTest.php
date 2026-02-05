@@ -1,9 +1,9 @@
 <?php
 
-namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Handler\GetAccessToken\Exception;
+namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Handler\AuthorizeClient\Exception;
 
 use League\OAuth2\Server\Exception\OAuthServerException;
-use Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Exception\LogExceptionHandler;
+use Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\Exception\LogExceptionHandler;
 use Oro\Bundle\OAuth2ServerBundle\League\Exception\ExtendedOAuthServerException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;

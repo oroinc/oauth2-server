@@ -6,12 +6,13 @@ use GuzzleHttp\Psr7\Response;
 use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use League\OAuth2\Server\RequestTypes\AuthorizationRequest;
-use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
 use Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\AuthorizeClientHandler;
 use Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\Exception\ExceptionHandler;
+use Oro\Bundle\OAuth2ServerBundle\League\Entity\ClientEntity;
 use Oro\Bundle\OAuth2ServerBundle\League\Entity\UserEntity;
 use Oro\Bundle\OAuth2ServerBundle\League\Exception\CryptKeyNotFoundException;
+use Oro\Bundle\UserBundle\Entity\UserInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
@@ -57,7 +58,11 @@ class AuthorizeClientController extends AbstractController
             $authServer = $this->getAuthorizationServer();
             $authRequest = $authServer->validateAuthorizationRequest($serverRequest);
 
-            $client = $this->getClient($request->get('client_id'));
+            $client = $authRequest->getClient();
+
+            if ($client->isFrontend() !== ('frontend' === $type)) {
+                throw $this->createNotFoundException();
+            }
 
             if ('plain' === $authRequest->getCodeChallengeMethod() && !$client->isPlainTextPkceAllowed()) {
                 return OAuthServerException::invalidRequest(
@@ -66,11 +71,7 @@ class AuthorizeClientController extends AbstractController
                 )->generateHttpResponse(new Response());
             }
 
-            if (null === $client || ($client->isFrontend() !== ('frontend' === $type))) {
-                throw $this->createNotFoundException();
-            }
-
-            if ($request->getMethod() === 'POST') {
+            if ('POST' === $serverRequest->getMethod()) {
                 return $this->processAuthorization(
                     $request->request->get('grantAccess') === 'true',
                     $authRequest,
@@ -82,7 +83,7 @@ class AuthorizeClientController extends AbstractController
                 return $this->processAuthorization(true, $authRequest, $client);
             }
         } catch (OAuthServerException $exception) {
-            $this->container->get(ExceptionHandler::class)->handle($serverRequest, $exception);
+            $this->getExceptionHandler()->handle($serverRequest, $exception);
 
             return $exception->generateHttpResponse(new Response());
         }
@@ -100,16 +101,21 @@ class AuthorizeClientController extends AbstractController
     private function processAuthorization(
         bool $isAuthorized,
         AuthorizationRequest $authRequest,
-        Client $client
+        ClientEntity $client
     ): ResponseInterface {
         $authServer = $this->getAuthorizationServer();
+        /** @var UserInterface $loggedUser */
         $loggedUser = $this->getUser();
         $user = new UserEntity();
         $user->setIdentifier($loggedUser->getUserIdentifier());
         $authRequest->setUser($user);
         $authRequest->setAuthorizationApproved($isAuthorized);
 
-        $this->container->get(AuthorizeClientHandler::class)->handle($client, $loggedUser, $isAuthorized);
+        $this->getAuthorizeClientHandler()->handle(
+            $this->container->get(ClientManager::class)->getClient($client->getIdentifier()),
+            $loggedUser,
+            $isAuthorized
+        );
 
         return $authServer->completeAuthorizationRequest($authRequest, new Response());
     }
@@ -119,14 +125,17 @@ class AuthorizeClientController extends AbstractController
         try {
             return $this->container->get(AuthorizationServer::class);
         } catch (\LogicException $e) {
-            $this->container->get(LoggerInterface::class)->warning($e->getMessage(), ['exception' => $e]);
-
             throw CryptKeyNotFoundException::create($e);
         }
     }
 
-    private function getClient(string $clientId): ?Client
+    private function getAuthorizeClientHandler(): AuthorizeClientHandler
     {
-        return $this->container->get(ClientManager::class)->getClient($clientId);
+        return $this->container->get(AuthorizeClientHandler::class);
+    }
+
+    private function getExceptionHandler(): ExceptionHandler
+    {
+        return $this->container->get(ExceptionHandler::class);
     }
 }

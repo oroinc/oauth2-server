@@ -9,10 +9,20 @@ services:
             - { name: container.service_subscriber, id: oro_oauth2_server.handler.frontend_authorize_client.handler, key: Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\AuthorizeClientHandler }
             - { name: container.service_subscriber, id: oro_oauth2_server.handler.authorize_client.exception_handler, key: Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\Exception\ExceptionHandler }
 
+    oro_oauth2_server.frontend_metadata_controller:
+        class: Oro\Bundle\OAuth2ServerBundle\Controller\MetadataController
+        public: true
+        arguments:
+            -
+                issuer: oro_oauth2_server_frontend_metadata
+                authorization_endpoint: oro_oauth2_server_frontend_authenticate
+                token_endpoint: oro_oauth2_server_auth_token
+            - '@router'
+
     oro_oauth2_server.listener.frontend_routes_listener:
         class: Oro\Bundle\OAuth2ServerBundle\EventListener\FrontendRoutesListener
         tags:
-            - { name: kernel.event_listener, event: oro_distribution.route_collection.expose, method: onCollectionAutoload }
+            - { name: kernel.event_listener, event: oro_distribution.route_collection.expose, method: onCollectionAutoload, priority: 200 }
 
     oro_oauth2_server.guest_access.provider.guest_access_urls_provider:
         class: Oro\Bundle\OAuth2ServerBundle\Provider\GuestAccessAllowedUrlsProvider

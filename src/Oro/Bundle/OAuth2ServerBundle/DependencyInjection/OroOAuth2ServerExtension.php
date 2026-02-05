@@ -5,6 +5,9 @@ namespace Oro\Bundle\OAuth2ServerBundle\DependencyInjection;
 use League\OAuth2\Server\CryptKey;
 use League\OAuth2\Server\Grant\ClientCredentialsGrant;
 use League\OAuth2\Server\Grant\RefreshTokenGrant;
+use Oro\Bundle\OAuth2ServerBundle\Controller\MetadataController;
+use Oro\Bundle\OAuth2ServerBundle\Controller\ProtectedResourceController;
+use Oro\Bundle\OAuth2ServerBundle\Controller\WellKnownMetadataController;
 use Oro\Bundle\OAuth2ServerBundle\League\Grant\AuthCodeGrant;
 use Oro\Bundle\OAuth2ServerBundle\League\Grant\PasswordGrant;
 use Oro\Bundle\OAuth2ServerBundle\League\Repository\FrontendAuthCodeRepository;
@@ -13,6 +16,7 @@ use Oro\Bundle\OAuth2ServerBundle\League\Repository\FrontendUserRepository;
 use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\OAuth2Token;
 use Oro\Component\DependencyInjection\ExtendedContainerBuilder;
 use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\Compiler\ServiceLocatorTagPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
@@ -22,6 +26,9 @@ use Symfony\Component\ExpressionLanguage\Expression;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 use Symfony\Component\Yaml\Yaml;
 
+/**
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
+ */
 class OroOAuth2ServerExtension extends Extension implements PrependExtensionInterface
 {
     private const SUPPORTED_GRANT_TYPES_PARAM = 'oro_oauth2_server.supported_grant_types';
@@ -57,6 +64,8 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
         $loader->load('controllers.yml');
         if (class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {
             $loader->load('services_frontend.yml');
+        } else {
+            $loader->load('services_no_frontend.yml');
         }
 
         if ('test' === $container->getParameter('kernel.environment')) {
@@ -69,6 +78,8 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
         $this->configureUserRepository($container);
         $this->configureAuthorizationServer($container, $config['authorization_server']);
         $this->configureResourceServer($container, $config['resource_server']);
+        $this->configureProtectedResources($container, $config['protected_resources']);
+        $this->configureWellKnownMetadataController($container);
         $this->configureCustomerUserLoginAttempts($container);
         $this->configureAuthCodeLogAttemptHelper($container, $config['authorization_server']);
     }
@@ -91,6 +102,7 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
             foreach ($configData as $name => $config) {
                 $container->prependExtensionConfig($name, $config);
             }
+            $this->configureTestProtectedResources($container);
         }
     }
 
@@ -210,6 +222,41 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
             ->setArgument('$keyPath', $config['public_key']);
     }
 
+    private function configureProtectedResources(ContainerBuilder $container, array $protectedResources): void
+    {
+        $container->getDefinition('oro_oauth2_server.protected_resource_provider')
+            ->setArgument('$resources', $protectedResources);
+
+        $authorizationServerRoutes = [];
+        if (class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {
+            $authorizationServerRoutes['%web_backend_prefix%/'] = 'oro_oauth2_server_metadata';
+            $authorizationServerRoutes[''] = 'oro_oauth2_server_frontend_metadata';
+        } else {
+            $authorizationServerRoutes[''] = 'oro_oauth2_server_metadata';
+        }
+        $container->getDefinition(ProtectedResourceController::class)
+            ->setArgument('$authorizationServerRoutes', $authorizationServerRoutes);
+    }
+
+    private function configureWellKnownMetadataController(ContainerBuilder $container): void
+    {
+        $controllers = [];
+        $controllerRefs = [];
+        $metadataPrefix = '/oauth2-server';
+        if (class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {
+            $controllers['%web_backend_prefix%' . $metadataPrefix] = 'backend';
+            $controllerRefs['backend'] = new Reference(MetadataController::class);
+            $controllers[$metadataPrefix] = 'frontend';
+            $controllerRefs['frontend'] = new Reference('oro_oauth2_server.frontend_metadata_controller');
+        } else {
+            $controllers[$metadataPrefix] = 'default';
+            $controllerRefs['default'] = new Reference(MetadataController::class);
+        }
+        $container->getDefinition(WellKnownMetadataController::class)
+            ->setArgument('$metadataControllers', $controllers)
+            ->setArgument('$container', ServiceLocatorTagPass::register($container, $controllerRefs));
+    }
+
     private function getTokenLifetime(int $lifetimeInSeconds): string
     {
         return sprintf('PT%dS', $lifetimeInSeconds);
@@ -324,8 +371,10 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
             }
 
             // add frontend firewalls
-            $frontendFirewalls = Yaml::parseFile(__DIR__ . '/../Resources/config/oro/frontend_firewalls.yml');
-            $firewalls = array_merge($frontendFirewalls, $firewalls);
+            $firewalls = $this->addOAuthFirewalls(
+                $firewalls,
+                Yaml::parseFile(__DIR__ . '/../Resources/config/oro/frontend_firewalls.yml')
+            );
 
             // enable basic authorization for test env
             if ('test' === $container->getParameter('kernel.environment')) {
@@ -340,10 +389,30 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
                 $accessControlConfig,
                 $securityConfigs[0]['access_control']
             );
+        } else {
+            $firewalls = $this->addOAuthFirewalls(
+                $firewalls,
+                Yaml::parseFile(__DIR__ . '/../Resources/config/oro/no_frontend_firewalls.yml')
+            );
         }
 
         $securityConfigs[0]['firewalls'] = $firewalls;
         $container->setExtensionConfig('security', $securityConfigs);
+    }
+
+    private function addOAuthFirewalls(array $firewalls, array $oauthFirewalls): array
+    {
+        $resultFirewalls = [];
+        foreach ($firewalls as $firewallName => $firewall) {
+            $resultFirewalls[$firewallName] = $firewall;
+            if ('oauth2_authorization_server' === $firewallName) {
+                foreach ($oauthFirewalls as $oauthFirewallName => $oauthFirewall) {
+                    $resultFirewalls[$oauthFirewallName] = $oauthFirewall;
+                }
+            }
+        }
+
+        return $resultFirewalls;
     }
 
     private function configureOrganizationProBundle(ContainerBuilder $container): void
@@ -376,5 +445,39 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
     {
         $container->getDefinition(self::AUTH_CODE_LOG_ATTEMPT_HELPER)
             ->addMethodCall('setEncryptionKey', [$config['encryption_key']]);
+    }
+
+    private function configureTestProtectedResources(ContainerBuilder $container): void
+    {
+        $testResourcePath = '/user/create';
+        $testResourceWithRouteParametersPath = '/user/update/1';
+        if (class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {
+            $testResourcePath = '%web_backend_prefix%' . $testResourcePath;
+            $testResourceWithRouteParametersPath = '%web_backend_prefix%' . $testResourceWithRouteParametersPath;
+        }
+        $protectedResources = [
+            $testResourcePath => [
+                'name' => 'Test Resource',
+                'route' => 'oro_user_create',
+                'supported_scopes' => ['scope:test'],
+                'options' => ['x-test-option' => 'test resource']
+            ],
+            $testResourceWithRouteParametersPath => [
+                'name' => 'Test Resource With Route Parameters',
+                'route' => 'oro_user_update',
+                'route_params' => ['id' => 1],
+                'supported_scopes' => ['scope:test'],
+                'options' => ['x-test-option' => 'test resource with route_params']
+            ]
+        ];
+        if (class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {
+            $protectedResources['/customer/user/create'] = [
+                'name' => 'Test Frontend Resource',
+                'route' => 'oro_customer_frontend_customer_user_create',
+                'supported_scopes' => ['scope:test'],
+                'options' => ['x-test-option' => 'test frontend resource']
+            ];
+        }
+        $container->prependExtensionConfig($this->getAlias(), ['protected_resources' => $protectedResources]);
     }
 }

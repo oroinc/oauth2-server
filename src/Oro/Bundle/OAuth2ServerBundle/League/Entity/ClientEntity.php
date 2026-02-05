@@ -20,6 +20,9 @@ class ClientEntity implements ClientEntityInterface
     /** @var bool */
     private $plainTextPkceAllowed = false;
 
+    /** @var bool */
+    private $skipAuthorizeClientAllowed = false;
+
     public function setName(string $name): void
     {
         $this->name = $name;
@@ -56,5 +59,15 @@ class ClientEntity implements ClientEntityInterface
     public function setPlainTextPkceAllowed(bool $plainTextPkceAllowed): void
     {
         $this->plainTextPkceAllowed = $plainTextPkceAllowed;
+    }
+
+    public function isSkipAuthorizeClientAllowed(): bool
+    {
+        return $this->skipAuthorizeClientAllowed;
+    }
+
+    public function setSkipAuthorizeClientAllowed(bool $skipAuthorizeClientAllowed): void
+    {
+        $this->skipAuthorizeClientAllowed = $skipAuthorizeClientAllowed;
     }
 }

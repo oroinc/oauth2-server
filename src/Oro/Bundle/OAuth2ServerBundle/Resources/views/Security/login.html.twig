@@ -50,7 +50,7 @@
                                      class="form-description__logo-img">
                             </div>
                         {% endif %}
-                        <div class="form-description__main">{{ 'oro.oauth2server.auth_code.login_message'|trans({'%app_name%': appName}) }}</div>
+                        <div class="form-description__main">{{ appName ? 'oro.oauth2server.auth_code.login_message'|trans({'%app_name%': appName}) : '' }}</div>
                     </div>
                     <div class="title-box">
                         <h2 class="title">{{ 'Login'|trans }}</h2>
