@@ -1,0 +1,4 @@
+oauth2_authorization_server_metadata:
+    pattern: '^/oauth2-server$'
+    stateless: true
+    security: false

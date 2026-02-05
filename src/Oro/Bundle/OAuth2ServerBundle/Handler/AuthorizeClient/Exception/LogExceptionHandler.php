@@ -1,6 +1,6 @@
 <?php
 
-namespace Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Exception;
+namespace Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\Exception;
 
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Oro\Bundle\OAuth2ServerBundle\League\Exception\ExtendedOAuthServerException;
@@ -9,16 +9,13 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 
 /**
- * The handler that logs exceptions occurred when getting of OAuth access token.
+ * The handler that logs exceptions occurred when authorizing of OAuth application.
  */
 class LogExceptionHandler implements ExceptionHandlerInterface
 {
-    /** @var LoggerInterface */
-    private $logger;
-
-    public function __construct(LoggerInterface $logger)
-    {
-        $this->logger = $logger;
+    public function __construct(
+        private readonly LoggerInterface $logger
+    ) {
     }
 
     #[\Override]

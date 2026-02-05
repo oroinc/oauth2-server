@@ -3,15 +3,16 @@
 namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\EventListener;
 
 use Oro\Bundle\DistributionBundle\Event\RouteCollectionEvent;
-use Oro\Bundle\OAuth2ServerBundle\EventListener\FrontendRoutesListener;
+use Oro\Bundle\OAuth2ServerBundle\EventListener\NoFrontendRoutesListener;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
 
-class FrontendRoutesListenerTest extends \PHPUnit\Framework\TestCase
+class NoFrontendRoutesListenerTest extends TestCase
 {
-    public function testOnCollectionAutoload()
+    public function testOnCollectionAutoload(): void
     {
-        $listener = new FrontendRoutesListener();
+        $listener = new NoFrontendRoutesListener();
 
         $collection = new RouteCollection();
         $collection->add('existing', new Route('some_path'));
@@ -28,10 +29,7 @@ class FrontendRoutesListenerTest extends \PHPUnit\Framework\TestCase
                 'oro_oauth2_server_protected_resource',
                 'oro_oauth2_server_metadata_well_known_alias',
                 'oro_oauth2_server_metadata',
-                'oro_oauth2_server_authenticate',
-                'oro_oauth2_server_frontend_metadata',
-                'oro_oauth2_server_frontend_authenticate',
-                'oro_oauth2_server_frontend_authenticate_visitor'
+                'oro_oauth2_server_authenticate'
             ],
             array_keys($routes)
         );

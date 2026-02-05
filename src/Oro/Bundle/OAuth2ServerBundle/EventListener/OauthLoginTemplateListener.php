@@ -2,21 +2,39 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\EventListener;
 
+use League\OAuth2\Server\Entities\ClientEntityInterface;
+use League\OAuth2\Server\Exception\OAuthServerException;
+use League\OAuth2\Server\Repositories\ClientRepositoryInterface;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
+use Oro\Bundle\OAuth2ServerBundle\League\Repository\ExtendedClientRepositoryInterface;
+use Psr\Http\Message\ServerRequestFactoryInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Symfony\Bridge\Twig\Attribute\Template;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
 
 /**
- * Changes templates for backoffice login routes.
+ * Changes Twig templates for back-office login routes.
  */
 class OauthLoginTemplateListener
 {
+    private ClientRepositoryInterface $clientRepository;
+    private ServerRequestFactoryInterface $serverRequestFactory;
     private array $routes = [];
 
     public function __construct(
         private readonly ClientManager $clientManager
     ) {
+    }
+
+    public function setClientRepository(ClientRepositoryInterface $clientRepository): void
+    {
+        $this->clientRepository = $clientRepository;
+    }
+
+    public function setServerRequestFactory(ServerRequestFactoryInterface $serverRequestFactory): void
+    {
+        $this->serverRequestFactory = $serverRequestFactory;
     }
 
     public function addRoute(string $route): void
@@ -27,46 +45,87 @@ class OauthLoginTemplateListener
     public function onKernelView(ViewEvent $event): void
     {
         $request = $event->getRequest();
-
-        $route = $request->attributes->get('_route');
-        if (!in_array($route, $this->routes, true)) {
+        if (!\in_array($request->attributes->get('_route'), $this->routes, true)) {
             return;
         }
 
-        $session = $request->hasSession() ? $request->getSession() : null;
-        if (!$session) {
-            return;
-        }
-        parse_str(parse_url($session->get('_security.main.target_path'), PHP_URL_QUERY), $parameters);
-        if (!array_key_exists('client_id', $parameters)) {
+        $targetRequest = $this->getTargetRequest($request);
+        if (null === $targetRequest) {
             return;
         }
 
         $templateReference = $this->getTemplateReference($request);
-        $template = $templateReference->getTemplate();
-        $templateReference->setTemplate(substr_replace($template, '@OroOAuth2Server', 0, strpos($template, '/')));
+        if (null === $templateReference) {
+            return;
+        }
+
+        $clientId = $this->getClientId($targetRequest);
+        if (!$clientId) {
+            return;
+        }
+
+        $template = $templateReference->template;
+        $templateReference->template = substr_replace($template, '@OroOAuth2Server', 0, strpos($template, '/'));
         $request->attributes->set('_oauth_login', true);
 
-        $client = $this->clientManager->getClient($parameters['client_id']);
-        $event->setControllerResult(array_merge($event->getControllerResult(), ['appName' => $client->getName()]));
+        $event->setControllerResult(array_merge(
+            $event->getControllerResult(),
+            ['appName' => $this->getClientName($clientId, $targetRequest)]
+        ));
     }
 
     private function getTemplateReference(Request $request): ?Template
     {
         $template = $request->attributes->get('_template');
-
-        if ($template instanceof Template) {
-            return $template;
+        if (\is_string($template)) {
+            $template = new Template($template);
+            $request->attributes->set('_template', $template);
+        } elseif (!$template instanceof Template) {
+            $template = null;
         }
 
-        if (is_string($template)) {
-            $parsedTemplate = new Template();
-            $parsedTemplate->setTemplate($template);
-            $request->attributes->set('_template', $parsedTemplate);
+        return $template;
+    }
 
-            return $parsedTemplate;
+    private function getTargetRequest(Request $request): ?ServerRequestInterface
+    {
+        $session = $request->hasSession() ? $request->getSession() : null;
+        if (null === $session) {
+            return null;
+        }
+        $targetUri = $session->get('_security.main.target_path');
+        if (!$targetUri) {
+            return null;
         }
 
-        return null;
+        parse_str(parse_url($targetUri, PHP_URL_QUERY), $parameters);
+
+        return $this->serverRequestFactory->createServerRequest('GET', $targetUri)
+            ->withQueryParams($parameters);
+    }
+
+    private function getClientId(ServerRequestInterface $targetRequest): ?string
+    {
+        return $targetRequest->getQueryParams()['client_id'] ?? null;
+    }
+
+    private function getClientName(string $clientId, ServerRequestInterface $targetRequest): ?string
+    {
+        return $this->getClient($clientId, $targetRequest)?->getName();
+    }
+
+    private function getClient(string $clientId, ServerRequestInterface $targetRequest): ?ClientEntityInterface
+    {
+        if ($this->clientRepository instanceof ExtendedClientRepositoryInterface
+            && $this->clientRepository->isSpecialClientIdentifier($clientId)
+        ) {
+            try {
+                return $this->clientRepository->findClientEntity($clientId, $targetRequest);
+            } catch (OAuthServerException) {
+                return null;
+            }
+        }
+
+        return $this->clientRepository->getClientEntity($clientId);
     }
 }

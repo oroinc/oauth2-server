@@ -1,6 +1,6 @@
 {% extends '@OroOAuth2Server/Security/layout.html.twig' %}
 {% block main_content %}
     {% set description_main = '' %}
-    {% set description_text = 'oro.oauth2server.auth_code.login_message'|trans({'%app_name%': appName}) %}
+    {% set description_text = appName ? 'oro.oauth2server.auth_code.login_message'|trans({'%app_name%': appName}) : '' %}
     {% include '@OroUser/Security/login_form.html.twig' %}
 {% endblock %}

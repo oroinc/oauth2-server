@@ -1,0 +1,5 @@
+services:
+    oro_oauth2_server.listener.no_frontend_routes_listener:
+        class: Oro\Bundle\OAuth2ServerBundle\EventListener\NoFrontendRoutesListener
+        tags:
+            - { name: kernel.event_listener, event: oro_distribution.route_collection.expose, method: onCollectionAutoload, priority: 200 }

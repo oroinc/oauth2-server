@@ -19,6 +19,7 @@ class Configuration implements ConfigurationInterface
         $node = $rootNode->children();
         $this->appendAuthorizationServer($node);
         $this->appendResourceServer($node);
+        $this->appendProtectedResources($node);
 
         return $treeBuilder;
     }
@@ -119,6 +120,67 @@ class Configuration implements ConfigurationInterface
                 ->prototype('scalar')
                     ->cannotBeEmpty()
                 ->end()
+            ->end();
+    }
+
+    private function appendProtectedResources(NodeBuilder $builder): void
+    {
+        $children = $builder
+            ->arrayNode('protected_resources')
+                ->info(
+                    'The list of OAuth protected resources which metadata can be obtained'
+                    . ' via "/.well-known/oauth-protected-resource/{resourcePath}".'
+                )
+                ->example(['/path/resource' => ['name' => 'My Resource', 'supported_scopes' => ['data:read']]])
+                ->useAttributeAsKey('path')
+                ->normalizeKeys(false)
+                ->prototype('array')
+                ->children();
+
+        $children
+            ->scalarNode('name')
+                ->info('The resource name.')
+                ->isRequired()
+                ->cannotBeEmpty()
+            ->end()
+            ->scalarNode('route')
+                ->info('The resource route name.')
+                ->isRequired()
+                ->cannotBeEmpty()
+            ->end()
+            ->arrayNode('route_params')
+                ->info('The resource route parameters.')
+                ->useAttributeAsKey('name')
+                ->normalizeKeys(false)
+                ->prototype('scalar')->end()
+                ->defaultValue([])
+            ->end()
+            ->arrayNode('supported_scopes')
+                ->info('Scopes supported by the resource.')
+                ->isRequired()
+                ->prototype('scalar')->cannotBeEmpty()->end()
+            ->end()
+            ->arrayNode('options')
+                ->info('Additional options for the resource.')
+                ->useAttributeAsKey('name')
+                ->normalizeKeys(false)
+                ->prototype('scalar')->end()
+            ->end();
+
+        $children->end()->end()
+            ->validate()
+                ->always(static function ($v): array {
+                    foreach ($v as $path => $resource) {
+                        if (!str_starts_with($path, '/')) {
+                            throw new \InvalidArgumentException(\sprintf(
+                                'The resource path "%s" must start with "/".',
+                                $path
+                            ));
+                        }
+                    }
+
+                    return $v;
+                })
             ->end();
     }
 }

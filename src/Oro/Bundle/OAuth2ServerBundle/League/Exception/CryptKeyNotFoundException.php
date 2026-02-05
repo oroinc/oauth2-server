@@ -2,20 +2,18 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\League\Exception;
 
-use League\OAuth2\Server\Exception\OAuthServerException;
+use Psr\Log\LogLevel;
 
 /**
  * This exception is thrown when an authentication is rejected because an encryption key file does not exist.
  */
-class CryptKeyNotFoundException extends OAuthServerException
+class CryptKeyNotFoundException extends ExtendedOAuthServerException
 {
-    /**
-     * @param \Throwable|null $previous The previous exception
-     *
-     * @return CryptKeyNotFoundException
-     */
-    public static function create(?\Throwable $previous = null): CryptKeyNotFoundException
+    public static function create(?\Throwable $previous = null): self
     {
-        return new static('The encryption key does not exist.', 0, 'no_encryption_key', 401, null, null, $previous);
+        $e = new static('The encryption key does not exist.', 0, 'no_encryption_key', 401, null, null, $previous);
+        $e->withLogLevel(LogLevel::WARNING);
+
+        return $e;
     }
 }

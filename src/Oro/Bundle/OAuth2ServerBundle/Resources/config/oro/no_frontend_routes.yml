@@ -1,22 +1,14 @@
-###############
-# common routes
-###############
-
 oro_oauth2_server_auth_token:
     path: '/oauth2-token'
     methods: [POST]
     defaults:
         _controller: Oro\Bundle\OAuth2ServerBundle\Controller\AuthorizationTokenController::tokenAction
-    options:
-        frontend: true
 
 oro_oauth2_server_auth_token_options:
     path: '/oauth2-token'
     methods: [OPTIONS]
     defaults:
         _controller: Oro\Bundle\OAuth2ServerBundle\Controller\AuthorizationTokenController::optionsAction
-    options:
-        frontend: true
 
 oro_oauth2_server_protected_resource:
     path: '/.well-known/oauth-protected-resource/{resourcePath}'
@@ -25,8 +17,6 @@ oro_oauth2_server_protected_resource:
         _controller: Oro\Bundle\OAuth2ServerBundle\Controller\ProtectedResourceController::resourceAction
     requirements:
         resourcePath: .+
-    options:
-        frontend: true
 
 oro_oauth2_server_metadata_well_known_alias:
     path: '/.well-known/oauth-authorization-server/{metadataPath}'
@@ -35,13 +25,6 @@ oro_oauth2_server_metadata_well_known_alias:
         _controller: Oro\Bundle\OAuth2ServerBundle\Controller\WellKnownMetadataController::metadataAction
     requirements:
         metadataPath: .+
-    options:
-        frontend: true
-
-
-####################
-# back-office routes
-####################
 
 oro_oauth2_server_metadata:
     path: '/oauth2-server'
@@ -54,32 +37,3 @@ oro_oauth2_server_authenticate:
     defaults:
         type: backoffice
         _controller: Oro\Bundle\OAuth2ServerBundle\Controller\AuthorizeClientController::authorizeAction
-
-
-###################
-# storefront routes
-###################
-
-oro_oauth2_server_frontend_metadata:
-    path: '/oauth2-server'
-    methods: [GET]
-    defaults:
-        _controller: oro_oauth2_server.frontend_metadata_controller::metadataAction
-    options:
-        frontend: true
-
-oro_oauth2_server_frontend_authenticate:
-    path: '/oauth2-token/authorize'
-    defaults:
-        type: frontend
-        _controller: oro_oauth2_server.frontend_authorize_client_controller::authorizeAction
-    options:
-        frontend: true
-
-oro_oauth2_server_frontend_authenticate_visitor:
-    path: '/oauth2-token/authorize-visitor'
-    methods: [GET]
-    defaults:
-        _controller: oro_oauth2_server.frontend_authorize_client_controller::authorizeVisitorAction
-    options:
-        frontend: true

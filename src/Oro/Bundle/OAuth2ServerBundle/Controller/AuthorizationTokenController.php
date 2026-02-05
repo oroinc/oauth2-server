@@ -10,7 +10,6 @@ use Oro\Bundle\OAuth2ServerBundle\Handler\GetAccessToken\Success\SuccessHandler;
 use Oro\Bundle\OAuth2ServerBundle\League\Exception\CryptKeyNotFoundException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
@@ -20,6 +19,19 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  */
 class AuthorizationTokenController extends AbstractController
 {
+    #[\Override]
+    public static function getSubscribedServices(): array
+    {
+        return array_merge(
+            parent::getSubscribedServices(),
+            [
+                AuthorizationServer::class,
+                SuccessHandler::class,
+                ExceptionHandler::class
+            ]
+        );
+    }
+
     /**
      * Gets OAuth 2.0 access token.
      */
@@ -30,9 +42,9 @@ class AuthorizationTokenController extends AbstractController
         try {
             $response = $this->getAuthorizationServer()
                 ->respondToAccessTokenRequest($serverRequest, $serverResponse);
-            $this->container->get(SuccessHandler::class)->handle($serverRequest);
+            $this->getSuccessHandler()->handle($serverRequest);
         } catch (OAuthServerException $e) {
-            $this->container->get(ExceptionHandler::class)->handle($serverRequest, $e);
+            $this->getExceptionHandler()->handle($serverRequest, $e);
             $response = $e->generateHttpResponse($serverResponse);
         }
 
@@ -139,28 +151,17 @@ class AuthorizationTokenController extends AbstractController
         try {
             return $this->container->get(AuthorizationServer::class);
         } catch (\LogicException $e) {
-            $this->getLogger()->warning($e->getMessage(), ['exception' => $e]);
-
             throw CryptKeyNotFoundException::create($e);
         }
     }
 
-    private function getLogger(): LoggerInterface
+    private function getSuccessHandler(): SuccessHandler
     {
-        return $this->container->get(LoggerInterface::class);
+        return $this->container->get(SuccessHandler::class);
     }
 
-    #[\Override]
-    public static function getSubscribedServices(): array
+    private function getExceptionHandler(): ExceptionHandler
     {
-        return array_merge(
-            parent::getSubscribedServices(),
-            [
-                SuccessHandler::class,
-                ExceptionHandler::class,
-                AuthorizationServer::class,
-                LoggerInterface::class,
-            ]
-        );
+        return $this->container->get(ExceptionHandler::class);
     }
 }

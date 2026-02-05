@@ -34,6 +34,11 @@ class AuthCodeGrantSuccessHandlerTest extends TestCase
         $this->handler->setEncryptionKey('test_encryption_key');
     }
 
+    private function generateAuthCode(array $payload): string
+    {
+        return Crypto::encryptWithPassword(json_encode($payload, JSON_THROW_ON_ERROR), 'test_encryption_key');
+    }
+
     public function testHandleForNonAuthCodeRequest(): void
     {
         $request = (new ServerRequest('GET', ''))
@@ -54,11 +59,7 @@ class AuthCodeGrantSuccessHandlerTest extends TestCase
         $request = (new ServerRequest('GET', ''))
             ->withParsedBody([
                 'grant_type' => 'authorization_code',
-                'client_id' => 'test_client',
-                'code' => Crypto::encryptWithPassword(json_encode(
-                    ['user_id' => 'test_user'],
-                    JSON_THROW_ON_ERROR
-                ), 'test_encryption_key')
+                'code' => $this->generateAuthCode(['client_id' => 'test_client', 'user_id' => 'test_user'])
             ]);
 
         $symfonyRequest = $this->createMock(Request::class);
@@ -81,11 +82,7 @@ class AuthCodeGrantSuccessHandlerTest extends TestCase
         $request = (new ServerRequest('GET', ''))
             ->withParsedBody([
                 'grant_type' => 'authorization_code',
-                'client_id' => 'test_client',
-                'code' => Crypto::encryptWithPassword(json_encode(
-                    ['user_id' => 'test_user'],
-                    JSON_THROW_ON_ERROR
-                ), 'test_encryption_key')
+                'code' => $this->generateAuthCode(['client_id' => 'test_client', 'user_id' => 'test_user'])
             ]);
 
         $this->requestStack->expects(self::once())
@@ -100,16 +97,37 @@ class AuthCodeGrantSuccessHandlerTest extends TestCase
         $this->handler->handle($request);
     }
 
+    public function testHandleWhenNoUserId(): void
+    {
+        $request = (new ServerRequest('GET', ''))
+            ->withParsedBody([
+                'grant_type' => 'authorization_code',
+                'code' => $this->generateAuthCode(['client_id' => 'test_client'])
+            ]);
+
+        $symfonyRequest = $this->createMock(Request::class);
+
+        $this->requestStack->expects(self::once())
+            ->method('getMainRequest')
+            ->willReturn($symfonyRequest);
+        $this->logAttemptHelper->expects(self::once())
+            ->method('logSuccessLoginAttempt')
+            ->with($request, 'OAuth');
+        $this->interactiveLoginEventDispatcher->expects(self::never())
+            ->method('dispatch');
+
+        $this->handler->handle($request);
+    }
+
     public function testHandleWhenUserIdentifierContainsVisitorSessionId(): void
     {
         $request = (new ServerRequest('GET', ''))
             ->withParsedBody([
                 'grant_type' => 'authorization_code',
-                'client_id' => 'test_client',
-                'code' => Crypto::encryptWithPassword(json_encode(
-                    ['user_id' => 'test_user|visitor:test_visitor_session_id'],
-                    JSON_THROW_ON_ERROR
-                ), 'test_encryption_key')
+                'code' => $this->generateAuthCode([
+                    'client_id' => 'test_client',
+                    'user_id' => 'test_user|visitor:test_visitor_session_id'
+                ])
             ]);
 
         $symfonyRequest = Request::create('/');
@@ -132,11 +150,10 @@ class AuthCodeGrantSuccessHandlerTest extends TestCase
         $request = (new ServerRequest('GET', ''))
             ->withParsedBody([
                 'grant_type' => 'authorization_code',
-                'client_id' => 'test_client',
-                'code' => Crypto::encryptWithPassword(json_encode(
-                    ['user_id' => 'test_user|visitor:'],
-                    JSON_THROW_ON_ERROR
-                ), 'test_encryption_key')
+                'code' => $this->generateAuthCode([
+                    'client_id' => 'test_client',
+                    'user_id' => 'test_user|visitor:'
+                ])
             ]);
 
         $symfonyRequest = Request::create('/');

@@ -2,13 +2,17 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\EventListener;
 
+use League\OAuth2\Server\Exception\OAuthServerException;
 use Oro\Bundle\LayoutBundle\Attribute\Layout;
 use Oro\Bundle\LayoutBundle\EventListener\LayoutListener;
-use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
 use Oro\Bundle\OAuth2ServerBundle\EventListener\OauthLoginLayoutListener;
+use Oro\Bundle\OAuth2ServerBundle\League\Entity\ClientEntity;
+use Oro\Bundle\OAuth2ServerBundle\League\Repository\ExtendedClientRepositoryInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\ServerRequestFactoryInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
@@ -16,19 +20,35 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 class OauthLoginLayoutListenerTest extends TestCase
 {
-    private ClientManager|MockObject $clientManager;
-    private LayoutListener|MockObject $layoutListener;
-
+    private LayoutListener&MockObject $layoutListener;
+    private ExtendedClientRepositoryInterface&MockObject $clientRepository;
+    private ServerRequestFactoryInterface&MockObject $serverRequestFactory;
     private OauthLoginLayoutListener $listener;
 
     protected function setUp(): void
     {
-        $this->clientManager = $this->createMock(ClientManager::class);
         $this->layoutListener = $this->createMock(LayoutListener::class);
+        $this->clientRepository = $this->createMock(ExtendedClientRepositoryInterface::class);
+        $this->serverRequestFactory = $this->createMock(ServerRequestFactoryInterface::class);
 
-        $this->listener = new OauthLoginLayoutListener($this->clientManager, $this->layoutListener);
+        $this->listener = new OauthLoginLayoutListener(
+            $this->createMock(ClientManager::class),
+            $this->layoutListener
+        );
+        $this->listener->setClientRepository($this->clientRepository);
+        $this->listener->setServerRequestFactory($this->serverRequestFactory);
         $this->listener->addRoute('test_route');
         $this->listener->addRoute('test1_route');
+    }
+
+    private function getEvent(Request $request): ViewEvent
+    {
+        return new ViewEvent(
+            $this->createMock(HttpKernelInterface::class),
+            $request,
+            HttpKernelInterface::MAIN_REQUEST,
+            []
+        );
     }
 
     public function testOnKernelViewWithNonSupportedRoute(): void
@@ -36,16 +56,10 @@ class OauthLoginLayoutListenerTest extends TestCase
         $request = new Request();
         $request->attributes->set('_route', 'non_supported_route');
 
-        $event = new ViewEvent(
-            $this->createMock(HttpKernelInterface::class),
-            $request,
-            HttpKernelInterface::MAIN_REQUEST,
-            []
-        );
-
+        $event = $this->getEvent($request);
         $this->layoutListener->expects(self::once())
             ->method('onKernelView')
-            ->with($event);
+            ->with(self::identicalTo($event));
 
         $this->listener->onKernelView($event);
 
@@ -58,16 +72,10 @@ class OauthLoginLayoutListenerTest extends TestCase
         $request = new Request();
         $request->attributes->set('_route', 'test_route');
 
-        $event = new ViewEvent(
-            $this->createMock(HttpKernelInterface::class),
-            $request,
-            HttpKernelInterface::MAIN_REQUEST,
-            []
-        );
-
+        $event = $this->getEvent($request);
         $this->layoutListener->expects(self::once())
             ->method('onKernelView')
-            ->with($event);
+            ->with(self::identicalTo($event));
 
         $this->listener->onKernelView($event);
 
@@ -88,16 +96,10 @@ class OauthLoginLayoutListenerTest extends TestCase
             ->with('_security.frontend.target_path')
             ->willReturn(null);
 
-        $event = new ViewEvent(
-            $this->createMock(HttpKernelInterface::class),
-            $request,
-            HttpKernelInterface::MAIN_REQUEST,
-            []
-        );
-
+        $event = $this->getEvent($request);
         $this->layoutListener->expects(self::once())
             ->method('onKernelView')
-            ->with($event);
+            ->with(self::identicalTo($event));
 
         $this->listener->onKernelView($event);
 
@@ -118,16 +120,10 @@ class OauthLoginLayoutListenerTest extends TestCase
             ->with('_security.frontend.target_path')
             ->willReturn('http://localhost');
 
-        $event = new ViewEvent(
-            $this->createMock(HttpKernelInterface::class),
-            $request,
-            HttpKernelInterface::MAIN_REQUEST,
-            []
-        );
-
+        $event = $this->getEvent($request);
         $this->layoutListener->expects(self::once())
             ->method('onKernelView')
-            ->with($event);
+            ->with(self::identicalTo($event));
 
         $this->listener->onKernelView($event);
 
@@ -137,10 +133,12 @@ class OauthLoginLayoutListenerTest extends TestCase
 
     public function testOnKernelView(): void
     {
-        $client = new Client();
+        $client = new ClientEntity();
         $client->setName('My App');
         $request = new Request();
         $request->attributes->set('_route', 'test_route');
+        $targetRequestUri = 'http://localhost?client_id=123567';
+        $targetRequestQueryParams = ['client_id' => '123567'];
 
         $session = $this->createMock(Session::class);
         $request->setSession($session);
@@ -148,23 +146,34 @@ class OauthLoginLayoutListenerTest extends TestCase
         $session->expects(self::once())
             ->method('get')
             ->with('_security.frontend.target_path')
-            ->willReturn('http://localhost?client_id=123567');
+            ->willReturn($targetRequestUri);
 
-        $event = new ViewEvent(
-            $this->createMock(HttpKernelInterface::class),
-            $request,
-            HttpKernelInterface::MAIN_REQUEST,
-            []
-        );
+        $targetRequest = $this->createMock(ServerRequestInterface::class);
+        $targetRequest->expects(self::once())
+            ->method('withQueryParams')
+            ->with($targetRequestQueryParams)
+            ->willReturnSelf();
+        $targetRequest->expects(self::once())
+            ->method('getQueryParams')
+            ->willReturn($targetRequestQueryParams);
+        $this->serverRequestFactory->expects(self::once())
+            ->method('createServerRequest')
+            ->with('GET', $targetRequestUri)
+            ->willReturn($targetRequest);
 
-        $this->clientManager->expects(self::once())
-            ->method('getClient')
+        $this->clientRepository->expects(self::once())
+            ->method('isSpecialClientIdentifier')
+            ->with('123567')
+            ->willReturn(false);
+        $this->clientRepository->expects(self::once())
+            ->method('getClientEntity')
             ->with('123567')
             ->willReturn($client);
 
+        $event = $this->getEvent($request);
         $this->layoutListener->expects(self::once())
             ->method('onKernelView')
-            ->with($event);
+            ->with(self::identicalTo($event));
 
         $this->listener->onKernelView($event);
 
@@ -175,21 +184,170 @@ class OauthLoginLayoutListenerTest extends TestCase
         self::assertTrue($request->attributes->get('_oauth_login'));
     }
 
+    public function testOnKernelViewForSpecialClientId(): void
+    {
+        $client = new ClientEntity();
+        $client->setName('My App');
+        $request = new Request();
+        $request->attributes->set('_route', 'test_route');
+        $targetRequestUri = 'http://localhost?client_id=123567';
+        $targetRequestQueryParams = ['client_id' => '123567'];
+
+        $session = $this->createMock(Session::class);
+        $request->setSession($session);
+
+        $session->expects(self::once())
+            ->method('get')
+            ->with('_security.frontend.target_path')
+            ->willReturn($targetRequestUri);
+
+        $targetRequest = $this->createMock(ServerRequestInterface::class);
+        $targetRequest->expects(self::once())
+            ->method('withQueryParams')
+            ->with($targetRequestQueryParams)
+            ->willReturnSelf();
+        $targetRequest->expects(self::once())
+            ->method('getQueryParams')
+            ->willReturn($targetRequestQueryParams);
+        $this->serverRequestFactory->expects(self::once())
+            ->method('createServerRequest')
+            ->with('GET', $targetRequestUri)
+            ->willReturn($targetRequest);
+
+        $this->clientRepository->expects(self::once())
+            ->method('isSpecialClientIdentifier')
+            ->with('123567')
+            ->willReturn(true);
+        $this->clientRepository->expects(self::once())
+            ->method('findClientEntity')
+            ->with('123567', self::identicalTo($targetRequest))
+            ->willReturn($client);
+
+        $event = $this->getEvent($request);
+        $this->layoutListener->expects(self::once())
+            ->method('onKernelView')
+            ->with(self::identicalTo($event));
+
+        $this->listener->onKernelView($event);
+
+        self::assertEquals(
+            ['data' => ['appName' => 'My App'], 'route_name' => 'oauth_test_route'],
+            $event->getControllerResult()
+        );
+        self::assertTrue($request->attributes->get('_oauth_login'));
+    }
+
+    public function testOnKernelViewWhenClientNotFound(): void
+    {
+        $request = new Request();
+        $request->attributes->set('_route', 'test_route');
+        $targetRequestUri = 'http://localhost?client_id=123567';
+        $targetRequestQueryParams = ['client_id' => '123567'];
+
+        $session = $this->createMock(Session::class);
+        $request->setSession($session);
+
+        $session->expects(self::once())
+            ->method('get')
+            ->with('_security.frontend.target_path')
+            ->willReturn($targetRequestUri);
+
+        $targetRequest = $this->createMock(ServerRequestInterface::class);
+        $targetRequest->expects(self::once())
+            ->method('withQueryParams')
+            ->with($targetRequestQueryParams)
+            ->willReturnSelf();
+        $targetRequest->expects(self::once())
+            ->method('getQueryParams')
+            ->willReturn($targetRequestQueryParams);
+        $this->serverRequestFactory->expects(self::once())
+            ->method('createServerRequest')
+            ->with('GET', $targetRequestUri)
+            ->willReturn($targetRequest);
+
+        $this->clientRepository->expects(self::once())
+            ->method('isSpecialClientIdentifier')
+            ->with('123567')
+            ->willReturn(true);
+        $this->clientRepository->expects(self::once())
+            ->method('findClientEntity')
+            ->with('123567', self::identicalTo($targetRequest))
+            ->willReturn(null);
+
+        $event = $this->getEvent($request);
+        $this->layoutListener->expects(self::once())
+            ->method('onKernelView')
+            ->with(self::identicalTo($event));
+
+        $this->listener->onKernelView($event);
+
+        self::assertEquals(
+            ['data' => ['appName' => null], 'route_name' => 'oauth_test_route'],
+            $event->getControllerResult()
+        );
+        self::assertTrue($request->attributes->get('_oauth_login'));
+    }
+
+    public function testOnKernelViewWhenClientNotFoundDueToInvalidRequest(): void
+    {
+        $request = new Request();
+        $request->attributes->set('_route', 'test_route');
+        $targetRequestUri = 'http://localhost?client_id=123567';
+        $targetRequestQueryParams = ['client_id' => '123567'];
+
+        $session = $this->createMock(Session::class);
+        $request->setSession($session);
+
+        $session->expects(self::once())
+            ->method('get')
+            ->with('_security.frontend.target_path')
+            ->willReturn($targetRequestUri);
+
+        $targetRequest = $this->createMock(ServerRequestInterface::class);
+        $targetRequest->expects(self::once())
+            ->method('withQueryParams')
+            ->with($targetRequestQueryParams)
+            ->willReturnSelf();
+        $targetRequest->expects(self::once())
+            ->method('getQueryParams')
+            ->willReturn($targetRequestQueryParams);
+        $this->serverRequestFactory->expects(self::once())
+            ->method('createServerRequest')
+            ->with('GET', $targetRequestUri)
+            ->willReturn($targetRequest);
+
+        $this->clientRepository->expects(self::once())
+            ->method('isSpecialClientIdentifier')
+            ->with('123567')
+            ->willReturn(true);
+        $this->clientRepository->expects(self::once())
+            ->method('findClientEntity')
+            ->with('123567', self::identicalTo($targetRequest))
+            ->willThrowException(OAuthServerException::serverError('some error'));
+
+        $event = $this->getEvent($request);
+        $this->layoutListener->expects(self::once())
+            ->method('onKernelView')
+            ->with(self::identicalTo($event));
+
+        $this->listener->onKernelView($event);
+
+        self::assertEquals(
+            ['data' => ['appName' => null], 'route_name' => 'oauth_test_route'],
+            $event->getControllerResult()
+        );
+        self::assertTrue($request->attributes->get('_oauth_login'));
+    }
+
     public function testOnKernelViewWithAuthRoute(): void
     {
         $request = new Request();
         $request->attributes->set('_route', 'oro_oauth2_server_frontend_authenticate');
 
-        $event = new ViewEvent(
-            $this->createMock(HttpKernelInterface::class),
-            $request,
-            HttpKernelInterface::MAIN_REQUEST,
-            []
-        );
-
+        $event = $this->getEvent($request);
         $this->layoutListener->expects(self::once())
             ->method('onKernelView')
-            ->with($event);
+            ->with(self::identicalTo($event));
 
         $this->listener->onKernelView($event);
 

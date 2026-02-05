@@ -9,7 +9,7 @@ use Psr\Http\Message\ServerRequestInterface;
 /**
  * Logs the exception during the OAuth application authorization failure.
  */
-class LogAuthorizeClientHandler
+class LogAuthorizeClientHandler implements ExceptionHandlerInterface
 {
     private AuthCodeLogAttemptHelper $logAttemptHelper;
 

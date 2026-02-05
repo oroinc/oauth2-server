@@ -2,9 +2,16 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\EventListener;
 
+use League\OAuth2\Server\Entities\ClientEntityInterface;
+use League\OAuth2\Server\Exception\OAuthServerException;
+use League\OAuth2\Server\Repositories\ClientRepositoryInterface;
 use Oro\Bundle\LayoutBundle\Attribute\Layout;
 use Oro\Bundle\LayoutBundle\EventListener\LayoutListener;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
+use Oro\Bundle\OAuth2ServerBundle\League\Repository\ExtendedClientRepositoryInterface;
+use Psr\Http\Message\ServerRequestFactoryInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
 
 /**
@@ -15,12 +22,24 @@ class OauthLoginLayoutListener
 {
     private const AUTHENTICATE_ROUTE = 'oro_oauth2_server_frontend_authenticate';
 
+    private ClientRepositoryInterface $clientRepository;
+    private ServerRequestFactoryInterface $serverRequestFactory;
     private array $routes = [];
 
     public function __construct(
         private ClientManager $clientManager,
         private LayoutListener $layoutListener
     ) {
+    }
+
+    public function setClientRepository(ClientRepositoryInterface $clientRepository): void
+    {
+        $this->clientRepository = $clientRepository;
+    }
+
+    public function setServerRequestFactory(ServerRequestFactoryInterface $serverRequestFactory): void
+    {
+        $this->serverRequestFactory = $serverRequestFactory;
     }
 
     public function addRoute(string $route): void
@@ -32,31 +51,68 @@ class OauthLoginLayoutListener
     {
         $request = $event->getRequest();
         $route = $request->attributes->get('_route');
-        if (in_array($route, $this->routes, true)) {
-            $session = $request->hasSession() ? $request->getSession() : null;
-            if ($session) {
-                parse_str(
-                    parse_url($session->get('_security.frontend.target_path'), PHP_URL_QUERY),
-                    $parameters
-                );
-                if (array_key_exists('client_id', $parameters) && is_array($event->getControllerResult())) {
+        if (\in_array($route, $this->routes, true)) {
+            $targetRequest = $this->getTargetRequest($request);
+            if (null !== $targetRequest) {
+                $clientId = $this->getClientId($targetRequest);
+                if ($clientId) {
                     $controllerResult = $event->getControllerResult();
-                    $controllerResult['data']['appName'] = $this->clientManager
-                        ->getClient($parameters['client_id'])
-                        ->getName();
-                    $controllerResult['route_name'] = 'oauth_' . $request->attributes->get('_route');
-                    $event->setControllerResult($controllerResult);
-
-                    $request->attributes->set('_oauth_login', true);
+                    if (\is_array($controllerResult)) {
+                        $request->attributes->set('_oauth_login', true);
+                        $controllerResult['data']['appName'] = $this->getClientName($clientId, $targetRequest);
+                        $controllerResult['route_name'] = 'oauth_' . $route;
+                        $event->setControllerResult($controllerResult);
+                    }
                 }
             }
         }
 
-        if ($route === self::AUTHENTICATE_ROUTE) {
-            $layout = new Layout();
-            $request->attributes->set('_layout', $layout);
+        if (self::AUTHENTICATE_ROUTE === $route) {
+            $request->attributes->set('_layout', new Layout());
         }
 
         $this->layoutListener->onKernelView($event);
+    }
+
+    private function getTargetRequest(Request $request): ?ServerRequestInterface
+    {
+        $session = $request->hasSession() ? $request->getSession() : null;
+        if (null === $session) {
+            return null;
+        }
+        $targetUri = $session->get('_security.frontend.target_path');
+        if (!$targetUri) {
+            return null;
+        }
+
+        parse_str(parse_url($targetUri, PHP_URL_QUERY), $parameters);
+
+        return $this->serverRequestFactory->createServerRequest('GET', $targetUri)
+            ->withQueryParams($parameters);
+    }
+
+    private function getClientId(ServerRequestInterface $targetRequest): ?string
+    {
+        return $targetRequest->getQueryParams()['client_id'] ?? null;
+    }
+
+    private function getClientName(string $clientId, ServerRequestInterface $targetRequest): ?string
+    {
+        return $this->getClient($clientId, $targetRequest)?->getName();
+    }
+
+    private function getClient(string $clientId, ServerRequestInterface $targetRequest): ?ClientEntityInterface
+    {
+        if ($this->clientRepository instanceof ExtendedClientRepositoryInterface
+            && $this->clientRepository->isSpecialClientIdentifier($clientId)
+        ) {
+            try {
+                return $this->clientRepository->findClientEntity($clientId, $targetRequest);
+            } catch (OAuthServerException) {
+                return null;
+            }
+        }
+
+        return $this->clientRepository->getClientEntity($clientId);
     }
 }

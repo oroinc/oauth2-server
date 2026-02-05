@@ -3,10 +3,22 @@
 namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\League\Entity;
 
 use Oro\Bundle\OAuth2ServerBundle\League\Entity\ClientEntity;
+use PHPUnit\Framework\TestCase;
 
-class ClientEntityTest extends \PHPUnit\Framework\TestCase
+class ClientEntityTest extends TestCase
 {
-    public function testName()
+    public function testIdentifier(): void
+    {
+        $identifier = 'test';
+
+        $entity = new ClientEntity();
+        self::assertNull($entity->getIdentifier());
+
+        $entity->setIdentifier($identifier);
+        self::assertSame($identifier, $entity->getIdentifier());
+    }
+
+    public function testName(): void
     {
         $name = 'test';
 
@@ -17,7 +29,7 @@ class ClientEntityTest extends \PHPUnit\Framework\TestCase
         self::assertSame($name, $entity->getName());
     }
 
-    public function testRedirectUri()
+    public function testRedirectUri(): void
     {
         $uris = ['test'];
 
@@ -31,7 +43,19 @@ class ClientEntityTest extends \PHPUnit\Framework\TestCase
         self::assertSame($uris[0], $entity->getRedirectUri());
     }
 
-    public function testFrontend()
+    public function testConfidential(): void
+    {
+        $entity = new ClientEntity();
+        self::assertFalse($entity->isConfidential());
+
+        $entity->setConfidential(true);
+        self::assertTrue($entity->isConfidential());
+
+        $entity->setConfidential(false);
+        self::assertFalse($entity->isConfidential());
+    }
+
+    public function testFrontend(): void
     {
         $entity = new ClientEntity();
         self::assertFalse($entity->isFrontend());
@@ -43,7 +67,7 @@ class ClientEntityTest extends \PHPUnit\Framework\TestCase
         self::assertFalse($entity->isFrontend());
     }
 
-    public function testPlainTextPkceAllowed()
+    public function testPlainTextPkceAllowed(): void
     {
         $entity = new ClientEntity();
         self::assertFalse($entity->isPlainTextPkceAllowed());
@@ -53,5 +77,17 @@ class ClientEntityTest extends \PHPUnit\Framework\TestCase
 
         $entity->setPlainTextPkceAllowed(false);
         self::assertFalse($entity->isPlainTextPkceAllowed());
+    }
+
+    public function testSkipAuthorizeClientAllowed(): void
+    {
+        $entity = new ClientEntity();
+        self::assertFalse($entity->isSkipAuthorizeClientAllowed());
+
+        $entity->setSkipAuthorizeClientAllowed(true);
+        self::assertTrue($entity->isSkipAuthorizeClientAllowed());
+
+        $entity->setSkipAuthorizeClientAllowed(false);
+        self::assertFalse($entity->isSkipAuthorizeClientAllowed());
     }
 }

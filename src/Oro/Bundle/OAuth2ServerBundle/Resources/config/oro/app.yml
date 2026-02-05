@@ -21,6 +21,11 @@ security:
             migrate_from:
                 - sha512
     firewalls:
+        oauth2_authorization_server_well_known_resource:
+            pattern: '^/.well-known/(oauth-protected-resource|oauth-authorization-server)/*'
+            methods: [GET]
+            security: false
+            stateless: true
         oauth2_authorization_server:
             pattern: '^/oauth2-token$'
             stateless: true
