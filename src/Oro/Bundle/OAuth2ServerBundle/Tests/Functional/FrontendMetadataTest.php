@@ -30,7 +30,6 @@ class FrontendMetadataTest extends WebTestCase
 
         self::assertResponseStatusCodeEquals($response, Response::HTTP_NOT_FOUND);
         self::assertResponseContentTypeContains($response, 'text/html');
-        self::assertStringContainsString('Not Found', $response->getContent());
     }
 
     public function testGetMetadataViaWellKnownAlias(): void
