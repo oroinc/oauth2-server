@@ -570,7 +570,6 @@ services:
 
     oro_oauth2_server.twig.oauth2server_extension:
         class: Oro\Bundle\OAuth2ServerBundle\Twig\OAuth2ServerExtension
-        public: false
         arguments:
             - '@oro_oauth2_server.provider.api_doc_view_provider'
         tags:
