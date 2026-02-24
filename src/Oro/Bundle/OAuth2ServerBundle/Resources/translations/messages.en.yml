@@ -104,9 +104,12 @@ oro:
             login_message: Sign in to continue to "%app_name%".
             authorize_message: '"%app_name%" wants to access your account.'
             authorize_description: |
-                <p>Granting <b>"%app_name%"</b> permission will provide access to all API resources available to your user based on your role and permissions. This means that this application will be able to potentially read, edit, and delete information on your behalf.</p>
+                <p>Granting <b>"%app_name%"</b> permission will provide access to %resources% This means that this application will be able to potentially read, edit, and delete information on your behalf.</p>
                 <p>Please be selective of which third party applications are granted access as well as the level of permission granted to them.</p>
-
+            authorize_api_resources: >
+                {0} all API resources available to you based on your role and permissions.
+                |{1} "%names%" resources available to you based on your role and permissions.
+                |]1,Inf[ the following resources available to you based on your role and permissions: <ul class="list-unstyled"><li>%names%</li></ul>
         login_source:
             oauth: OAuth token
             oauth_auth_code: OAuth auth code

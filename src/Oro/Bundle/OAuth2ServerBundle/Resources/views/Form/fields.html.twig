@@ -1,0 +1,5 @@
+{% block _oro_oauth2_client_apis_entry_label %}
+    {% import '@OroUI/macros.html.twig' as UI %}
+    {{ form_label(form) }}
+    {{ UI.tooltip(oro_oauth2_api_view_description(form.vars.value), {}, null, false, null, null, false) }}
+{% endblock %}

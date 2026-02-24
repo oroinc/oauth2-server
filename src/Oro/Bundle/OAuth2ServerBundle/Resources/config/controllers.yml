@@ -16,6 +16,7 @@ services:
             - [setContainer, ['@Psr\Container\ContainerInterface']]
         tags:
             - { name: container.service_subscriber }
+            - { name: container.service_subscriber, id: oro_oauth2_server.league.repository.client_repository, key: League\OAuth2\Server\Repositories\ClientRepositoryInterface }
 
     Oro\Bundle\OAuth2ServerBundle\Controller\AuthorizeClientController:
         calls:
@@ -24,6 +25,9 @@ services:
             - { name: container.service_subscriber }
             - { name: container.service_subscriber, id: oro_oauth2_server.handler.authorize_client.handler, key: Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\AuthorizeClientHandler }
             - { name: container.service_subscriber, id: oro_oauth2_server.handler.authorize_client.exception_handler, key: Oro\Bundle\OAuth2ServerBundle\Handler\AuthorizeClient\Exception\ExceptionHandler }
+            - { name: container.service_subscriber, id: oro_oauth2_server.provider.api_doc_view_provider, key: Oro\Bundle\OAuth2ServerBundle\Provider\ApiDocViewProvider }
+            - { name: container.service_subscriber, id: oro_ui.html_tag_helper, key: Oro\Bundle\UIBundle\Tools\HtmlTagHelper }
+            - { name: container.service_subscriber, id: oro_ui.user_agent_provider, key: Oro\Bundle\UIBundle\Provider\UserAgentProviderInterface }
 
     Oro\Bundle\OAuth2ServerBundle\Controller\AuthorizationTokenController:
         calls:

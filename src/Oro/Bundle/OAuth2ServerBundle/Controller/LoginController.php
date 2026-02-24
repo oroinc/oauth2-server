@@ -3,8 +3,11 @@
 namespace Oro\Bundle\OAuth2ServerBundle\Controller;
 
 use Doctrine\Persistence\ManagerRegistry;
+use League\OAuth2\Server\Repositories\ClientRepositoryInterface;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
+use Oro\Bundle\OAuth2ServerBundle\League\Repository\ExtendedClientRepositoryInterface;
+use Psr\Http\Message\ServerRequestFactoryInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -25,7 +28,9 @@ class LoginController extends AbstractController
             CsrfTokenManagerInterface::class,
             AuthenticationUtils::class,
             'doctrine' => ManagerRegistry::class,
-            ClientManager::class
+            ClientManager::class,
+            ClientRepositoryInterface::class,
+            ServerRequestFactoryInterface::class
         ]);
     }
 
@@ -44,14 +49,21 @@ class LoginController extends AbstractController
             throw $this->createNotFoundException();
         }
 
-        parse_str(parse_url($session->get($sessionParameterName), PHP_URL_QUERY), $parameters);
+        $targetPath = $session->get($sessionParameterName);
+        parse_str(parse_url($targetPath, PHP_URL_QUERY), $parameters);
 
-        if (empty($parameters['client_id'])) {
+        $clientId = $parameters['client_id'] ?? null;
+        if (!$clientId) {
             throw $this->createNotFoundException();
         }
 
-        $client = $this->getClient($parameters['client_id']);
-        if (null === $client || ($client->isFrontend() !== ('frontend' === $type))) {
+        $client = $this->getClient($clientId);
+        if (null !== $client && ($client->isFrontend() !== ('frontend' === $type))) {
+            throw $this->createNotFoundException();
+        }
+
+        $clientName = $client?->getName() ?? $this->getClientName($clientId, $targetPath, $parameters);
+        if (null === $clientName) {
             throw $this->createNotFoundException();
         }
 
@@ -62,7 +74,7 @@ class LoginController extends AbstractController
                 'error'         => $this->container->get(AuthenticationUtils::class)->getLastAuthenticationError(),
                 'csrf_token'    => $this->container->get(CsrfTokenManagerInterface::class)->getToken('authenticate')
                     ->getValue(),
-                'appName'       => $client->getName()
+                'appName'       => $clientName
             ]
         );
     }
@@ -78,5 +90,23 @@ class LoginController extends AbstractController
     private function getClient(string $clientId): ?Client
     {
         return $this->container->get(ClientManager::class)->getClient($clientId);
+    }
+
+    private function getClientName(string $clientId, string $targetPath, array $targetParameters): ?string
+    {
+        /** @var ClientRepositoryInterface $clientRepository */
+        $clientRepository = $this->container->get(ClientRepositoryInterface::class);
+        if ($clientRepository instanceof ExtendedClientRepositoryInterface
+            && $clientRepository->isSpecialClientIdentifier($clientId)
+        ) {
+            /** @var ServerRequestFactoryInterface $serverRequestFactory */
+            $serverRequestFactory = $this->container->get(ServerRequestFactoryInterface::class);
+            $serverRequest = $serverRequestFactory->createServerRequest('GET', $targetPath)
+                ->withQueryParams($targetParameters);
+
+            return $clientRepository->findClientName($clientId, $serverRequest);
+        }
+
+        return null;
     }
 }

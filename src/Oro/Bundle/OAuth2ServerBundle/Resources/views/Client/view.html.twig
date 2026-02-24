@@ -61,16 +61,15 @@
     {% endif %}
     {% set grants %}
         {%- for grant in entity.grants -%}
-            {%- if not loop.first %}, {% endif -%}
-            {{ ('oro.oauth2server.grant_types.' ~ grant)|trans }}
+            {%- if not loop.first %}, {% endif %}{{ ('oro.oauth2server.grant_types.' ~ grant)|trans }}
         {%- endfor -%}
     {% endset %}
     {% if entity.allApis %}
         {% set apis = 'oro.oauth2server.client.apis.all'|trans %}
     {% else %}
         {% set apis %}
-            {%- for api in entity.apis -%}
-                {%- if not loop.first %}, {% endif %}{{ oro_oauth2_api_view_label(entity.frontend, api) }}
+            {%- for apiLabel in oro_oauth2_api_view_labels(entity.frontend, entity.apis) -%}
+                {%- if not loop.first %}, {% endif %}{{ apiLabel|oro_html_sanitize }}
             {%- endfor -%}
         {% endset %}
     {% endif %}
