@@ -2,7 +2,6 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\EventListener;
 
-use League\OAuth2\Server\Exception\OAuthServerException;
 use Oro\Bundle\OAuth2ServerBundle\EventListener\OAuthLoginTemplateListener;
 use Oro\Bundle\OAuth2ServerBundle\League\Entity\ClientEntity;
 use Oro\Bundle\OAuth2ServerBundle\League\Repository\ExtendedClientRepositoryInterface;
@@ -161,8 +160,6 @@ class OAuthLoginTemplateListenerTest extends TestCase
 
     public function testOnKernelViewForSpecialClientId(): void
     {
-        $client = new ClientEntity();
-        $client->setName('My App');
         $request = new Request();
         $request->attributes->set('_route', 'test_route');
         $request->attributes->set('_template', '@OroUserBundle/Some/template.html.twig');
@@ -195,9 +192,9 @@ class OAuthLoginTemplateListenerTest extends TestCase
             ->with('123567')
             ->willReturn(true);
         $this->clientRepository->expects(self::once())
-            ->method('findClientEntity')
+            ->method('findClientName')
             ->with('123567', self::identicalTo($targetRequest))
-            ->willReturn($client);
+            ->willReturn('My App');
 
         $event = $this->getEvent($request);
         $this->listener->onKernelView($event);
@@ -244,58 +241,9 @@ class OAuthLoginTemplateListenerTest extends TestCase
             ->with('123567')
             ->willReturn(true);
         $this->clientRepository->expects(self::once())
-            ->method('findClientEntity')
+            ->method('findClientName')
             ->with('123567', self::identicalTo($targetRequest))
             ->willReturn(null);
-
-        $event = $this->getEvent($request);
-        $this->listener->onKernelView($event);
-
-        self::assertEquals(['appName' => null], $event->getControllerResult());
-        self::assertTrue($request->attributes->get('_oauth_login'));
-        self::assertEquals(
-            '@OroOAuth2Server/Some/template.html.twig',
-            $request->attributes->get('_template')->template
-        );
-    }
-
-    public function testOnKernelViewWhenClientNotFoundDueToInvalidRequest(): void
-    {
-        $request = new Request();
-        $request->attributes->set('_route', 'test_route');
-        $request->attributes->set('_template', '@OroUserBundle/Some/template.html.twig');
-        $targetRequestUri = 'http://localhost?client_id=123567';
-        $targetRequestQueryParams = ['client_id' => '123567'];
-
-        $session = $this->createMock(Session::class);
-        $request->setSession($session);
-
-        $session->expects(self::once())
-            ->method('get')
-            ->with('_security.main.target_path')
-            ->willReturn($targetRequestUri);
-
-        $targetRequest = $this->createMock(ServerRequestInterface::class);
-        $targetRequest->expects(self::once())
-            ->method('withQueryParams')
-            ->with($targetRequestQueryParams)
-            ->willReturnSelf();
-        $targetRequest->expects(self::once())
-            ->method('getQueryParams')
-            ->willReturn($targetRequestQueryParams);
-        $this->serverRequestFactory->expects(self::once())
-            ->method('createServerRequest')
-            ->with('GET', $targetRequestUri)
-            ->willReturn($targetRequest);
-
-        $this->clientRepository->expects(self::once())
-            ->method('isSpecialClientIdentifier')
-            ->with('123567')
-            ->willReturn(true);
-        $this->clientRepository->expects(self::once())
-            ->method('findClientEntity')
-            ->with('123567', self::identicalTo($targetRequest))
-            ->willThrowException(OAuthServerException::serverError('some error'));
 
         $event = $this->getEvent($request);
         $this->listener->onKernelView($event);

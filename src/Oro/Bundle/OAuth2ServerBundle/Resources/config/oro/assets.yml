@@ -1,0 +1,3 @@
+css:
+    inputs:
+        - 'bundles/orooauth2server/css/scss/main.scss'

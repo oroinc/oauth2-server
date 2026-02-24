@@ -30,4 +30,9 @@ interface ExtendedClientRepositoryInterface extends ClientRepositoryInterface
         string $clientIdentifier,
         ServerRequestInterface $request
     ): ?ClientEntityInterface;
+
+    /**
+     * Finds a client name by its identifier and additional data from the incoming HTTP request.
+     */
+    public function findClientName(string $clientIdentifier, ServerRequestInterface $request): ?string;
 }

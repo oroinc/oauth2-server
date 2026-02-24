@@ -2,8 +2,8 @@
     {{- 'oro.oauth2server.client.apis.all'|trans -}}
 {%- else -%}
     {%- set apis -%}
-        {%- for api in record.getValue('apis') -%}
-            {%- if not loop.first %}, {% endif %}{{ oro_oauth2_api_view_label(record.getValue('frontend'), api) }}
+        {%- for apiLabel in oro_oauth2_api_view_labels(record.getValue('frontend'), record.getValue('apis')) -%}
+            {%- if not loop.first %}, {% endif %}{{ apiLabel|oro_html_sanitize }}
         {%- endfor -%}
     {%- endset -%}
     {{- apis -}}

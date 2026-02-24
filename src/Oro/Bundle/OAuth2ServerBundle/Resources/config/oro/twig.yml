@@ -1,0 +1,2 @@
+bundles:
+    - '@OroOAuth2Server/Form/fields.html.twig'

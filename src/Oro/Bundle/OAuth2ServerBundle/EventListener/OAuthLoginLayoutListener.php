@@ -2,8 +2,6 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\EventListener;
 
-use League\OAuth2\Server\Entities\ClientEntityInterface;
-use League\OAuth2\Server\Exception\OAuthServerException;
 use League\OAuth2\Server\Repositories\ClientRepositoryInterface;
 use Oro\Bundle\LayoutBundle\Attribute\Layout;
 use Oro\Bundle\LayoutBundle\EventListener\LayoutListener;
@@ -86,22 +84,13 @@ class OAuthLoginLayoutListener
 
     private function getClientName(string $clientId, ServerRequestInterface $targetRequest): ?string
     {
-        return $this->getClient($clientId, $targetRequest)?->getName();
-    }
-
-    private function getClient(string $clientId, ServerRequestInterface $targetRequest): ?ClientEntityInterface
-    {
         if (
             $this->clientRepository instanceof ExtendedClientRepositoryInterface
             && $this->clientRepository->isSpecialClientIdentifier($clientId)
         ) {
-            try {
-                return $this->clientRepository->findClientEntity($clientId, $targetRequest);
-            } catch (OAuthServerException) {
-                return null;
-            }
+            return $this->clientRepository->findClientName($clientId, $targetRequest);
         }
 
-        return $this->clientRepository->getClientEntity($clientId);
+        return $this->clientRepository->getClientEntity($clientId)?->getName();
     }
 }

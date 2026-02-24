@@ -90,4 +90,15 @@ class ClientEntityTest extends TestCase
         $entity->setSkipAuthorizeClientAllowed(false);
         self::assertFalse($entity->isSkipAuthorizeClientAllowed());
     }
+
+    public function testApis(): void
+    {
+        $apis = ['test'];
+
+        $entity = new ClientEntity();
+        self::assertSame([], $entity->getApis());
+
+        $entity->setApis($apis);
+        self::assertSame($apis, $entity->getApis());
+    }
 }

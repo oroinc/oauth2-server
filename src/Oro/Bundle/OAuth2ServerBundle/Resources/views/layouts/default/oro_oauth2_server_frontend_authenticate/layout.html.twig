@@ -23,3 +23,9 @@
         });
     </script>
 {% endblock %}
+
+{% block _access_prompt_description_widget %}
+    <div {{ block('block_attributes') }}>
+        {{ block('text_widget') }}
+    </div>
+{% endblock %}

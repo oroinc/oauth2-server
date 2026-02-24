@@ -58,7 +58,7 @@ Feature: Manage Backoffice OAuth Applications
       | Grant Type       | Client Credentials |
       | User             | John Doe           |
     And I uncheck "Support all APIs"
-    And I check "JSON:API"
+    And I check "Back-Office API"
     And I click "Save and Close"
     Then I should see "OAuth application has been created." flash message
     And I should see "Please copy Client Secret and save it somewhere safe. For security reasons, we cannot show it to you again."
@@ -70,7 +70,7 @@ Feature: Manage Backoffice OAuth Applications
     When I click "View"
     Then I should see OAuth Application with:
       | Application Name | Client App (API)   |
-      | Supported APIs   | JSON:API           |
+      | Supported APIs   | Back-Office API    |
       | Grant Type       | Client Credentials |
       | User             | John Doe           |
     And I should not see "Redirect URLs"
@@ -81,7 +81,7 @@ Feature: Manage Backoffice OAuth Applications
     When I go to System/User Management/OAuth Applications
     Then I should see "Client App (API)" in grid with following data:
       | Application Name | Client App (API)   |
-      | Supported APIs   | JSON:API           |
+      | Supported APIs   | Back-Office API    |
       | Grant Type       | Client Credentials |
       | Active           | Yes                |
 

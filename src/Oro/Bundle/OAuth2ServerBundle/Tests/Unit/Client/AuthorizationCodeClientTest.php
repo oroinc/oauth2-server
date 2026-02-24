@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\Client;
 
+use League\OAuth2\Server\Repositories\ClientRepositoryInterface;
 use Oro\Bundle\OAuth2ServerBundle\Client\AuthorizationCodeClient;
 use Oro\Bundle\OAuth2ServerBundle\Controller\AuthorizeClientController;
 use Oro\Bundle\OAuth2ServerBundle\Generator\OAuth2CodeGenerator;
 use Oro\Bundle\OAuth2ServerBundle\League\Entity\ClientEntity;
-use Oro\Bundle\OAuth2ServerBundle\League\Repository\ClientRepository;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,7 +19,7 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 class AuthorizationCodeClientTest extends TestCase
 {
     private HttpKernelInterface&MockObject $httpKernel;
-    private ClientRepository&MockObject $clientRepository;
+    private ClientRepositoryInterface&MockObject $clientRepository;
     private RequestStack&MockObject $requestStack;
     private AuthorizationCodeClient $client;
 
@@ -27,7 +27,7 @@ class AuthorizationCodeClientTest extends TestCase
     protected function setUp(): void
     {
         $this->httpKernel = $this->createMock(HttpKernelInterface::class);
-        $this->clientRepository = $this->createMock(ClientRepository::class);
+        $this->clientRepository = $this->createMock(ClientRepositoryInterface::class);
         $this->requestStack = $this->createMock(RequestStack::class);
 
         $this->client = new AuthorizationCodeClient($this->httpKernel, $this->clientRepository, $this->requestStack);
