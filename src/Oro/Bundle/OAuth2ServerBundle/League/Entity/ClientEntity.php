@@ -23,6 +23,9 @@ class ClientEntity implements ClientEntityInterface
     /** @var bool */
     private $skipAuthorizeClientAllowed = false;
 
+    /** @var array */
+    private $apis = [];
+
     public function setName(string $name): void
     {
         $this->name = $name;
@@ -69,5 +72,15 @@ class ClientEntity implements ClientEntityInterface
     public function setSkipAuthorizeClientAllowed(bool $skipAuthorizeClientAllowed): void
     {
         $this->skipAuthorizeClientAllowed = $skipAuthorizeClientAllowed;
+    }
+
+    public function getApis(): array
+    {
+        return $this->apis;
+    }
+
+    public function setApis(array $apis): void
+    {
+        $this->apis = $apis;
     }
 }

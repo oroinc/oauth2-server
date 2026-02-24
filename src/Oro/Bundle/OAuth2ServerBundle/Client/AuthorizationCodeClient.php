@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Oro\Bundle\OAuth2ServerBundle\Client;
 
+use League\OAuth2\Server\Repositories\ClientRepositoryInterface;
 use Oro\Bundle\OAuth2ServerBundle\Controller\AuthorizeClientController;
 use Oro\Bundle\OAuth2ServerBundle\Generator\OAuth2CodeGenerator;
-use Oro\Bundle\OAuth2ServerBundle\League\Repository\ClientRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,7 +19,7 @@ class AuthorizationCodeClient
 {
     public function __construct(
         private HttpKernelInterface $httpKernel,
-        private ClientRepository $clientRepository,
+        private ClientRepositoryInterface $clientRepository,
         private RequestStack $requestStack
     ) {
     }

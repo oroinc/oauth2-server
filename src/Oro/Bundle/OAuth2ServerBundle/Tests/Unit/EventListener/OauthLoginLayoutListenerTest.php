@@ -2,7 +2,6 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\EventListener;
 
-use League\OAuth2\Server\Exception\OAuthServerException;
 use Oro\Bundle\LayoutBundle\Attribute\Layout;
 use Oro\Bundle\LayoutBundle\EventListener\LayoutListener;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
@@ -186,8 +185,6 @@ class OauthLoginLayoutListenerTest extends TestCase
 
     public function testOnKernelViewForSpecialClientId(): void
     {
-        $client = new ClientEntity();
-        $client->setName('My App');
         $request = new Request();
         $request->attributes->set('_route', 'test_route');
         $targetRequestUri = 'http://localhost?client_id=123567';
@@ -219,9 +216,9 @@ class OauthLoginLayoutListenerTest extends TestCase
             ->with('123567')
             ->willReturn(true);
         $this->clientRepository->expects(self::once())
-            ->method('findClientEntity')
+            ->method('findClientName')
             ->with('123567', self::identicalTo($targetRequest))
-            ->willReturn($client);
+            ->willReturn('My App');
 
         $event = $this->getEvent($request);
         $this->layoutListener->expects(self::once())
@@ -270,60 +267,9 @@ class OauthLoginLayoutListenerTest extends TestCase
             ->with('123567')
             ->willReturn(true);
         $this->clientRepository->expects(self::once())
-            ->method('findClientEntity')
+            ->method('findClientName')
             ->with('123567', self::identicalTo($targetRequest))
             ->willReturn(null);
-
-        $event = $this->getEvent($request);
-        $this->layoutListener->expects(self::once())
-            ->method('onKernelView')
-            ->with(self::identicalTo($event));
-
-        $this->listener->onKernelView($event);
-
-        self::assertEquals(
-            ['data' => ['appName' => null], 'route_name' => 'oauth_test_route'],
-            $event->getControllerResult()
-        );
-        self::assertTrue($request->attributes->get('_oauth_login'));
-    }
-
-    public function testOnKernelViewWhenClientNotFoundDueToInvalidRequest(): void
-    {
-        $request = new Request();
-        $request->attributes->set('_route', 'test_route');
-        $targetRequestUri = 'http://localhost?client_id=123567';
-        $targetRequestQueryParams = ['client_id' => '123567'];
-
-        $session = $this->createMock(Session::class);
-        $request->setSession($session);
-
-        $session->expects(self::once())
-            ->method('get')
-            ->with('_security.frontend.target_path')
-            ->willReturn($targetRequestUri);
-
-        $targetRequest = $this->createMock(ServerRequestInterface::class);
-        $targetRequest->expects(self::once())
-            ->method('withQueryParams')
-            ->with($targetRequestQueryParams)
-            ->willReturnSelf();
-        $targetRequest->expects(self::once())
-            ->method('getQueryParams')
-            ->willReturn($targetRequestQueryParams);
-        $this->serverRequestFactory->expects(self::once())
-            ->method('createServerRequest')
-            ->with('GET', $targetRequestUri)
-            ->willReturn($targetRequest);
-
-        $this->clientRepository->expects(self::once())
-            ->method('isSpecialClientIdentifier')
-            ->with('123567')
-            ->willReturn(true);
-        $this->clientRepository->expects(self::once())
-            ->method('findClientEntity')
-            ->with('123567', self::identicalTo($targetRequest))
-            ->willThrowException(OAuthServerException::serverError('some error'));
 
         $event = $this->getEvent($request);
         $this->layoutListener->expects(self::once())

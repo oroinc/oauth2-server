@@ -571,6 +571,7 @@ services:
         class: Oro\Bundle\OAuth2ServerBundle\Provider\ApiDocViewProvider
         arguments:
             - !abstract '$views defined in Oro\Bundle\OAuth2ServerBundle\DependencyInjection\Compiler\ApiDocViewProviderCompilerPass'
+            - '@translator'
 
     oro_oauth2_server.twig.oauth2server_extension:
         class: Oro\Bundle\OAuth2ServerBundle\Twig\OroOauth2ServerExtension

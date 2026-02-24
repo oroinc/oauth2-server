@@ -60,6 +60,7 @@ layout:
                 label: oro.oauth2server.auth_code.authorize_description
                 parameters:
                     '%app_name%': '=data["appName"]'
+                    '%resources%': '=data["resources"]'
         - '@add':
             id: oauth_access_prompt_form_container
             blockType: container

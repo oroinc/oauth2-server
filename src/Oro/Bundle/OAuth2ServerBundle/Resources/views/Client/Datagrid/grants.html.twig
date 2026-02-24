@@ -1,4 +1,3 @@
 {%- for grant in record.getValue('grants') -%}
-    {%- if not loop.first %}, {% endif -%}
-    {{ ('oro.oauth2server.grant_types.' ~ grant)|trans }}
+    {%- if not loop.first %}, {% endif %}{{ ('oro.oauth2server.grant_types.' ~ grant)|trans }}
 {%- endfor -%}
