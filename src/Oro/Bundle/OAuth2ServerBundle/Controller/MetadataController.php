@@ -12,10 +12,17 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
  */
 class MetadataController
 {
+    private array $enabledGrantTypes = [];
+
     public function __construct(
         private readonly array $routeNames,
         private readonly UrlGeneratorInterface $urlGenerator
     ) {
+    }
+
+    public function setEnabledGrantTypes(array $enabledGrantTypes): void
+    {
+        $this->enabledGrantTypes = $enabledGrantTypes;
     }
 
     public function metadataAction(bool $allowAccess = false): Response
@@ -33,7 +40,7 @@ class MetadataController
             'authorization_endpoint' => $this->generateAbsoluteUrl($this->routeNames['authorization_endpoint']),
             'token_endpoint' => $this->generateAbsoluteUrl($this->routeNames['token_endpoint']),
             'response_types_supported' => ['code'],
-            'grant_types_supported' => ['authorization_code', 'refresh_token'],
+            'grant_types_supported' => $this->enabledGrantTypes,
             'code_challenge_methods_supported' => ['S256'],
             'client_id_metadata_document_supported' => true
         ]);

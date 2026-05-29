@@ -31,6 +31,7 @@ use Symfony\Component\Yaml\Yaml;
  */
 class OroOAuth2ServerExtension extends Extension implements PrependExtensionInterface
 {
+    private const ENABLED_GRANT_TYPES_PARAM = 'oro_oauth2_server.enabled_grant_types';
     private const SUPPORTED_GRANT_TYPES_PARAM = 'oro_oauth2_server.supported_grant_types';
     private const SUPPORTED_CLIENT_OWNERS_PARAM = 'oro_oauth2_server.supported_client_owners';
     private const CORS_PREFLIGHT_MAX_AGE_PARAM = 'oro_oauth2_server.cors.preflight_max_age';
@@ -166,10 +167,19 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
         $refreshTokenLifetime = $refreshTokenEnabled
             ? $this->getTokenLifetime($config['refresh_token_lifetime'])
             : null;
-        $authCodeEnabled = $config['enable_auth_code'];
-        $authCodeLifetime = $refreshTokenEnabled
-            ? $this->getTokenLifetime($config['auth_code_lifetime'])
-            : null;
+
+        if ($config['enable_auth_code']) {
+            $this->enableGrantType(
+                $container,
+                $authorizationServer,
+                'authorization_code',
+                $this->getAuthCodeGrant(
+                    $refreshTokenEnabled ? $this->getTokenLifetime($config['auth_code_lifetime']) : null
+                ),
+                $accessTokenLifetime,
+                $refreshTokenLifetime
+            );
+        }
 
         $this->enableGrantType(
             $container,
@@ -197,17 +207,6 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
                 $accessTokenLifetime,
                 $refreshTokenLifetime,
                 false
-            );
-        }
-
-        if ($authCodeEnabled) {
-            $this->enableGrantType(
-                $container,
-                $authorizationServer,
-                'authorization_code',
-                $this->getAuthCodeGrant($authCodeLifetime),
-                $accessTokenLifetime,
-                $refreshTokenLifetime
             );
         }
 
@@ -282,6 +281,10 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
             new Definition(\DateInterval::class, [$accessTokenLifetime])
         ]);
 
+        $container->setParameter(
+            self::ENABLED_GRANT_TYPES_PARAM,
+            array_merge($container->getParameter(self::ENABLED_GRANT_TYPES_PARAM), [$grantTypeName])
+        );
         if ($addToVisibleList) {
             $container->setParameter(
                 self::SUPPORTED_GRANT_TYPES_PARAM,

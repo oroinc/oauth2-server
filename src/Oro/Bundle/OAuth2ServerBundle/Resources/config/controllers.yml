@@ -51,6 +51,8 @@ services:
                 authorization_endpoint: oro_oauth2_server_authenticate
                 token_endpoint: oro_oauth2_server_auth_token
             - '@router'
+        calls:
+            - [setEnabledGrantTypes, ['%oro_oauth2_server.enabled_grant_types%']]
 
     Oro\Bundle\OAuth2ServerBundle\Controller\WellKnownMetadataController:
         arguments:
