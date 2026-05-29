@@ -15,7 +15,8 @@ class MetadataController
 {
     public function __construct(
         private readonly array $routeNames,
-        private readonly UrlGeneratorInterface $urlGenerator
+        private readonly UrlGeneratorInterface $urlGenerator,
+        private readonly array $enabledGrantTypes
     ) {
     }
 
@@ -34,7 +35,7 @@ class MetadataController
             'authorization_endpoint' => $this->generateAbsoluteUrl($this->routeNames['authorization_endpoint']),
             'token_endpoint' => $this->generateAbsoluteUrl($this->routeNames['token_endpoint']),
             'response_types_supported' => ['code'],
-            'grant_types_supported' => ['authorization_code', 'refresh_token'],
+            'grant_types_supported' => $this->enabledGrantTypes,
             'code_challenge_methods_supported' => [OAuth2CodeGenerator::CODE_CHALLENGE_METHOD],
             'client_id_metadata_document_supported' => true
         ]);

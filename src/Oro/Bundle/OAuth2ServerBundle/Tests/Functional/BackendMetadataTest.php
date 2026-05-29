@@ -50,7 +50,7 @@ class BackendMetadataTest extends WebTestCase
                 'authorization_endpoint' => $this->getUrl('oro_oauth2_server_authenticate', [], true),
                 'token_endpoint' => $this->getUrl('oro_oauth2_server_auth_token', [], true),
                 'response_types_supported' => ['code'],
-                'grant_types_supported' => ['authorization_code', 'refresh_token'],
+                'grant_types_supported' => ['authorization_code', 'client_credentials', 'password', 'refresh_token'],
                 'code_challenge_methods_supported' => ['S256'],
                 'client_id_metadata_document_supported' => true
             ],
