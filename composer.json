@@ -39,10 +39,10 @@
             "dev-master": "7.0-dev"
         },
         "oro-post-install-cmd": [
-            "@oauth-server-generate-keys"
+            "console oro:oauth-server:generate-keys"
         ],
         "oro-post-update-cmd": [
-            "@oauth-server-generate-keys"
+            "console oro:oauth-server:generate-keys"
         ]
     }
 }
