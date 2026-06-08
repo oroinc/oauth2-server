@@ -72,19 +72,19 @@ Feature: Manage OAuth Applications
       | Application Name | The application with the given name already exists. |
     When type "First App" in "Application Name"
     And click "Save"
-    Then I should see "Saved successfully" flash message
+    Then I should see "Saved successfully" flash message and I close it
 
   Scenario: Deactivate OAuth application
     When I click "Deactivate" on row "First App" in "OAuth Applications Grid"
     Then I should see "Are you sure you want to deactivate the application?"
     When I click "Yes, do it"
-    Then I should see "Deactivated successfully" flash message
+    Then I should see "Deactivated successfully" flash message and I close it
     And I should see "First App" in "OAuth Applications Grid" with following data:
       | Active | No |
 
   Scenario: Activate OAuth application
     When I click "Activate" on row "First App" in "OAuth Applications Grid"
-    Then I should see "Activated successfully" flash message
+    Then I should see "Activated successfully" flash message and I close it
     And I should see "First App" in "OAuth Applications Grid" with following data:
       | Active | Yes |
 
@@ -92,7 +92,7 @@ Feature: Manage OAuth Applications
     When I click "Delete" on row "First App" in "OAuth Applications Grid"
     Then I should see "Are you sure you want to delete the application?"
     When I click "Yes"
-    Then I should see "Deleted successfully" flash message
+    Then I should see "Deleted successfully" flash message and I close it
     And I should see following "OAuth Applications Grid" grid:
       | Application Name | Active |
       | Second App       | Yes    |
