@@ -97,7 +97,9 @@ class ClientEntityVariableProviderTest extends TestCase
                             'simple_array',
                             ['translatable' => true, 'translation_template' => 'oro.oauth2server.grant_types.%s']
                         ]
-                    ]
+                    ],
+                    'user' => null,
+                    'organization' => null,
                 ]
             ],
             $this->provider->getVariableGetters()
