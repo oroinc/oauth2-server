@@ -11,7 +11,7 @@ class OroOAuth2ServerBundleInstaller implements Installation
     #[\Override]
     public function getMigrationVersion(): string
     {
-        return 'v1_7';
+        return 'v6_1_9_0';
     }
 
     #[\Override]
