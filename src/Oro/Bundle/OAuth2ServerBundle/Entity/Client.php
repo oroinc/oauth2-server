@@ -24,7 +24,8 @@ use Oro\Bundle\OrganizationBundle\Entity\Organization;
             'owner_field_name' => 'organization',
             'owner_column_name' => 'organization_id'
         ],
-        'security' => ['type' => 'ACL', 'permissions' => 'VIEW;CREATE;EDIT;DELETE', 'group_name' => '']
+        'security' => ['type' => 'ACL', 'permissions' => 'VIEW;CREATE;EDIT;DELETE', 'group_name' => ''],
+        'email' => ['available_in_template' => true],
     ]
 )]
 class Client
@@ -32,20 +33,23 @@ class Client
     #[ORM\Column(name: 'id', type: Types::INTEGER)]
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'AUTO')]
+    #[ConfigField(defaultValues: ['email' => ['available_in_template' => true]])]
     private ?int $id = null;
 
     #[ORM\Column(name: 'name', type: Types::STRING, length: 255)]
+    #[ConfigField(defaultValues: ['email' => ['available_in_template' => true]])]
     private ?string $name = null;
 
     #[ORM\Column(name: 'identifier', type: Types::STRING, length: 32)]
+    #[ConfigField(defaultValues: ['email' => ['available_in_template' => true]])]
     private ?string $identifier = null;
 
     #[ORM\Column(name: 'secret', type: Types::STRING, length: 128, nullable: true)]
-    #[ConfigField(defaultValues: ['email' => ['available_in_template' => false]])]
+    #[ConfigField(defaultValues: ['email' => ['available_in_template' => false, 'immutable' => true]])]
     private ?string $secret = null;
 
     #[ORM\Column(name: 'salt', type: Types::STRING, length: 50)]
-    #[ConfigField(defaultValues: ['email' => ['available_in_template' => false]])]
+    #[ConfigField(defaultValues: ['email' => ['available_in_template' => false, 'immutable' => true]])]
     private ?string $salt = null;
 
     /**
@@ -58,60 +62,72 @@ class Client
     private $plainSecret;
 
     #[ORM\Column(name: 'last_used_at', type: Types::DATETIME_MUTABLE, nullable: true)]
+    #[ConfigField(defaultValues: ['email' => ['available_in_template' => true]])]
     private ?\DateTimeInterface $lastUsedAt = null;
 
     /**
      * @var string[]
      */
     #[ORM\Column(name: 'grants', type: Types::SIMPLE_ARRAY)]
+    #[ConfigField(defaultValues: ['email' => ['available_in_template' => true]])]
     private $grants;
 
     /**
      * @var string[]|null
      */
     #[ORM\Column(name: 'scopes', type: Types::SIMPLE_ARRAY, nullable: true)]
+    #[ConfigField(defaultValues: ['email' => ['available_in_template' => true]])]
     private $scopes;
 
     #[ORM\Column(name: 'all_apis', type: Types::BOOLEAN, options: ['default' => true])]
+    #[ConfigField(defaultValues: ['email' => ['available_in_template' => true]])]
     private ?bool $allApis = true;
 
     /**
      * @var string[]
      */
     #[ORM\Column(name: 'apis', type: Types::SIMPLE_ARRAY, nullable: true)]
+    #[ConfigField(defaultValues: ['email' => ['available_in_template' => true]])]
     private ?array $apis;
 
     /**
      * @var string[]|null
      */
     #[ORM\Column(name: 'redirect_uris', type: Types::SIMPLE_ARRAY, nullable: true)]
+    #[ConfigField(defaultValues: ['email' => ['available_in_template' => true]])]
     private $redirectUris;
 
     #[ORM\Column(name: 'active', type: Types::BOOLEAN, options: ['default' => true])]
+    #[ConfigField(defaultValues: ['email' => ['available_in_template' => true]])]
     private ?bool $active = true;
 
     #[ORM\Column(name: 'frontend', type: Types::BOOLEAN, options: ['default' => false])]
+    #[ConfigField(defaultValues: ['email' => ['available_in_template' => true]])]
     private ?bool $frontend = false;
 
     #[ORM\ManyToOne(targetEntity: Organization::class)]
     #[ORM\JoinColumn(name: 'organization_id', referencedColumnName: 'id', onDelete: 'SET NULL')]
+    #[ConfigField(defaultValues: ['email' => ['available_in_template' => true]])]
     private ?Organization $organization = null;
 
     #[ORM\Column(name: 'owner_entity_class', type: Types::STRING, length: 255, nullable: true)]
-    #[ConfigField(defaultValues: ['email' => ['available_in_template' => false]])]
+    #[ConfigField(defaultValues: ['email' => ['available_in_template' => false, 'immutable' => true]])]
     private ?string $ownerEntityClass = null;
 
     #[ORM\Column(name: 'owner_entity_id', type: Types::INTEGER, nullable: true)]
-    #[ConfigField(defaultValues: ['email' => ['available_in_template' => false]])]
+    #[ConfigField(defaultValues: ['email' => ['available_in_template' => false, 'immutable' => true]])]
     private ?int $ownerEntityId = null;
 
     #[ORM\Column(name: 'confidential', type: Types::BOOLEAN, options: ['default' => true])]
+    #[ConfigField(defaultValues: ['email' => ['available_in_template' => true]])]
     private ?bool $confidential = true;
 
     #[ORM\Column(name: 'plain_text_pkce_allowed', type: Types::BOOLEAN, options: ['default' => false])]
+    #[ConfigField(defaultValues: ['email' => ['available_in_template' => true]])]
     private ?bool $plainTextPkceAllowed = false;
 
     #[ORM\Column(name: 'skip_authorize_client_allowed', type: Types::BOOLEAN, options: ['default' => false])]
+    #[ConfigField(defaultValues: ['email' => ['available_in_template' => true]])]
     private ?bool $skipAuthorizeClientAllowed = false;
 
     /**

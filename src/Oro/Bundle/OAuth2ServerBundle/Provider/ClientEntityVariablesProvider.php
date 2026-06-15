@@ -98,17 +98,23 @@ class ClientEntityVariablesProvider implements EntityVariablesProviderInterface
 
     private function getClientEntityVariableGetters(): array
     {
-        return [
-            'scopes' => [
-                'default_formatter' => 'oauth_scopes'
-            ],
-            'grants' => [
-                'default_formatter' => [
-                    'simple_array',
-                    ['translatable' => true, 'translation_template' => 'oro.oauth2server.grant_types.%s']
-                ]
+        $result = [];
+        foreach ($this->ownerEntityClasses as $associationName => $ownerEntityClass) {
+            $result[$associationName] = null;
+        }
+
+        $result['scopes'] = [
+            'default_formatter' => 'oauth_scopes'
+        ];
+
+        $result['grants'] = [
+            'default_formatter' => [
+                'simple_array',
+                ['translatable' => true, 'translation_template' => 'oro.oauth2server.grant_types.%s']
             ]
         ];
+
+        return $result;
     }
 
     private function getVariableLabel(string $ownerEntityClass): string
