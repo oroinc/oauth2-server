@@ -13,7 +13,7 @@ class OroOAuth2ServerBundleInstaller implements Installation
      */
     public function getMigrationVersion()
     {
-        return 'v1_6';
+        return 'v5_1_17_0';
     }
 
     /**
