@@ -31,6 +31,9 @@ use Oro\Bundle\OrganizationBundle\Entity\Organization;
  *          "type"="ACL",
  *          "permissions"="VIEW;CREATE;EDIT;DELETE",
  *          "group_name"=""
+ *      },
+ *      "email"={
+ *          "available_in_template"=true
  *      }
  *  }
  * )
@@ -68,7 +71,8 @@ class Client
      * @ConfigField(
      *      defaultValues={
      *          "email"={
-     *              "available_in_template"=false
+     *              "available_in_template"=false,
+     *              "immutable"=true
      *          }
      *      }
      * )
@@ -82,7 +86,8 @@ class Client
      * @ConfigField(
      *      defaultValues={
      *          "email"={
-     *              "available_in_template"=false
+     *              "available_in_template"=false,
+     *              "immutable"=true
      *          }
      *      }
      * )
@@ -155,7 +160,8 @@ class Client
      * @ConfigField(
      *      defaultValues={
      *          "email"={
-     *              "available_in_template"=false
+     *              "available_in_template"=false,
+     *              "immutable"=true
      *          }
      *      }
      * )
@@ -169,7 +175,8 @@ class Client
      * @ConfigField(
      *      defaultValues={
      *          "email"={
-     *              "available_in_template"=false
+     *              "available_in_template"=false,
+     *              "immutable"=true
      *          }
      *      }
      * )
