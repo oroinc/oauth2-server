@@ -17,7 +17,7 @@
         {{ form_row(form.active) }}
         {% if form.grants is defined %}
             {% if 'hidden' in form.grants.vars.block_prefixes %}
-                <div data-validation-ignore="true">{{ form_row(form.grants) }}</div>
+                <div class="hidden-input__wrapper" data-validation-ignore="true">{{ form_row(form.grants) }}</div>
             {% else %}
                 {{ form_row(form.grants, {'group_attr': {'class': 'client-grants'}}) }}
             {% endif %}
