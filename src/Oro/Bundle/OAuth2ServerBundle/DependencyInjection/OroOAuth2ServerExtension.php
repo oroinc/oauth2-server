@@ -10,9 +10,11 @@ use Oro\Bundle\OAuth2ServerBundle\Controller\ProtectedResourceController;
 use Oro\Bundle\OAuth2ServerBundle\Controller\WellKnownMetadataController;
 use Oro\Bundle\OAuth2ServerBundle\League\Grant\AuthCodeGrant;
 use Oro\Bundle\OAuth2ServerBundle\League\Grant\PasswordGrant;
+use Oro\Bundle\OAuth2ServerBundle\League\Grant\SessionTransferGrant;
 use Oro\Bundle\OAuth2ServerBundle\League\Repository\FrontendAuthCodeRepository;
 use Oro\Bundle\OAuth2ServerBundle\League\Repository\FrontendRefreshTokenRepository;
 use Oro\Bundle\OAuth2ServerBundle\League\Repository\FrontendUserRepository;
+use Oro\Bundle\OAuth2ServerBundle\League\ResponseType\SessionTransferTokenResponse;
 use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\OAuth2Token;
 use Oro\Component\DependencyInjection\ExtendedContainerBuilder;
 use Symfony\Component\Config\FileLocator;
@@ -52,6 +54,12 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
     private const CUSTOMER_VISITOR_MANAGER_SERVICE = 'oro_customer.customer_visitor_manager';
     private const CUSTOMER_LOGIN_SOURCES = 'oro_customer_user.login_sources';
     private const FEATURE_CHECK_SERVICE = 'oro_featuretoggle.checker.feature_checker';
+
+    private const AUTHORIZATION_VALIDATOR_SERVICE = 'oro_oauth2_server.league.authorization_validator';
+    private const CLIENT_MANAGER_SERVICE = 'oro_oauth2_server.client_manager';
+    private const SESSION_TRANSFER_ROUTE_VALIDATOR_SERVICE = 'oro_oauth2_server.session_transfer.route_validator';
+    private const SESSION_TRANSFER_TOKEN_MANAGER_SERVICE = 'oro_oauth2_server.session_transfer.token_manager';
+    private const SESSION_TRANSFER_SUBJECT_RESOLVER_SERVICE = 'oro_oauth2_server.session_transfer.subject_resolver';
 
     #[\Override]
     public function load(array $configs, ContainerBuilder $container): void
@@ -214,6 +222,16 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
             );
         }
 
+        $this->enableGrantType(
+            $container,
+            $authorizationServer,
+            SessionTransferGrant::IDENTIFIER,
+            $this->getSessionTransferGrant(),
+            $this->getTokenLifetime($config['session_transfer_token_lifetime']),
+            null,
+            false
+        );
+
         $container->setParameter(self::CORS_PREFLIGHT_MAX_AGE_PARAM, $config['cors']['preflight_max_age']);
         $container->setParameter(self::CORS_ALLOW_ORIGINS_PARAM, $config['cors']['allow_origins']);
         $container->setParameter(self::CORS_ALLOW_HEADERS_PARAM, $config['cors']['allow_headers']);
@@ -318,6 +336,19 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
         ]);
     }
 
+    private function getSessionTransferGrant(): Definition
+    {
+        return new Definition(SessionTransferGrant::class, [
+            new Reference(self::AUTHORIZATION_VALIDATOR_SERVICE),
+            new Reference(self::CLIENT_MANAGER_SERVICE),
+            new Reference('doctrine'),
+            new Reference(self::SESSION_TRANSFER_SUBJECT_RESOLVER_SERVICE),
+            new Reference(self::SESSION_TRANSFER_ROUTE_VALIDATOR_SERVICE),
+            new Reference(self::SESSION_TRANSFER_TOKEN_MANAGER_SERVICE),
+            new Definition(SessionTransferTokenResponse::class),
+        ]);
+    }
+
     private function getAuthCodeGrant(string $authCodeLifetime): Definition
     {
         return new Definition(AuthCodeGrant::class, [
@@ -394,6 +425,16 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
             $firewalls = $this->addOAuthFirewalls(
                 $firewalls,
                 Yaml::parseFile(__DIR__ . '/../Resources/config/oro/no_frontend_firewalls.yml')
+            );
+
+            $accessControlConfig = Yaml::parseFile(__DIR__ . '/../Resources/config/oro/no_frontend_access_control.yml');
+            $oroSecurityConfigs[0]['access_control'] = array_merge(
+                $accessControlConfig,
+                $oroSecurityConfigs[0]['access_control']
+            );
+            $securityConfigs[0]['access_control'] = array_merge(
+                $accessControlConfig,
+                $securityConfigs[0]['access_control']
             );
         }
 

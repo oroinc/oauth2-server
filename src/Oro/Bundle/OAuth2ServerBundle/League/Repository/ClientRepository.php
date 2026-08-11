@@ -65,7 +65,11 @@ class ClientRepository implements ClientRepositoryInterface
             return false;
         }
 
-        if ($client->isConfidential() && !$this->passwordHasherVerify($client, $clientSecret)) {
+        if (
+            $grantType !== Client::SESSION_TRANSFER
+            && $client->isConfidential()
+            && !$this->passwordHasherVerify($client, $clientSecret)
+        ) {
             return false;
         }
 
@@ -111,6 +115,14 @@ class ClientRepository implements ClientRepositoryInterface
     {
         if (null === $grant) {
             return true;
+        }
+
+        /**
+         * Session Transfer should not be implicitly enabled when the regular grants list
+         * is empty.
+         */
+        if (Client::SESSION_TRANSFER === $grant) {
+            return $client->isSessionTransferAllowed();
         }
 
         $grants = $client->getGrants();

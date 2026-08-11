@@ -65,6 +65,11 @@ abstract class AbstractClientType extends AbstractType
             ->add('active', CheckboxType::class, [
                 'label' => 'oro.oauth2server.client.active.label',
                 'tooltip' => 'oro.oauth2server.client.active.description'
+            ])
+            ->add('sessionTransferAllowed', CheckboxType::class, [
+                'label' => 'oro.oauth2server.client.session_transfer_allowed.label',
+                'tooltip' => 'oro.oauth2server.client.session_transfer_allowed.description',
+                'required' => false,
             ]);
 
         $this->addGrantField(

@@ -1,0 +1,1 @@
+- { path: ^/oauth2/session-transfer/consume$, roles: PUBLIC_ACCESS }

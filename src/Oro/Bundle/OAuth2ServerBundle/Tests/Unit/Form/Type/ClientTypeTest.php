@@ -109,9 +109,10 @@ class ClientTypeTest extends TypeTestCase
     {
         $client = new Client();
         $submittedData = [
-            'name'   => 'test name',
-            'active' => 1,
-            'grants' => 'grant2'
+            'name'                   => 'test name',
+            'active'                 => 1,
+            'grants'                 => 'grant2',
+            'sessionTransferAllowed' => 1
         ];
 
         $this->organizationsProvider->expects(self::once())
@@ -131,6 +132,7 @@ class ClientTypeTest extends TypeTestCase
         self::assertEquals('test name', $client->getName());
         self::assertTrue($client->isActive());
         self::assertEquals(['grant2'], $client->getGrants());
+        self::assertTrue($client->isSessionTransferAllowed());
     }
 
     public function testSubmitForNewClientWhenMultiOrganizationIsSupportedAndClientOwnerBelongsToOneOrganizationOnly()

@@ -681,4 +681,60 @@ class ClientRepositoryTest extends TestCase
         );
         self::assertTrue($result);
     }
+
+    public function testValidateClientForSessionTransferDoesNotRequireClientSecret(): void
+    {
+        $clientIdentifier = 'test_client';
+        $client = new Client();
+        $client->setIdentifier($clientIdentifier);
+        $client->setOrganization($this->getOrganization());
+        $client->setSessionTransferAllowed(true);
+
+        $this->clientManager->expects(self::once())
+            ->method('getClient')
+            ->with($clientIdentifier)
+            ->willReturn($client);
+        $this->featureChecker->expects(self::once())
+            ->method('isEnabledByClient')
+            ->with($client)
+            ->willReturn(true);
+        $this->passwordHasherFactory->expects(self::never())
+            ->method('getPasswordHasher');
+
+        self::assertTrue(
+            $this->clientRepository->validateClient(
+                $clientIdentifier,
+                null,
+                Client::SESSION_TRANSFER
+            )
+        );
+    }
+
+    public function testValidateClientForSessionTransferRequiresExplicitCapability(): void
+    {
+        $clientIdentifier = 'test_client';
+        $client = new Client();
+        $client->setIdentifier($clientIdentifier);
+        $client->setOrganization($this->getOrganization());
+        $client->setGrants([]);
+
+        $this->clientManager->expects(self::once())
+            ->method('getClient')
+            ->with($clientIdentifier)
+            ->willReturn($client);
+        $this->featureChecker->expects(self::once())
+            ->method('isEnabledByClient')
+            ->with($client)
+            ->willReturn(true);
+        $this->passwordHasherFactory->expects(self::never())
+            ->method('getPasswordHasher');
+
+        self::assertFalse(
+            $this->clientRepository->validateClient(
+                $clientIdentifier,
+                null,
+                Client::SESSION_TRANSFER
+            )
+        );
+    }
 }

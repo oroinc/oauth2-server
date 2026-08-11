@@ -86,6 +86,12 @@ oro:
             datagrid:
                 entity_hint: OAuth Applications
             client_credentials_grant_access_token_message: 'Temporary access token (the token will expire in %expiresIn% minutes):'
+            session_transfer_allowed:
+                label: Enable Session Transfer
+                description: >
+                    Allows this OAuth application to exchange a user-bound API
+                    access token for a short-lived Session Transfer Token that
+                    can be converted into a browser session.
         scopes:
             all: all
         grant_types:
