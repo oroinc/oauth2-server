@@ -28,6 +28,7 @@ const GrantWatcherView = BaseView.extend({
             this.ownerField.removeClass('hide');
         } else {
             this.ownerField.addClass('hide');
+            this.clearOwnerField();
         }
         if ('authorization_code' === selectedGrant) {
             this.redirectUrisField.removeClass('hide');
@@ -37,6 +38,14 @@ const GrantWatcherView = BaseView.extend({
             this.redirectUrisField.addClass('hide');
             this.confidentialField.addClass('hide');
             this.skipAuthorizeClientAllowedField.addClass('hide');
+        }
+    },
+
+    clearOwnerField: function() {
+        const $ownerInput = this.ownerField.find(':input[name]');
+
+        if ($ownerInput.val()) {
+            $ownerInput.val(null).trigger('change');
         }
     }
 });

@@ -48,6 +48,7 @@ services:
             - '@oro_oauth2_server.client_cleaner'
             - '@oro_oauth2_server.access_token_cleaner'
             - '@oro_oauth2_server.refresh_token_cleaner'
+            - '@oro_oauth2_server.session_transfer_token_cleaner'
             - '@oro_oauth2_server.auth_code_cleaner'
         tags: [console.command]
 
@@ -91,6 +92,12 @@ services:
 
     oro_oauth2_server.auth_code_cleaner:
         class: Oro\Bundle\OAuth2ServerBundle\Entity\Cleaner\AuthCodeCleaner
+        public: false
+        arguments:
+            - '@doctrine'
+
+    oro_oauth2_server.session_transfer_token_cleaner:
+        class: Oro\Bundle\OAuth2ServerBundle\Entity\Cleaner\SessionTransferTokenCleaner
         public: false
         arguments:
             - '@doctrine'
@@ -581,3 +588,47 @@ services:
         class: Oro\Bundle\OAuth2ServerBundle\ProtectedResource\ProtectedResourceProvider
         arguments:
             - !abstract '$resources defined in Oro\Bundle\OAuth2ServerBundle\DependencyInjection\OroOAuth2ServerExtension'
+
+    oro_oauth2_server.session_transfer.route_validator:
+        class: Oro\Bundle\OAuth2ServerBundle\SessionTransfer\Route\SessionTransferRouteValidator
+        arguments:
+            - !tagged_iterator oro_oauth2_server.session_transfer.route_context_validator
+
+    oro_oauth2_server.session_transfer.backend_route_context_validator:
+        class: Oro\Bundle\OAuth2ServerBundle\SessionTransfer\Route\BackendSessionTransferRouteContextValidator
+        arguments:
+            - '@router'
+        tags:
+            - { name: oro_oauth2_server.session_transfer.route_context_validator }
+
+    oro_oauth2_server.session_transfer.context_handler_registry:
+        class: Oro\Bundle\OAuth2ServerBundle\SessionTransfer\Handler\SessionTransferContextHandlerRegistry
+        arguments:
+            - !tagged_iterator oro_oauth2_server.session_transfer.context_handler
+
+    oro_oauth2_server.session_transfer.backend_context_handler:
+        class: Oro\Bundle\OAuth2ServerBundle\SessionTransfer\Handler\BackendSessionTransferContextHandler
+        arguments:
+            - '@oro_user.security.user_loader'
+            - '@security.token_storage'
+            - '@security.firewall.map'
+            - '@security.authentication.session_strategy'
+            - '@security.user_checker'
+            - '@event_dispatcher'
+        tags:
+            - { name: oro_oauth2_server.session_transfer.context_handler }
+
+    oro_oauth2_server.session_transfer.token_redeemer:
+        class: Oro\Bundle\OAuth2ServerBundle\SessionTransfer\Token\SessionTransferTokenRedeemer
+        arguments:
+            - '@doctrine'
+
+    oro_oauth2_server.session_transfer.subject_resolver:
+        class: Oro\Bundle\OAuth2ServerBundle\SessionTransfer\SessionTransferSubjectResolver
+        arguments:
+            - '@doctrine'
+
+    oro_oauth2_server.session_transfer.token_manager:
+        class: Oro\Bundle\OAuth2ServerBundle\SessionTransfer\SessionTransferTokenManager
+        arguments:
+            - '@doctrine'

@@ -1,2 +1,4 @@
 - { path: ^/oauth2-token/(authorize|login-check), roles: IS_AUTHENTICATED, options: { frontend: true } }
 - { path: ^/oauth2-token/login$, roles: PUBLIC_ACCESS}
+- { path: ^/oauth2/session-transfer/consume$, roles: PUBLIC_ACCESS, options: { frontend: true } }
+- { path: ^/oauth2/session-transfer/consume$, roles: PUBLIC_ACCESS }

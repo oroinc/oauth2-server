@@ -87,13 +87,17 @@ class SystemClientType extends AbstractClientType
             return;
         }
 
+        /** @var Client $client */
+        $client = $event->getData();
+        if (!\in_array(Client::CLIENT_CREDENTIALS, $client->getGrants() ?? [], true)) {
+            return;
+        }
+
         $owner = $event->getForm()->get(self::OWNER_FIELD)->getData();
         if (!$owner) {
             return;
         }
 
-        /** @var Client $client */
-        $client = $event->getData();
         $client->setOwnerEntity(ClassUtils::getClass($owner), $owner->getId());
     }
 }

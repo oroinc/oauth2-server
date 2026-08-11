@@ -51,3 +51,9 @@ services:
         arguments:
             - !abstract '$metadataControllers defined in Oro\Bundle\OAuth2ServerBundle\DependencyInjection\OroOAuth2ServerExtension'
             - !abstract '$container defined in Oro\Bundle\OAuth2ServerBundle\DependencyInjection\OroOAuth2ServerExtension'
+
+    Oro\Bundle\OAuth2ServerBundle\Controller\SessionTransferController:
+        arguments:
+            - '@oro_oauth2_server.session_transfer.token_redeemer'
+            - '@oro_oauth2_server.session_transfer.context_handler_registry'
+            - '@router'

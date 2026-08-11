@@ -12,6 +12,7 @@
         {{ form_row(form.identifier) }}
         {{ form_row(form.name) }}
         {{ form_row(form.active) }}
+        {{ form_row(form.sessionTransferAllowed) }}
         {% if form.grants is defined %}
             {% if 'hidden' in form.grants.vars.block_prefixes %}
                 <div data-validation-ignore="true">{{ form_row(form.grants) }}</div>

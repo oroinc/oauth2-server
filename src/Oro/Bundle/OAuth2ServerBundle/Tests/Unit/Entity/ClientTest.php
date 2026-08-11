@@ -187,4 +187,16 @@ class ClientTest extends TestCase
         $entity->setPlainTextPkceAllowed(false);
         self::assertFalse($entity->isPlainTextPkceAllowed());
     }
+
+    public function testSessionTransferAllowed(): void
+    {
+        $entity = new Client();
+        self::assertFalse($entity->isSessionTransferAllowed());
+
+        self::assertSame($entity, $entity->setSessionTransferAllowed(true));
+        self::assertTrue($entity->isSessionTransferAllowed());
+
+        $entity->setSessionTransferAllowed(false);
+        self::assertFalse($entity->isSessionTransferAllowed());
+    }
 }

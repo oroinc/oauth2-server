@@ -9,6 +9,7 @@ use Oro\Bundle\OAuth2ServerBundle\Entity\Cleaner\AccessTokenCleaner;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Cleaner\AuthCodeCleaner;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Cleaner\ClientCleaner;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Cleaner\RefreshTokenCleaner;
+use Oro\Bundle\OAuth2ServerBundle\Entity\Cleaner\SessionTransferTokenCleaner;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -21,6 +22,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  * The following data is removed:
  * * outdated OAuth 2.0 access tokens
  * * outdated OAuth 2.0 refresh tokens
+ * * expired tokens that used to transfer the session
  * * OAuth 2.0 clients that belong to removed users
  * * outdated OAuth 2.0 auth codes
  */
@@ -33,18 +35,21 @@ class CleanupCommand extends Command implements CronCommandScheduleDefinitionInt
     private ClientCleaner $clientCleaner;
     private AccessTokenCleaner $accessTokenCleaner;
     private RefreshTokenCleaner $refreshTokenCleaner;
+    private SessionTransferTokenCleaner $sessionTransferTokenCleaner;
     private AuthCodeCleaner $authCodeCleaner;
 
     public function __construct(
         ClientCleaner $clientCleaner,
         AccessTokenCleaner $accessTokenCleaner,
         RefreshTokenCleaner $refreshTokenCleaner,
+        SessionTransferTokenCleaner $sessionTransferTokenCleaner,
         AuthCodeCleaner $authCodeCleaner
     ) {
         parent::__construct();
         $this->clientCleaner = $clientCleaner;
         $this->accessTokenCleaner = $accessTokenCleaner;
         $this->refreshTokenCleaner = $refreshTokenCleaner;
+        $this->sessionTransferTokenCleaner = $sessionTransferTokenCleaner;
         $this->authCodeCleaner = $authCodeCleaner;
     }
 
@@ -61,8 +66,9 @@ class CleanupCommand extends Command implements CronCommandScheduleDefinitionInt
         $this
             ->setHelp(
                 <<<'HELP'
-The <info>%command.name%</info> command removes outdated OAuth 2.0 access tokens, refresh tokens
-and auth codes. It also removes OAuth 2.0 applications that belong to removed users.
+The <info>%command.name%</info> command removes outdated OAuth 2.0 access tokens, refresh tokens,
+auth codes and expired Session Transfer Tokens. It also removes OAuth 2.0 applications that belong
+to removed users.
 
   <info>php %command.full_name%</info>
 
@@ -82,6 +88,9 @@ HELP
 
         $io->comment('Removing outdated OAuth 2.0 access tokens...');
         $this->accessTokenCleaner->cleanUp();
+
+        $io->comment('Removing expired Session Transfer Tokens...');
+        $this->sessionTransferTokenCleaner->cleanUp();
 
         $io->comment('Removing OAuth 2.0 applications that belong to removed users...');
         $this->clientCleaner->cleanUp();

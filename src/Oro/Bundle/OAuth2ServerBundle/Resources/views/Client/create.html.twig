@@ -50,6 +50,7 @@
                     form.organization is defined ? form_row(form.organization) : '',
                     form_row(form.name),
                     form_row(form.active),
+                    form_row(form.sessionTransferAllowed),
                     form_row(form.allApis, {'group_attr': {'id': 'all-api-types-field'}}),
                     form_row(form.apis, {'group_attr': {'id': 'api-types-field', 'class': 'hide'}}),
                     grantsRow,

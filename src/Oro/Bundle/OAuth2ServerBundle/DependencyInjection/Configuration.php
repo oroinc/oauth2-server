@@ -94,6 +94,11 @@ class Configuration implements ConfigurationInterface
                         ->prototype('scalar')->cannotBeEmpty()->end()
                     ->end()
                 ->end()
+            ->end()
+            ->integerNode('session_transfer_token_lifetime')
+                ->defaultValue(60)
+                ->min(1)
+                ->info('The lifetime in seconds of a Session Transfer Token.')
             ->end();
     }
 

@@ -34,6 +34,7 @@ services:
         class: Oro\Bundle\OAuth2ServerBundle\Provider\GuestAccessAllowedUrlsProvider
         calls:
             - [addAllowedUrlPattern, ['^/oauth2-token$']]
+            - [addAllowedUrlPattern, [ '^/oauth2/session-transfer/consume$' ]]
         tags: [oro_frontend.guest_access_urls_provider]
 
     oro_oauth2_server.handler.frontend_authorize_client.handler:
@@ -71,3 +72,28 @@ services:
         arguments:
             - '@.inner'
             - '@request_stack'
+
+    oro_oauth2_server.session_transfer.frontend_route_context_validator:
+        class: Oro\Bundle\OAuth2ServerBundle\SessionTransfer\Route\FrontendSessionTransferRouteContextValidator
+        arguments:
+            - '@router'
+            - '@oro_website.manager'
+        tags:
+            - { name: oro_oauth2_server.session_transfer.route_context_validator }
+
+    oro_oauth2_server.session_transfer.frontend_context_handler:
+        class: Oro\Bundle\OAuth2ServerBundle\SessionTransfer\Handler\FrontendSessionTransferContextHandler
+        arguments:
+            - '@oro_customer.security.user_loader'
+            - '@oro_website.manager'
+            - '@oro_customer.customer_visitor_manager'
+            - '@oro_customer.anonymous_customer_user.token.factory'
+            - '@oro_customer.authentication.anonymous_customer_user_roles_provider'
+            - '@oro_customer.authentication.customer_visitor_cookie_factory'
+            - '@security.token_storage'
+            - '@security.firewall.map'
+            - '@security.authentication.session_strategy'
+            - '@security.user_checker'
+            - '@event_dispatcher'
+        tags:
+            - { name: oro_oauth2_server.session_transfer.context_handler }

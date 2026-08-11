@@ -21,7 +21,7 @@ class NoFrontendRoutesListenerTest extends TestCase
         $listener->onCollectionAutoload($event);
 
         $routes = $collection->all();
-        self::assertSame(
+        self::assertEquals(
             [
                 'existing',
                 'oro_oauth2_server_auth_token',
@@ -29,7 +29,8 @@ class NoFrontendRoutesListenerTest extends TestCase
                 'oro_oauth2_server_protected_resource',
                 'oro_oauth2_server_metadata_well_known_alias',
                 'oro_oauth2_server_metadata',
-                'oro_oauth2_server_authenticate'
+                'oro_oauth2_server_authenticate',
+                'oro_oauth2_session_transfer_consume'
             ],
             array_keys($routes)
         );

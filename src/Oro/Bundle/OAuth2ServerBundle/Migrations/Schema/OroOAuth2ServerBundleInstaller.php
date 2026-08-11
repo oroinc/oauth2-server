@@ -11,7 +11,7 @@ class OroOAuth2ServerBundleInstaller implements Installation
     #[\Override]
     public function getMigrationVersion(): string
     {
-        return 'v7_1_0_0';
+        return 'v7_1_0_1';
     }
 
     #[\Override]
@@ -22,12 +22,14 @@ class OroOAuth2ServerBundleInstaller implements Installation
         $this->createAccessTokenTable($schema);
         $this->createRefreshTokenTable($schema);
         $this->createAuthCodeTable($schema);
+        $this->createSessionTransferTokenTable($schema);
 
         /** Foreign keys generation **/
         $this->addClientForeignKeys($schema);
         $this->addAccessTokenForeignKeys($schema);
         $this->addRefreshTokenForeignKeys($schema);
         $this->addAuthCodeForeignKeys($schema);
+        $this->addSessionTransferTokenForeignKeys($schema);
     }
 
     /**
@@ -55,6 +57,7 @@ class OroOAuth2ServerBundleInstaller implements Installation
         $table->addColumn('confidential', 'boolean', ['default' => '1']);
         $table->addColumn('plain_text_pkce_allowed', 'boolean', ['default' => '0']);
         $table->addColumn('skip_authorize_client_allowed', 'boolean', ['default' => '0']);
+        $table->addColumn('session_transfer_allowed', 'boolean', ['default' => '0']);
         $table->setPrimaryKey(['id']);
         $table->addUniqueIndex(['identifier'], 'oro_oauth2_client_uidx');
         $table->addIndex(['organization_id'], 'IDX_2A8C454232C8A3DE');
@@ -114,6 +117,38 @@ class OroOAuth2ServerBundleInstaller implements Installation
     }
 
     /**
+     * Create oro_oauth2_session_transfer_token table
+     */
+    private function createSessionTransferTokenTable(Schema $schema): void
+    {
+        $table = $schema->createTable('oro_oauth2_session_transfer_token');
+        $table->addColumn('id', 'integer', ['autoincrement' => true]);
+        $table->addColumn('identifier', 'string', ['length' => 64]);
+        $table->addColumn('client_id', 'integer');
+        $table->addColumn('source_access_token_identifier', 'string', ['length' => 80]);
+        $table->addColumn('user_identifier', 'string', ['length' => 128]);
+        $table->addColumn('organization_id', 'integer');
+        $table->addColumn('route', 'string', ['length' => 255]);
+        $table->addColumn('route_parameters', 'json', ['comment' => '(DC2Type:json)']);
+        $table->addColumn('context_data', 'json', ['comment' => '(DC2Type:json)']);
+        $table->addColumn('created_at', 'datetime', ['comment' => '(DC2Type:datetime)']);
+        $table->addColumn('expires_at', 'datetime', ['comment' => '(DC2Type:datetime)']);
+        $table->addColumn(
+            'consumed_at',
+            'datetime',
+            ['notnull' => false, 'comment' => '(DC2Type:datetime)']
+        );
+        $table->addColumn('revoked', 'boolean', ['default' => '0']);
+        $table->setPrimaryKey(['id']);
+        $table->addUniqueIndex(['identifier'], 'oro_oauth2_stt_uidx');
+        $table->addIndex(['client_id'], 'oro_oauth2_stt_client_idx');
+        $table->addIndex(['organization_id'], 'oro_oauth2_stt_org_idx');
+        $table->addIndex(['expires_at'], 'oro_oauth2_stt_exp_idx');
+        $table->addIndex(['consumed_at'], 'oro_oauth2_stt_consumed_idx');
+        $table->addIndex(['source_access_token_identifier'], 'oro_oauth2_stt_source_idx');
+    }
+
+    /**
      * Add oro_oauth2_client foreign keys.
      */
     private function addClientForeignKeys(Schema $schema): void
@@ -164,6 +199,26 @@ class OroOAuth2ServerBundleInstaller implements Installation
         $table->addForeignKeyConstraint(
             $schema->getTable('oro_oauth2_client'),
             ['client_id'],
+            ['id'],
+            ['onDelete' => 'CASCADE']
+        );
+    }
+
+    /**
+     * Add oro_oauth2_session_transfer_token foreign keys.
+     */
+    private function addSessionTransferTokenForeignKeys(Schema $schema): void
+    {
+        $table = $schema->getTable('oro_oauth2_session_transfer_token');
+        $table->addForeignKeyConstraint(
+            $schema->getTable('oro_oauth2_client'),
+            ['client_id'],
+            ['id'],
+            ['onDelete' => 'CASCADE']
+        );
+        $table->addForeignKeyConstraint(
+            $schema->getTable('oro_organization'),
+            ['organization_id'],
             ['id'],
             ['onDelete' => 'CASCADE']
         );
