@@ -10,6 +10,7 @@ use Oro\Bundle\OAuth2ServerBundle\Entity\AuthCode;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
 use Oro\Bundle\OAuth2ServerBundle\Entity\RefreshToken;
+use Oro\Bundle\OAuth2ServerBundle\Entity\SessionTransferToken;
 use Oro\Bundle\TestFrameworkBundle\Tests\Functional\DataFixtures\LoadBusinessUnit;
 use Oro\Bundle\TestFrameworkBundle\Tests\Functional\DataFixtures\LoadOrganization;
 use Oro\Bundle\UserBundle\Entity\User;
@@ -128,6 +129,20 @@ class LoadCleanupCommandData extends AbstractFixture implements ContainerAwareIn
                 new \DateTime('now - 1 second')
             )
         );
+        $manager->persist(
+            $this->createSessionTransferToken(
+                $client1,
+                'session_transfer_token_not_expired',
+                new \DateTime('now + 1 minute')
+            )
+        );
+        $manager->persist(
+            $this->createSessionTransferToken(
+                $client1,
+                'session_transfer_token_expired',
+                new \DateTime('now - 1 second')
+            )
+        );
 
         $manager->flush();
     }
@@ -177,5 +192,23 @@ class LoadCleanupCommandData extends AbstractFixture implements ContainerAwareIn
     private function createAuthCode(Client $client, string $identifier, \DateTime $expiresAt): AuthCode
     {
         return new AuthCode($identifier, $expiresAt, ['all'], $client, 'test');
+    }
+
+    private function createSessionTransferToken(
+        Client $client,
+        string $identifier,
+        \DateTime $expiresAt
+    ): SessionTransferToken {
+        return (new SessionTransferToken())
+            ->setIdentifier($identifier)
+            ->setClient($client)
+            ->setSourceAccessTokenIdentifier('source_access_token')
+            ->setUserIdentifier('user1')
+            ->setOrganization($client->getOrganization())
+            ->setRoute('oro_default')
+            ->setRouteParameters([])
+            ->setContextData([])
+            ->setCreatedAt(new \DateTime('now - 1 minute'))
+            ->setExpiresAt($expiresAt);
     }
 }

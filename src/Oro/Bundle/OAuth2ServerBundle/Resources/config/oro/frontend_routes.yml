@@ -55,6 +55,11 @@ oro_oauth2_server_authenticate:
         type: backoffice
         _controller: Oro\Bundle\OAuth2ServerBundle\Controller\AuthorizeClientController::authorizeAction
 
+oro_oauth2_session_transfer_consume:
+    path: '/oauth2/session-transfer/consume'
+    methods: [GET]
+    defaults:
+        _controller: Oro\Bundle\OAuth2ServerBundle\Controller\SessionTransferController::consumeBackend
 
 ###################
 # storefront routes
@@ -81,5 +86,13 @@ oro_oauth2_server_frontend_authenticate_visitor:
     methods: [GET]
     defaults:
         _controller: oro_oauth2_server.frontend_authorize_client_controller::authorizeVisitorAction
+    options:
+        frontend: true
+
+oro_oauth2_frontend_session_transfer_consume:
+    path: '/oauth2/session-transfer/consume'
+    methods: [GET]
+    defaults:
+        _controller: Oro\Bundle\OAuth2ServerBundle\Controller\SessionTransferController::consumeFrontend
     options:
         frontend: true

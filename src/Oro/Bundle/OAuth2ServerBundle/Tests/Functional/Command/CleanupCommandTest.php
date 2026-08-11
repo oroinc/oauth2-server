@@ -7,6 +7,7 @@ use Oro\Bundle\OAuth2ServerBundle\Entity\AccessToken;
 use Oro\Bundle\OAuth2ServerBundle\Entity\AuthCode;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Entity\RefreshToken;
+use Oro\Bundle\OAuth2ServerBundle\Entity\SessionTransferToken;
 use Oro\Bundle\OAuth2ServerBundle\Tests\Functional\DataFixtures\LoadCleanupCommandData;
 use Oro\Bundle\TestFrameworkBundle\Test\WebTestCase;
 
@@ -56,5 +57,13 @@ class CleanupCommandTest extends WebTestCase
         $authCodeRepo = $em->getRepository(AuthCode::class);
         self::assertNull($authCodeRepo->findOneBy(['identifier' => 'auth_code_expired']));
         self::assertNotNull($authCodeRepo->findOneBy(['identifier' => 'auth_code_not_expired']));
+
+        $sessionTransferTokenRepo = $em->getRepository(SessionTransferToken::class);
+        self::assertNull(
+            $sessionTransferTokenRepo->findOneBy(['identifier' => 'session_transfer_token_expired'])
+        );
+        self::assertNotNull(
+            $sessionTransferTokenRepo->findOneBy(['identifier' => 'session_transfer_token_not_expired'])
+        );
     }
 }

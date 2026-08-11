@@ -36,6 +36,7 @@ class Client
     public const string PASSWORD           = 'password';
     public const string REFRESH_TOKEN      = 'refresh_token';
     public const string IMPLICIT           = 'implicit';
+    public const string SESSION_TRANSFER = 'session_transfer';
 
     #[ORM\Column(name: 'id', type: Types::INTEGER)]
     #[ORM\Id]
@@ -136,6 +137,13 @@ class Client
     #[ORM\Column(name: 'skip_authorize_client_allowed', type: Types::BOOLEAN, options: ['default' => false])]
     #[ConfigField(defaultValues: ['email' => ['available_in_template' => true]])]
     private ?bool $skipAuthorizeClientAllowed = false;
+
+    /**
+     * Used to enable session transfer grant that allow to exchange access token to the session
+     */
+    #[ORM\Column(name: 'session_transfer_allowed', type: Types::BOOLEAN, options: ['default' => false])]
+    #[ConfigField(defaultValues: ['email' => ['available_in_template' => true]])]
+    private bool $sessionTransferAllowed = false;
 
     /**
      * Gets the entity identifier.
@@ -513,6 +521,18 @@ class Client
     public function setAllApis(bool $allApis): self
     {
         $this->allApis = $allApis;
+
+        return $this;
+    }
+
+    public function isSessionTransferAllowed(): bool
+    {
+        return $this->sessionTransferAllowed;
+    }
+
+    public function setSessionTransferAllowed(bool $sessionTransferAllowed): self
+    {
+        $this->sessionTransferAllowed = $sessionTransferAllowed;
 
         return $this;
     }

@@ -37,3 +37,9 @@ oro_oauth2_server_authenticate:
     defaults:
         type: backoffice
         _controller: Oro\Bundle\OAuth2ServerBundle\Controller\AuthorizeClientController::authorizeAction
+
+oro_oauth2_session_transfer_consume:
+    path: '/oauth2/session-transfer/consume'
+    methods: [GET]
+    defaults:
+        _controller: Oro\Bundle\OAuth2ServerBundle\Controller\SessionTransferController::consumeBackend
