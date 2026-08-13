@@ -34,6 +34,7 @@ class OpenApiCompilerPass implements CompilerPassInterface
                 ->register('oro_oauth2_server.open_api.describer.' . $view, OAuthDescriber::class)
                 ->addArgument(new Reference('router'))
                 ->addArgument(new Reference('oro_api.api_doc.open_api.data_type_describe_helper'))
+                ->addArgument(new Reference('oro_api.rest.doc_view_detector'))
                 ->addTag('oro.api.open_api.describer.' . $view);
         }
     }
