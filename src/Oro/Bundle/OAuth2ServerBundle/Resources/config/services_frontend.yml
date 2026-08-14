@@ -87,7 +87,6 @@ services:
             - '@oro_customer.security.user_loader'
             - '@oro_website.manager'
             - '@oro_customer.customer_visitor_manager'
-            - '@oro_customer.anonymous_customer_user.token.factory'
             - '@oro_customer.authentication.anonymous_customer_user_roles_provider'
             - '@oro_customer.authentication.customer_visitor_cookie_factory'
             - '@security.token_storage'
@@ -97,3 +96,15 @@ services:
             - '@event_dispatcher'
         tags:
             - { name: oro_oauth2_server.session_transfer.context_handler }
+
+    oro_oauth2_server.provider.session_transfer_mode:
+        class: Oro\Bundle\OAuth2ServerBundle\Provider\SessionTransferModeProvider
+        arguments:
+            - '@security.token_storage'
+
+    oro_oauth2_server.layout.extension.session_transfer_mode_context_configurator:
+        class: Oro\Bundle\OAuth2ServerBundle\Layout\Extension\SessionTransferModeContextConfigurator
+        arguments:
+            - '@oro_oauth2_server.provider.session_transfer_mode'
+        tags:
+            - { name: layout.context_configurator }
