@@ -9,10 +9,11 @@ use Oro\Bundle\CustomerBundle\Entity\CustomerVisitorManager;
 use Oro\Bundle\CustomerBundle\Security\AnonymousCustomerUserAuthenticator;
 use Oro\Bundle\CustomerBundle\Security\AnonymousCustomerUserRolesProvider;
 use Oro\Bundle\CustomerBundle\Security\Firewall\CustomerVisitorCookieFactory;
-use Oro\Bundle\CustomerBundle\Security\Token\AnonymousCustomerUserTokenFactoryInterface;
 use Oro\Bundle\CustomerBundle\Security\VisitorIdentifierUtil;
 use Oro\Bundle\OAuth2ServerBundle\Entity\SessionTransferToken;
 use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\SessionTransferAuthenticationToken;
+use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\SessionTransferCustomerVisitorAuthenticationToken;
+use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\SessionTransferCustomerVisitorTokenFactory;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Oro\Bundle\UserBundle\Security\UserLoaderInterface;
 use Oro\Bundle\WebsiteBundle\Manager\WebsiteManager;
@@ -37,7 +38,6 @@ final class FrontendSessionTransferContextHandler extends AbstractSessionTransfe
         private readonly UserLoaderInterface $userLoader,
         private readonly WebsiteManager $websiteManager,
         private readonly CustomerVisitorManager $visitorManager,
-        private readonly AnonymousCustomerUserTokenFactoryInterface $anonymousTokenFactory,
         private readonly AnonymousCustomerUserRolesProvider $anonymousRolesProvider,
         private readonly CustomerVisitorCookieFactory $cookieFactory,
         TokenStorageInterface $tokenStorage,
@@ -113,17 +113,20 @@ final class FrontendSessionTransferContextHandler extends AbstractSessionTransfe
     private function createVisitorSession(Request $request, string $userIdentifier, Organization $organization): void
     {
         $visitorSessionId = VisitorIdentifierUtil::decodeIdentifier($userIdentifier);
-        $visitor = $this->visitorManager->find($visitorSessionId);
+        $visitor = $this->visitorManager->findOrCreate($visitorSessionId);
 
-        if (null === $visitor) {
-            throw new UnauthorizedHttpException('SessionTransfer', 'The customer visitor cannot be found.');
-        }
-
-        $securityToken = $this->anonymousTokenFactory
-            ->create($visitor, $organization, $this->anonymousRolesProvider->getRoles());
+        $securityToken = new SessionTransferCustomerVisitorAuthenticationToken(
+            $visitor,
+            $this->anonymousRolesProvider->getRoles(),
+            $organization
+        );
         $request->attributes->set(
             AnonymousCustomerUserAuthenticator::COOKIE_ATTR_NAME,
             $this->cookieFactory->getCookie($visitor->getSessionId())
+        );
+        $request->getSession()->set(
+            SessionTransferCustomerVisitorTokenFactory::SESSION_KEY,
+            $visitor->getSessionId()
         );
         $this->storeSecurityToken($request, $securityToken, false);
     }
