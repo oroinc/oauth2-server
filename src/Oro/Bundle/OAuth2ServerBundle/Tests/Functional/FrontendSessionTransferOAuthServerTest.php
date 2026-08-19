@@ -14,6 +14,7 @@ use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\SessionTransferC
 use Oro\Bundle\OAuth2ServerBundle\Tests\Functional\DataFixtures\LoadFrontendClientCredentialsClient;
 use Oro\Bundle\OAuth2ServerBundle\Tests\Functional\DataFixtures\LoadFrontendPasswordGrantClient;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\GoneHttpException;
 
 /**
  * @dbIsolationPerTest
@@ -96,6 +97,11 @@ class FrontendSessionTransferOAuthServerTest extends OAuthServerTestCase
         self::assertNotNull($expectedVisitorIdentifier);
         self::assertStringStartsWith('visitor:', $expectedVisitorIdentifier);
         self::assertNull($transferToken->getConsumedAt());
+        self::assertNull(
+            $this->getEntityManager()->getRepository(CustomerVisitor::class)->findOneBy([
+                'sessionId' => VisitorIdentifierUtil::decodeIdentifier($expectedVisitorIdentifier)
+            ])
+        );
 
         $this->client->request(
             'GET',
@@ -133,6 +139,24 @@ class FrontendSessionTransferOAuthServerTest extends OAuthServerTestCase
 
         $transferToken = $this->getSessionTransferToken($responseData['access_token']);
         self::assertNotNull($transferToken->getConsumedAt());
+
+        $this->client->catchExceptions(false);
+        try {
+            $this->client->request(
+                'GET',
+                $this->getUrl(
+                    'oro_oauth2_frontend_session_transfer_consume',
+                    ['token' => $responseData['access_token']]
+                )
+            );
+            self::fail('A consumed Session Transfer Token must not be accepted.');
+        } catch (GoneHttpException $exception) {
+            self::assertStringContainsString('already been used', $exception->getMessage());
+        }
+
+        $securityToken = self::getContainer()->get('oro_security.token_accessor')->getToken();
+        self::assertInstanceOf(SessionTransferCustomerVisitorAuthenticationToken::class, $securityToken);
+        self::assertEquals($expectedVisitorIdentifier, $securityToken->getUser()->getUserIdentifier());
     }
 
     public function testExchangeIsRejectedForBackOfficeRoute(): void
@@ -166,15 +190,6 @@ class FrontendSessionTransferOAuthServerTest extends OAuthServerTestCase
             'username' => 'guest',
             'password' => 'guest'
         ]);
-
-        [, $accessTokenPayload] = explode('.', $responseData['access_token']);
-        $accessTokenPayload = self::jsonToArray(base64_decode($accessTokenPayload));
-        $visitor = (new CustomerVisitor())->setSessionId(
-            VisitorIdentifierUtil::decodeIdentifier($accessTokenPayload['sub'])
-        );
-        $entityManager = $this->getEntityManager();
-        $entityManager->persist($visitor);
-        $entityManager->flush();
 
         return $responseData['access_token'];
     }

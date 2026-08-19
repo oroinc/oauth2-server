@@ -97,14 +97,9 @@ services:
         tags:
             - { name: oro_oauth2_server.session_transfer.context_handler }
 
-    oro_oauth2_server.provider.session_transfer_mode:
-        class: Oro\Bundle\OAuth2ServerBundle\Provider\SessionTransferModeProvider
+    oro_oauth2_server.session_transfer.customer_visitor_token_factory:
+        class: Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\SessionTransferCustomerVisitorTokenFactory
+        decorates: oro_customer.anonymous_customer_user.token.factory
         arguments:
-            - '@security.token_storage'
-
-    oro_oauth2_server.layout.extension.session_transfer_mode_context_configurator:
-        class: Oro\Bundle\OAuth2ServerBundle\Layout\Extension\SessionTransferModeContextConfigurator
-        arguments:
-            - '@oro_oauth2_server.provider.session_transfer_mode'
-        tags:
-            - { name: layout.context_configurator }
+            - '@.inner'
+            - '@request_stack'

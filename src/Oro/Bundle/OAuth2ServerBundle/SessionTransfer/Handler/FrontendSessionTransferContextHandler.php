@@ -13,6 +13,7 @@ use Oro\Bundle\CustomerBundle\Security\VisitorIdentifierUtil;
 use Oro\Bundle\OAuth2ServerBundle\Entity\SessionTransferToken;
 use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\SessionTransferAuthenticationToken;
 use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\SessionTransferCustomerVisitorAuthenticationToken;
+use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\SessionTransferCustomerVisitorTokenFactory;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Oro\Bundle\UserBundle\Security\UserLoaderInterface;
 use Oro\Bundle\WebsiteBundle\Manager\WebsiteManager;
@@ -112,11 +113,7 @@ final class FrontendSessionTransferContextHandler extends AbstractSessionTransfe
     private function createVisitorSession(Request $request, string $userIdentifier, Organization $organization): void
     {
         $visitorSessionId = VisitorIdentifierUtil::decodeIdentifier($userIdentifier);
-        $visitor = $this->visitorManager->find($visitorSessionId);
-
-        if (null === $visitor) {
-            throw new UnauthorizedHttpException('SessionTransfer', 'The customer visitor cannot be found.');
-        }
+        $visitor = $this->visitorManager->findOrCreate($visitorSessionId);
 
         $securityToken = new SessionTransferCustomerVisitorAuthenticationToken(
             $visitor,
@@ -126,6 +123,10 @@ final class FrontendSessionTransferContextHandler extends AbstractSessionTransfe
         $request->attributes->set(
             AnonymousCustomerUserAuthenticator::COOKIE_ATTR_NAME,
             $this->cookieFactory->getCookie($visitor->getSessionId())
+        );
+        $request->getSession()->set(
+            SessionTransferCustomerVisitorTokenFactory::SESSION_KEY,
+            $visitor->getSessionId()
         );
         $this->storeSecurityToken($request, $securityToken, false);
     }

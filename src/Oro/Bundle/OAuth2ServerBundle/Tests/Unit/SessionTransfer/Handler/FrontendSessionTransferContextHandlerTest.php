@@ -15,6 +15,7 @@ use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Entity\SessionTransferToken;
 use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\SessionTransferAuthenticationToken;
 use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\SessionTransferCustomerVisitorAuthenticationToken;
+use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\SessionTransferCustomerVisitorTokenFactory;
 use Oro\Bundle\OAuth2ServerBundle\SessionTransfer\Handler\FrontendSessionTransferContextHandler;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Oro\Bundle\UserBundle\Security\UserLoaderInterface;
@@ -138,7 +139,7 @@ class FrontendSessionTransferContextHandlerTest extends TestCase
         $websiteManager->expects(self::once())->method('getCurrentWebsite')->willReturn($website);
         $visitorManager = $this->createMock(CustomerVisitorManager::class);
         $visitorManager->expects(self::once())
-            ->method('find')
+            ->method('findOrCreate')
             ->with('visitorSessionId')
             ->willReturn($visitor);
         $anonymousRolesProvider = $this->createMock(AnonymousCustomerUserRolesProvider::class);
@@ -199,6 +200,10 @@ class FrontendSessionTransferContextHandlerTest extends TestCase
         self::assertSame(
             $cookie,
             $request->attributes->get(AnonymousCustomerUserAuthenticator::COOKIE_ATTR_NAME)
+        );
+        self::assertSame(
+            'visitorSessionId',
+            $request->getSession()->get(SessionTransferCustomerVisitorTokenFactory::SESSION_KEY)
         );
     }
 
