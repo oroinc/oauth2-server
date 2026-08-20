@@ -13,6 +13,8 @@ use Symfony\Component\Security\Core\Exception\AuthenticationException;
  */
 class ValidateAccessByOAuth2Token implements ProcessorInterface
 {
+    public const OPERATION_NAME = 'validate_access_by_oauth2_token';
+
     public function __construct(
         private readonly OAuth2TokenAccessChecker $accessChecker
     ) {
@@ -23,8 +25,14 @@ class ValidateAccessByOAuth2Token implements ProcessorInterface
     {
         /** @var Context $context */
 
+        if ($context->isProcessed(self::OPERATION_NAME)) {
+            // the access validation was already done or not needed
+            return;
+        }
+
         if (!$this->accessChecker->isAccessGranted($context->getRequestType())) {
             throw new AuthenticationException('This API is not accessible via the current OAuth2 token.');
         }
+        $context->setProcessed(self::OPERATION_NAME);
     }
 }
