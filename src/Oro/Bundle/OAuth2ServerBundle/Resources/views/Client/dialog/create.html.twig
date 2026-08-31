@@ -16,6 +16,8 @@
         {{ form_row(form.name) }}
         {{ form_row(form.active) }}
         {{ form_row(form.sessionTransferAllowed) }}
+        {{ form_row(form.allApis, {'group_attr': {'id': 'all-api-types-field'}}) }}
+        {{ form_row(form.apis, {'group_attr': {'id': 'api-types-field','class': 'hide'}}) }}
         {% if form.grants is defined %}
             {% if 'hidden' in form.grants.vars.block_prefixes %}
                 <div class="hidden-input__wrapper" data-validation-ignore="true">{{ form_row(form.grants) }}</div>
@@ -29,6 +31,13 @@
             <button class="btn btn-primary" type="submit">{{ 'Save'|trans }}</button>
         </div>
     </fieldset>
+    <div {{ UI.renderPageComponentAttributes({
+        view: 'orooauth2server/js/views/api-types-view',
+        options: {
+            _sourceElement: '#all-api-types-field',
+            apiTypesField: '#api-types-field'
+        }
+    }) }}></div>
 {% endblock content_data %}
 
 {% block widget_context %}
