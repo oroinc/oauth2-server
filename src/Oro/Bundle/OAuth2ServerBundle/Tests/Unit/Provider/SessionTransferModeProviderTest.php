@@ -36,6 +36,10 @@ class SessionTransferModeProviderTest extends TestCase
 
     public function testIsInSessionTransferModeWhenCustomerVisitorSessionTransferToken(): void
     {
+        if (!\class_exists('Oro\\Bundle\\CustomerBundle\\OroCustomerBundle')) {
+            self::markTestSkipped('can be tested only with CustomerBundle');
+        }
+
         $this->tokenStorage->expects(self::once())
             ->method('getToken')
             ->willReturn($this->createMock(SessionTransferCustomerVisitorAuthenticationToken::class));
