@@ -5,5 +5,9 @@ features:
             - oro_oauth2_view
             - oro_oauth2_create
             - oro_oauth2_update
+        datagrids:
+            - oauth-client-backend-grid
+            - oauth-client-grid
+            - oauth-client-with-owner-grid
         navigation_items:
             - application_menu.system_tab.users_management.backoffice_oauth_applications
