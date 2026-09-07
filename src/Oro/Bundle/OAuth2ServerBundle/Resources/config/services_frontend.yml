@@ -103,3 +103,15 @@ services:
         arguments:
             - '@.inner'
             - '@request_stack'
+
+    oro_oauth2_server.provider.session_transfer_mode:
+        class: Oro\Bundle\OAuth2ServerBundle\Provider\SessionTransferModeProvider
+        arguments:
+            - '@security.token_storage'
+
+    oro_oauth2_server.layout.extension.session_transfer_mode_context_configurator:
+        class: Oro\Bundle\OAuth2ServerBundle\Layout\Extension\SessionTransferModeContextConfigurator
+        arguments:
+            - '@oro_oauth2_server.provider.session_transfer_mode'
+        tags:
+            - { name: layout.context_configurator }
