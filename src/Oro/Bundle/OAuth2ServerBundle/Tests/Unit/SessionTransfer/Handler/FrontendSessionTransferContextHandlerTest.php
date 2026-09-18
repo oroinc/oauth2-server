@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\SessionTransfer\Handler;
 
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ManagerRegistry;
 use Oro\Bundle\CustomerBundle\Entity\CustomerUser;
 use Oro\Bundle\CustomerBundle\Entity\CustomerVisitor;
 use Oro\Bundle\CustomerBundle\Entity\CustomerVisitorManager;
@@ -142,6 +144,14 @@ class FrontendSessionTransferContextHandlerTest extends TestCase
             ->method('findOrCreate')
             ->with('visitorSessionId')
             ->willReturn($visitor);
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects(self::once())->method('persist')->with($visitor);
+        $entityManager->expects(self::once())->method('flush');
+        $doctrine = $this->createMock(ManagerRegistry::class);
+        $doctrine->expects(self::once())
+            ->method('getManagerForClass')
+            ->with(CustomerVisitor::class)
+            ->willReturn($entityManager);
         $anonymousRolesProvider = $this->createMock(AnonymousCustomerUserRolesProvider::class);
         $anonymousRolesProvider->expects(self::once())
             ->method('getRoles')
@@ -188,6 +198,7 @@ class FrontendSessionTransferContextHandlerTest extends TestCase
         $handler = $this->createHandler(
             websiteManager: $websiteManager,
             visitorManager: $visitorManager,
+            doctrine: $doctrine,
             anonymousRolesProvider: $anonymousRolesProvider,
             cookieFactory: $cookieFactory,
             tokenStorage: $tokenStorage,
@@ -231,6 +242,7 @@ class FrontendSessionTransferContextHandlerTest extends TestCase
         ?UserLoaderInterface $userLoader = null,
         ?WebsiteManager $websiteManager = null,
         ?CustomerVisitorManager $visitorManager = null,
+        ?ManagerRegistry $doctrine = null,
         ?AnonymousCustomerUserRolesProvider $anonymousRolesProvider = null,
         ?CustomerVisitorCookieFactory $cookieFactory = null,
         ?TokenStorageInterface $tokenStorage = null,
@@ -243,6 +255,7 @@ class FrontendSessionTransferContextHandlerTest extends TestCase
             $userLoader ?? $this->createMock(UserLoaderInterface::class),
             $websiteManager ?? $this->createMock(WebsiteManager::class),
             $visitorManager ?? $this->createMock(CustomerVisitorManager::class),
+            $doctrine ?? $this->createMock(ManagerRegistry::class),
             $anonymousRolesProvider ?? $this->createMock(AnonymousCustomerUserRolesProvider::class),
             $cookieFactory ?? $this->createMock(CustomerVisitorCookieFactory::class),
             $tokenStorage ?? $this->createMock(TokenStorageInterface::class),
