@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Oro\Bundle\OAuth2ServerBundle\SessionTransfer\Handler;
 
+use Doctrine\Persistence\ManagerRegistry;
 use Oro\Bundle\CustomerBundle\Entity\CustomerUser;
+use Oro\Bundle\CustomerBundle\Entity\CustomerVisitor;
 use Oro\Bundle\CustomerBundle\Entity\CustomerVisitorManager;
 use Oro\Bundle\CustomerBundle\Security\AnonymousCustomerUserAuthenticator;
 use Oro\Bundle\CustomerBundle\Security\AnonymousCustomerUserRolesProvider;
@@ -38,6 +40,7 @@ final class FrontendSessionTransferContextHandler extends AbstractSessionTransfe
         private readonly UserLoaderInterface $userLoader,
         private readonly WebsiteManager $websiteManager,
         private readonly CustomerVisitorManager $visitorManager,
+        private readonly ManagerRegistry $doctrine,
         private readonly AnonymousCustomerUserRolesProvider $anonymousRolesProvider,
         private readonly CustomerVisitorCookieFactory $cookieFactory,
         TokenStorageInterface $tokenStorage,
@@ -114,6 +117,11 @@ final class FrontendSessionTransferContextHandler extends AbstractSessionTransfe
     {
         $visitorSessionId = VisitorIdentifierUtil::decodeIdentifier($userIdentifier);
         $visitor = $this->visitorManager->findOrCreate($visitorSessionId);
+        if (null === $visitor->getId()) {
+            $entityManager = $this->doctrine->getManagerForClass(CustomerVisitor::class);
+            $entityManager->persist($visitor);
+            $entityManager->flush();
+        }
 
         $securityToken = new SessionTransferCustomerVisitorAuthenticationToken(
             $visitor,

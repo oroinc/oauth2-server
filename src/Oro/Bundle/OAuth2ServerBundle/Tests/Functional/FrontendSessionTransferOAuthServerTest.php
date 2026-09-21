@@ -123,6 +123,11 @@ class FrontendSessionTransferOAuthServerTest extends OAuthServerTestCase
         $visitor = $securityToken->getUser();
         self::assertInstanceOf(CustomerVisitor::class, $visitor);
         self::assertEquals($expectedVisitorIdentifier, $visitor->getUserIdentifier());
+        self::assertNotNull(
+            $this->getEntityManager()->getRepository(CustomerVisitor::class)->findOneBy([
+                'sessionId' => $visitor->getSessionId()
+            ])
+        );
 
         $visitorCookie = null;
         foreach ($response->headers->getCookies() as $cookie) {
