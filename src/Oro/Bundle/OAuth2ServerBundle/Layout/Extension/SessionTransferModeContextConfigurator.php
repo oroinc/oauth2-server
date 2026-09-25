@@ -14,7 +14,7 @@ use Oro\Component\Layout\ContextInterface;
  */
 class SessionTransferModeContextConfigurator implements ContextConfiguratorInterface
 {
-    private const string OPTION_NAME = 'is_in_session_transfer_mode';
+    public const string OPTION_NAME = 'is_in_session_transfer_mode';
 
     public function __construct(private readonly SessionTransferModeProvider $sessionTransferModeProvider)
     {

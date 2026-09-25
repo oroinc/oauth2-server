@@ -10,8 +10,13 @@ use Oro\Component\Layout\LayoutContext;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
-class SessionTransferModeContextConfiguratorTest extends TestCase
+final class SessionTransferModeContextConfiguratorTest extends TestCase
 {
+    /**
+     * The literal is repeated on purpose: it guards the option name the layout updates depend on.
+     */
+    private const string OPTION_NAME = 'is_in_session_transfer_mode';
+
     private SessionTransferModeProvider&MockObject $sessionTransferModeProvider;
 
     private SessionTransferModeContextConfigurator $configurator;
@@ -24,30 +29,26 @@ class SessionTransferModeContextConfiguratorTest extends TestCase
     }
 
     /**
-     * @dataProvider configureContextDataProvider
+     * @dataProvider configureContextProvider
      */
     public function testConfigureContext(bool $isInSessionTransferMode): void
     {
         $context = new LayoutContext();
 
-        $this->sessionTransferModeProvider->expects(self::once())
+        $this->sessionTransferModeProvider
+            ->expects(self::once())
             ->method('isInSessionTransferMode')
             ->willReturn($isInSessionTransferMode);
 
         $this->configurator->configureContext($context);
 
-        self::assertContains(
-            'is_in_session_transfer_mode',
-            $context->getResolver()->getRequiredOptions()
-        );
-        self::assertSame($isInSessionTransferMode, $context->get('is_in_session_transfer_mode'));
+        self::assertContains(self::OPTION_NAME, $context->getResolver()->getRequiredOptions());
+        self::assertSame($isInSessionTransferMode, $context->get(self::OPTION_NAME));
     }
 
-    public function configureContextDataProvider(): array
+    public static function configureContextProvider(): iterable
     {
-        return [
-            'In Session Transfer Mode' => ['isInSessionTransferMode' => true],
-            'Not in Session Transfer Mode' => ['isInSessionTransferMode' => false],
-        ];
+        yield 'in session transfer mode' => ['isInSessionTransferMode' => true];
+        yield 'not in session transfer mode' => ['isInSessionTransferMode' => false];
     }
 }

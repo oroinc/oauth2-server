@@ -42,6 +42,7 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
     private const CORS_PREFLIGHT_MAX_AGE_PARAM = 'oro_oauth2_server.cors.preflight_max_age';
     private const CORS_ALLOW_ORIGINS_PARAM = 'oro_oauth2_server.cors.allow_origins';
     private const CORS_ALLOW_HEADERS_PARAM = 'oro_oauth2_server.cors.allow_headers';
+    private const SESSION_TRANSFER_RETURN_URL_PARAM = 'oro_oauth2_server.session_transfer.return_url';
 
     private const PRIVATE_KEY_SERVICE = 'oro_oauth2_server.league.private_key';
     private const PUBLIC_KEY_SERVICE = 'oro_oauth2_server.league.public_key';
@@ -100,6 +101,10 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
         $container->setParameter(
             self::AUTH_SERVER_ACCESS_TOKEN_LIFETIME,
             $config['authorization_server']['access_token_lifetime']
+        );
+        $container->setParameter(
+            self::SESSION_TRANSFER_RETURN_URL_PARAM,
+            $config['session_transfer']['return_url']
         );
     }
 

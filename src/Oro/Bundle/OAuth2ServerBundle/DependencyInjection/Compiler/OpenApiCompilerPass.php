@@ -6,6 +6,7 @@ use Oro\Bundle\ApiBundle\Request\RequestType;
 use Oro\Bundle\ApiBundle\Util\DependencyInjectionUtil;
 use Oro\Bundle\OAuth2ServerBundle\OpenApi\Describer\OAuthDescriber;
 use Oro\Bundle\OAuth2ServerBundle\OpenApi\Describer\OAuthSecurityDescriber;
+use Oro\Bundle\OAuth2ServerBundle\OpenApi\Describer\OAuthVisitorAuthorizationDescriber;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Reference;
@@ -15,6 +16,11 @@ use Symfony\Component\DependencyInjection\Reference;
  */
 class OpenApiCompilerPass implements CompilerPassInterface
 {
+    /**
+     * The request type aspect that marks the storefront API views.
+     */
+    private const string FRONTEND_REQUEST_TYPE = 'frontend';
+
     #[\Override]
     public function process(ContainerBuilder $container): void
     {
@@ -34,8 +40,18 @@ class OpenApiCompilerPass implements CompilerPassInterface
                 ->register('oro_oauth2_server.open_api.describer.' . $view, OAuthDescriber::class)
                 ->addArgument(new Reference('router'))
                 ->addArgument(new Reference('oro_api.api_doc.open_api.data_type_describe_helper'))
-                ->addArgument(new Reference('oro_api.rest.doc_view_detector'))
                 ->addTag('oro.api.open_api.describer.' . $view);
+            if (\in_array(self::FRONTEND_REQUEST_TYPE, $requestType, true)) {
+                // the visitor authorization endpoint exists in the storefront API only;
+                // the tag has no priority, so this describer runs right after the OAuth token endpoint describer
+                $container
+                    ->register(
+                        'oro_oauth2_server.open_api.visitor_authorization_describer.' . $view,
+                        OAuthVisitorAuthorizationDescriber::class
+                    )
+                    ->addArgument(new Reference('router'))
+                    ->addTag('oro.api.open_api.describer.' . $view);
+            }
         }
     }
 
