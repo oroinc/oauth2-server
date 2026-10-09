@@ -11,6 +11,7 @@ use Oro\Bundle\OAuth2ServerBundle\Controller\WellKnownMetadataController;
 use Oro\Bundle\OAuth2ServerBundle\League\Grant\AuthCodeGrant;
 use Oro\Bundle\OAuth2ServerBundle\League\Grant\PasswordGrant;
 use Oro\Bundle\OAuth2ServerBundle\League\Grant\SessionTransferGrant;
+use Oro\Bundle\OAuth2ServerBundle\League\Repository\FrontendAccessTokenRepository;
 use Oro\Bundle\OAuth2ServerBundle\League\Repository\FrontendAuthCodeRepository;
 use Oro\Bundle\OAuth2ServerBundle\League\Repository\FrontendRefreshTokenRepository;
 use Oro\Bundle\OAuth2ServerBundle\League\Repository\FrontendUserRepository;
@@ -47,6 +48,7 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
     private const PUBLIC_KEY_SERVICE = 'oro_oauth2_server.league.public_key';
 
     private const AUTHORIZATION_SERVER_SERVICE = 'oro_oauth2_server.league.authorization_server';
+    private const ACCESS_TOKEN_REPOSITORY_SERVICE = 'oro_oauth2_server.league.repository.access_token_repository';
     private const USER_REPOSITORY_SERVICE = 'oro_oauth2_server.league.repository.user_repository';
     private const REFRESH_TOKEN_REPOSITORY_SERVICE = 'oro_oauth2_server.league.repository.refresh_token_repository';
     private const AUTH_CODE_REPOSITORY_SERVICE = 'oro_oauth2_server.league.repository.auth_code_repository';
@@ -56,6 +58,7 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
     private const FEATURE_CHECK_SERVICE = 'oro_featuretoggle.checker.feature_checker';
 
     private const AUTHORIZATION_VALIDATOR_SERVICE = 'oro_oauth2_server.league.authorization_validator';
+    private const CLIENT_OWNER_SCOPE_VALIDATOR_SERVICE = 'oro_oauth2_server.security.client_owner_scope_validator';
     private const CLIENT_MANAGER_SERVICE = 'oro_oauth2_server.client_manager';
     private const SESSION_TRANSFER_ROUTE_VALIDATOR_SERVICE = 'oro_oauth2_server.session_transfer.route_validator';
     private const SESSION_TRANSFER_TOKEN_MANAGER_SERVICE = 'oro_oauth2_server.session_transfer.token_manager';
@@ -145,7 +148,7 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
 
     private function configureUserRepository(ContainerBuilder $container): void
     {
-        // replace user and refresh token repositories with the repositories that can handle customer users here
+        // replace repositories with the repositories that can handle customer users here
         // to avoid creation of a bridge for the customer-portal package
         if (class_exists('Oro\Bundle\CustomerBundle\OroCustomerBundle')) {
             $container->getDefinition(self::USER_REPOSITORY_SERVICE)
@@ -158,6 +161,9 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
             $container->getDefinition(self::AUTH_CODE_REPOSITORY_SERVICE)
                 ->setClass(FrontendAuthCodeRepository::class)
                 ->addArgument(new Reference(self::FRONTEND_USER_LOADER_SERVICE));
+            $container->getDefinition(self::ACCESS_TOKEN_REPOSITORY_SERVICE)
+                ->setClass(FrontendAccessTokenRepository::class)
+                ->addArgument(new Reference(self::CLIENT_OWNER_SCOPE_VALIDATOR_SERVICE));
         }
     }
 

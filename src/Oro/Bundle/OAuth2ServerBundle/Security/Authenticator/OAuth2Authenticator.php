@@ -152,7 +152,7 @@ class OAuth2Authenticator implements AuthenticatorInterface
         return $client;
     }
 
-    private function getUser(Client $client, ServerRequestInterface $request): object
+    protected function getUser(Client $client, ServerRequestInterface $request): object
     {
         $ownerClass = $client->getOwnerEntityClass();
         $ownerId = $client->getOwnerEntityId();

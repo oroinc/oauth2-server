@@ -8,7 +8,7 @@ oro_api:
                 - Oro\Bundle\OAuth2ServerBundle\Security\Authenticator\OAuth2Authenticator
         frontend_api_secured:
             feature_firewall_authenticators: # FeatureDependAuthenticatorChecker
-                - Oro\Bundle\OAuth2ServerBundle\Security\Authenticator\OAuth2Authenticator
+                - Oro\Bundle\OAuth2ServerBundle\Security\Authenticator\FrontendOAuth2Authenticator
 
 oro_security:
     access_control:
