@@ -2,6 +2,8 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\Tests\Functional;
 
+use Oro\Bundle\CustomerBundle\Entity\CustomerUser;
+use Oro\Bundle\CustomerBundle\Tests\Functional\DataFixtures\LoadCustomerUserData;
 use Oro\Bundle\OAuth2ServerBundle\Tests\Functional\DataFixtures\LoadFrontendPasswordGrantClient;
 use Oro\Bundle\OAuth2ServerBundle\Tests\Functional\DataFixtures\LoadPasswordGrantClient;
 use Oro\Bundle\TestFrameworkBundle\Tests\Functional\DataFixtures\LoadUser;
@@ -26,8 +28,26 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
             LoadPasswordGrantClient::class,
             LoadFrontendPasswordGrantClient::class,
             LoadUser::class,
-            'Oro\Bundle\CustomerBundle\Tests\Functional\DataFixtures\LoadCustomerUserData'
+            LoadCustomerUserData::class
         ]);
+    }
+
+    private function setFrontendClientOwner(string $ownerReference): void
+    {
+        /** @var CustomerUser $owner */
+        $owner = $this->getReference($ownerReference);
+        $client = $this->getReference(LoadFrontendPasswordGrantClient::OAUTH_CLIENT_REFERENCE);
+        $client->setOwnerEntity(CustomerUser::class, $owner->getId());
+        $this->getEntityManager()->flush();
+    }
+
+    private function setBackendClientOwner(): void
+    {
+        /** @var User $owner */
+        $owner = $this->getReference(LoadUser::USER);
+        $client = $this->getReference(LoadPasswordGrantClient::OAUTH_CLIENT_REFERENCE);
+        $client->setOwnerEntity(User::class, $owner->getId());
+        $this->getEntityManager()->flush();
     }
 
     private function getBackendBearerAuthHeaderValue(): string
@@ -134,6 +154,115 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
 
         $client = $this->getReference(LoadFrontendPasswordGrantClient::OAUTH_CLIENT_REFERENCE);
         self::assertClientLastUsedValueIsCorrect($startDateTime, $client);
+    }
+
+    /**
+     * @dataProvider frontendOwnerScopeDataProvider
+     */
+    public function testGetFrontendAuthTokenRespectsClientOwnerScope(
+        string $userName,
+        string $password,
+        int $expectedStatusCode,
+        bool $tokenExpected
+    ): void {
+        $this->setFrontendClientOwner(LoadCustomerUserData::EMAIL);
+
+        $responseContent = $this->sendFrontendPasswordAccessTokenRequest(
+            $userName,
+            $password,
+            $expectedStatusCode
+        );
+
+        if ($tokenExpected) {
+            self::assertArrayHasKey('access_token', $responseContent);
+        } else {
+            self::assertArrayNotHasKey('access_token', $responseContent);
+            self::assertSame('invalid_grant', $responseContent['error']);
+        }
+    }
+
+    public static function frontendOwnerScopeDataProvider(): array
+    {
+        return [
+            'user from the owner customer' => [
+                LoadCustomerUserData::LEVEL_1_EMAIL,
+                LoadCustomerUserData::LEVEL_1_PASSWORD,
+                Response::HTTP_OK,
+                true
+            ],
+            'user from a subordinate customer' => [
+                LoadCustomerUserData::LEVEL_1_1_EMAIL,
+                LoadCustomerUserData::LEVEL_1_1_PASSWORD,
+                Response::HTTP_OK,
+                true
+            ],
+            'user from another customer tree' => [
+                LoadCustomerUserData::ORPHAN_EMAIL,
+                LoadCustomerUserData::ORPHAN_PASSWORD,
+                Response::HTTP_BAD_REQUEST,
+                false
+            ]
+        ];
+    }
+
+    public function testApiFrontendRequestWithinClientOwnerScopeShouldReturnRequestedData(): void
+    {
+        $this->setFrontendClientOwner(LoadCustomerUserData::EMAIL);
+        $accessToken = $this->sendFrontendPasswordAccessTokenRequest(
+            LoadCustomerUserData::LEVEL_1_1_EMAIL,
+            LoadCustomerUserData::LEVEL_1_1_PASSWORD
+        );
+        /** @var CustomerUser $customerUser */
+        $customerUser = $this->getReference(LoadCustomerUserData::LEVEL_1_1_EMAIL);
+
+        $response = $this->frontendGet(
+            ['entity' => 'customerusers', 'id' => $customerUser->getId()],
+            [],
+            ['HTTP_AUTHORIZATION' => sprintf('Bearer %s', $accessToken['access_token'])]
+        );
+
+        $this->assertResponseContains(
+            ['data' => ['type' => 'customerusers', 'id' => (string)$customerUser->getId()]],
+            $response
+        );
+    }
+
+    public function testApiFrontendRequestOutsideCurrentClientOwnerScopeShouldReturnUnauthorized(): void
+    {
+        $accessToken = $this->sendFrontendPasswordAccessTokenRequest(
+            LoadCustomerUserData::ORPHAN_EMAIL,
+            LoadCustomerUserData::ORPHAN_PASSWORD
+        );
+        $this->setFrontendClientOwner(LoadCustomerUserData::EMAIL);
+        /** @var CustomerUser $customerUser */
+        $customerUser = $this->getReference(LoadCustomerUserData::ORPHAN_EMAIL);
+
+        $response = $this->frontendGet(
+            ['entity' => 'customerusers', 'id' => $customerUser->getId()],
+            [],
+            ['HTTP_AUTHORIZATION' => sprintf('Bearer %s', $accessToken['access_token'])],
+            false
+        );
+
+        self::assertResponseStatusCodeEquals($response, Response::HTTP_UNAUTHORIZED);
+        self::assertSame('', $response->getContent());
+    }
+
+    public function testBackendClientOwnerDoesNotEnableFrontendOwnerScopeValidation(): void
+    {
+        $this->setBackendClientOwner();
+        $authorizationHeader = $this->getBackendBearerAuthHeaderValue();
+
+        $response = $this->get(
+            ['entity' => 'users', 'id' => '<toString(@user->id)>'],
+            [],
+            ['HTTP_AUTHORIZATION' => $authorizationHeader]
+        );
+
+        $this->assertResponseContains(
+            ['data' => ['type' => 'users', 'id' => '<toString(@user->id)>']],
+            $response
+        );
     }
 
     public function testFrontendGetAuthTokenWithBackendCredentialsShouldReturnBadRequestStatusCode(): void

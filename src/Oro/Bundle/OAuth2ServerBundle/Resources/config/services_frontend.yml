@@ -1,4 +1,12 @@
 services:
+    oro_oauth2_server.security.client_owner_scope_validator:
+        class: Oro\Bundle\OAuth2ServerBundle\Security\ClientOwnerScopeValidator
+        lazy: true
+        arguments:
+            - '@doctrine'
+            - '@oro_customer.security.user_loader'
+            - '@oro_customer.owner.tree_provider'
+
     oro_oauth2_server.frontend_authorize_client_controller:
         class: Oro\Bundle\OAuth2ServerBundle\Controller\AuthorizeClientController
         public: true

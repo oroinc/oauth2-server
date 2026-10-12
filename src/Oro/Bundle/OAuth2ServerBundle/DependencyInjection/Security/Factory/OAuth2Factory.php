@@ -2,6 +2,7 @@
 
 namespace Oro\Bundle\OAuth2ServerBundle\DependencyInjection\Security\Factory;
 
+use Oro\Bundle\OAuth2ServerBundle\Security\Authenticator\FrontendOAuth2Authenticator;
 use Oro\Bundle\OAuth2ServerBundle\Security\Authenticator\OAuth2Authenticator;
 use Oro\Bundle\OAuth2ServerBundle\Security\VisitorUserProvider;
 use Symfony\Bridge\PsrHttpMessage\HttpMessageFactoryInterface;
@@ -24,9 +25,13 @@ class OAuth2Factory implements AuthenticatorFactoryInterface
         string $userProviderId
     ): string {
         $authenticatorId = 'oro_oauth2_server.security.authenticator.' . $firewallName;
+        $isVisitorFirewall = $this->isVisitorFirewall($config);
 
-        $container
-            ->register($authenticatorId, OAuth2Authenticator::class)
+        $authenticator = $container
+            ->register(
+                $authenticatorId,
+                $isVisitorFirewall ? FrontendOAuth2Authenticator::class : OAuth2Authenticator::class
+            )
             ->addArgument(new Reference('logger'))
             ->addArgument(new Reference('oro_oauth2_server.client_manager'))
             ->addArgument(new Reference('doctrine'))
@@ -36,11 +41,18 @@ class OAuth2Factory implements AuthenticatorFactoryInterface
             ->addArgument(new Reference('oro_api.security.authenticator.feature_checker'))
             ->addArgument($firewallName)
             ->addArgument(
-                $this->isVisitorFirewall($config)
+                $isVisitorFirewall
                     ? new Reference('oro_customer.authentication.anonymous_customer_user_roles_provider')
                     : null
             )
             ->addMethodCall('setAuthorizationCookies', [$config['authorization_cookies']]);
+
+        if ($isVisitorFirewall) {
+            $authenticator->addMethodCall(
+                'setClientOwnerScopeValidator',
+                [new Reference('oro_oauth2_server.security.client_owner_scope_validator')]
+            );
+        }
 
         return $authenticatorId;
     }
