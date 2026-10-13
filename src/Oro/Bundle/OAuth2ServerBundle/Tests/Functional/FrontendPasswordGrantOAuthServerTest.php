@@ -3,7 +3,6 @@
 namespace Oro\Bundle\OAuth2ServerBundle\Tests\Functional;
 
 use Oro\Bundle\CustomerBundle\Entity\CustomerUser;
-use Oro\Bundle\CustomerBundle\Tests\Functional\DataFixtures\LoadCustomerUserData;
 use Oro\Bundle\OAuth2ServerBundle\Tests\Functional\DataFixtures\LoadFrontendPasswordGrantClient;
 use Oro\Bundle\OAuth2ServerBundle\Tests\Functional\DataFixtures\LoadPasswordGrantClient;
 use Oro\Bundle\TestFrameworkBundle\Tests\Functional\DataFixtures\LoadUser;
@@ -28,7 +27,7 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
             LoadPasswordGrantClient::class,
             LoadFrontendPasswordGrantClient::class,
             LoadUser::class,
-            LoadCustomerUserData::class
+            'Oro\Bundle\CustomerBundle\Tests\Functional\DataFixtures\LoadCustomerUserData'
         ]);
     }
 
@@ -165,7 +164,7 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
         int $expectedStatusCode,
         bool $tokenExpected
     ): void {
-        $this->setFrontendClientOwner(LoadCustomerUserData::EMAIL);
+        $this->setFrontendClientOwner('grzegorz.brzeczyszczykiewicz@example.com');
 
         $responseContent = $this->sendFrontendPasswordAccessTokenRequest(
             $userName,
@@ -185,20 +184,20 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
     {
         return [
             'user from the owner customer' => [
-                LoadCustomerUserData::LEVEL_1_EMAIL,
-                LoadCustomerUserData::LEVEL_1_PASSWORD,
+                'other.user@test.com',
+                'pass',
                 Response::HTTP_OK,
                 true
             ],
             'user from a subordinate customer' => [
-                LoadCustomerUserData::LEVEL_1_1_EMAIL,
-                LoadCustomerUserData::LEVEL_1_1_PASSWORD,
+                'second_customer.user@test.com',
+                'pass',
                 Response::HTTP_OK,
                 true
             ],
             'user from another customer tree' => [
-                LoadCustomerUserData::ORPHAN_EMAIL,
-                LoadCustomerUserData::ORPHAN_PASSWORD,
+                'orphan.user@test.com',
+                'pass',
                 Response::HTTP_BAD_REQUEST,
                 false
             ]
@@ -207,13 +206,13 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
 
     public function testApiFrontendRequestWithinClientOwnerScopeShouldReturnRequestedData(): void
     {
-        $this->setFrontendClientOwner(LoadCustomerUserData::EMAIL);
+        $this->setFrontendClientOwner('grzegorz.brzeczyszczykiewicz@example.com');
         $accessToken = $this->sendFrontendPasswordAccessTokenRequest(
-            LoadCustomerUserData::LEVEL_1_1_EMAIL,
-            LoadCustomerUserData::LEVEL_1_1_PASSWORD
+            'second_customer.user@test.com',
+            'pass'
         );
         /** @var CustomerUser $customerUser */
-        $customerUser = $this->getReference(LoadCustomerUserData::LEVEL_1_1_EMAIL);
+        $customerUser = $this->getReference('second_customer.user@test.com');
 
         $response = $this->frontendGet(
             ['entity' => 'customerusers', 'id' => $customerUser->getId()],
@@ -230,12 +229,12 @@ class FrontendPasswordGrantOAuthServerTest extends OAuthServerTestCase
     public function testApiFrontendRequestOutsideCurrentClientOwnerScopeShouldReturnUnauthorized(): void
     {
         $accessToken = $this->sendFrontendPasswordAccessTokenRequest(
-            LoadCustomerUserData::ORPHAN_EMAIL,
-            LoadCustomerUserData::ORPHAN_PASSWORD
+            'orphan.user@test.com',
+            'pass'
         );
-        $this->setFrontendClientOwner(LoadCustomerUserData::EMAIL);
+        $this->setFrontendClientOwner('grzegorz.brzeczyszczykiewicz@example.com');
         /** @var CustomerUser $customerUser */
-        $customerUser = $this->getReference(LoadCustomerUserData::ORPHAN_EMAIL);
+        $customerUser = $this->getReference('grzegorz.brzeczyszczykiewicz@example.com');
 
         $response = $this->frontendGet(
             ['entity' => 'customerusers', 'id' => $customerUser->getId()],
