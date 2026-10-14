@@ -12,7 +12,6 @@ The current file describes significant changes in the code that may affect the u
 * Added `\Oro\Bundle\OAuth2ServerBundle\Client\AccessTokenClient` that makes internal requests to provide an OAuth2 access token.
 * Added `\Oro\Bundle\OAuth2ServerBundle\Client\AuthorizationCodeClient` that makes internal requests to provide an OAuth2 authorization code.
 * Added the ability to fetch an access token from a cookie instead of `Authorizarion` header in the `oauth2` authentication method - via the `authorization_cookies` setting.
-* Added the `oro_oauth2_server.session_transfer.return_url` configuration option - the URL of the application that started an OAuth2 Session Transfer. Storefront pages rendered in Session Transfer mode (see CheckoutBundle) link back to it. Defaults to `http://localhost:3000` for local development; set it to the storefront application's own URL in production.
 * Documented the storefront visitor authorization endpoint (`GET /oauth2-token/authorize-visitor`) in the frontend OpenAPI specification.
 
 ## 6.0.0 (2024-03-30)

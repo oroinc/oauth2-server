@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Oro\Bundle\OAuth2ServerBundle\SessionTransfer\Handler;
 
+use Oro\Bundle\OAuth2ServerBundle\Entity\SessionTransferToken;
+use Oro\Bundle\OAuth2ServerBundle\Provider\CurrentClientProvider;
 use Symfony\Bundle\SecurityBundle\Security\FirewallMap;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -66,6 +68,20 @@ abstract class AbstractSessionTransferContextHandler implements SessionTransferC
                 $exception
             );
         }
+    }
+
+    /**
+     * Sets the id of the OAuth2 client that opened the session via Session Transfer to the security token.
+     * Must be called before {@see storeSecurityToken()}.
+     */
+    protected function setSessionTransferClient(
+        TokenInterface $securityToken,
+        SessionTransferToken $transferToken
+    ): void {
+        $securityToken->setAttribute(
+            CurrentClientProvider::CLIENT_ID_ATTRIBUTE,
+            $transferToken->getClient()->getId()
+        );
     }
 
     protected function storeSecurityToken(

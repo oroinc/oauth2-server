@@ -8,6 +8,7 @@ use Oro\Bundle\CustomerBundle\Entity\CustomerVisitor;
 use Oro\Bundle\CustomerBundle\Security\Token\AnonymousCustomerUserToken;
 use Oro\Bundle\CustomerBundle\Security\Token\AnonymousCustomerUserTokenFactoryInterface;
 use Oro\Bundle\CustomerBundle\Security\Token\ApiAnonymousCustomerUserToken;
+use Oro\Bundle\OAuth2ServerBundle\Provider\CurrentClientProvider;
 use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\SessionTransferCustomerVisitorAuthenticationToken;
 use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\SessionTransferCustomerVisitorTokenFactory;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
@@ -49,6 +50,7 @@ class SessionTransferCustomerVisitorTokenFactoryTest extends TestCase
             SessionTransferCustomerVisitorTokenFactory::SESSION_KEY,
             'visitor-session-id'
         );
+        $request->getSession()->set(SessionTransferCustomerVisitorTokenFactory::CLIENT_SESSION_KEY, 30);
         $this->requestStack->push($request);
         $this->innerFactory->expects(self::never())->method('create');
 
@@ -58,6 +60,46 @@ class SessionTransferCustomerVisitorTokenFactoryTest extends TestCase
         self::assertSame($visitor, $token->getVisitor());
         self::assertSame($organization, $token->getOrganization());
         self::assertSame(['ROLE_FRONTEND_ANONYMOUS'], $token->getRoleNames());
+        self::assertSame(30, $token->getAttribute(CurrentClientProvider::CLIENT_ID_ATTRIBUTE));
+    }
+
+    public function testCreateSessionTransferCustomerVisitorTokenWhenNoClientIdInSession(): void
+    {
+        $visitor = (new CustomerVisitor())->setSessionId('visitor-session-id');
+        $organization = new Organization();
+        $request = new Request();
+        $request->setSession(new Session(new MockArraySessionStorage()));
+        $request->getSession()->set(
+            SessionTransferCustomerVisitorTokenFactory::SESSION_KEY,
+            'visitor-session-id'
+        );
+        $this->requestStack->push($request);
+        $this->innerFactory->expects(self::never())->method('create');
+
+        $token = $this->factory->create($visitor, $organization);
+
+        self::assertInstanceOf(SessionTransferCustomerVisitorAuthenticationToken::class, $token);
+        self::assertFalse($token->hasAttribute(CurrentClientProvider::CLIENT_ID_ATTRIBUTE));
+    }
+
+    public function testCreateSessionTransferCustomerVisitorTokenWhenClientIdInSessionIsNotInteger(): void
+    {
+        $visitor = (new CustomerVisitor())->setSessionId('visitor-session-id');
+        $organization = new Organization();
+        $request = new Request();
+        $request->setSession(new Session(new MockArraySessionStorage()));
+        $request->getSession()->set(
+            SessionTransferCustomerVisitorTokenFactory::SESSION_KEY,
+            'visitor-session-id'
+        );
+        $request->getSession()->set(SessionTransferCustomerVisitorTokenFactory::CLIENT_SESSION_KEY, '30');
+        $this->requestStack->push($request);
+        $this->innerFactory->expects(self::never())->method('create');
+
+        $token = $this->factory->create($visitor, $organization);
+
+        self::assertInstanceOf(SessionTransferCustomerVisitorAuthenticationToken::class, $token);
+        self::assertFalse($token->hasAttribute(CurrentClientProvider::CLIENT_ID_ATTRIBUTE));
     }
 
     public function testCreateStandardCustomerVisitorTokenWhenSessionVisitorDoesNotMatch(): void
@@ -70,7 +112,35 @@ class SessionTransferCustomerVisitorTokenFactoryTest extends TestCase
             SessionTransferCustomerVisitorTokenFactory::SESSION_KEY,
             'another-visitor-session-id'
         );
+        $request->getSession()->set(SessionTransferCustomerVisitorTokenFactory::CLIENT_SESSION_KEY, 30);
         $this->requestStack->push($request);
+        $expectedToken = new AnonymousCustomerUserToken($visitor, [], $organization);
+        $this->innerFactory->expects(self::once())
+            ->method('create')
+            ->with($visitor, $organization, [])
+            ->willReturn($expectedToken);
+
+        self::assertSame($expectedToken, $this->factory->create($visitor, $organization));
+    }
+
+    public function testCreateStandardCustomerVisitorTokenWithoutRequest(): void
+    {
+        $visitor = (new CustomerVisitor())->setSessionId('visitor-session-id');
+        $organization = new Organization();
+        $expectedToken = new AnonymousCustomerUserToken($visitor, [], $organization);
+        $this->innerFactory->expects(self::once())
+            ->method('create')
+            ->with($visitor, $organization, [])
+            ->willReturn($expectedToken);
+
+        self::assertSame($expectedToken, $this->factory->create($visitor, $organization));
+    }
+
+    public function testCreateStandardCustomerVisitorTokenWhenRequestHasNoSession(): void
+    {
+        $visitor = (new CustomerVisitor())->setSessionId('visitor-session-id');
+        $organization = new Organization();
+        $this->requestStack->push(new Request());
         $expectedToken = new AnonymousCustomerUserToken($visitor, [], $organization);
         $this->innerFactory->expects(self::once())
             ->method('create')

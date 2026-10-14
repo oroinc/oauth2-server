@@ -16,7 +16,6 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 /**
  * Describes the OAuth 2.0 authorization endpoint for storefront visitors (guests) in OpenAPI specification.
- * The endpoint exists in the storefront API only, so this describer is registered for the frontend API views only.
  */
 class OAuthVisitorAuthorizationDescriber implements
     DescriberInterface,

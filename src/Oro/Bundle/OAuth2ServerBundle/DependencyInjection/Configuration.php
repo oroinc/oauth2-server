@@ -20,7 +20,6 @@ class Configuration implements ConfigurationInterface
         $this->appendAuthorizationServer($node);
         $this->appendResourceServer($node);
         $this->appendProtectedResources($node);
-        $this->appendSessionTransfer($node);
 
         return $treeBuilder;
     }
@@ -187,30 +186,6 @@ class Configuration implements ConfigurationInterface
 
                     return $v;
                 })
-            ->end();
-    }
-
-    private function appendSessionTransfer(NodeBuilder $builder): void
-    {
-        $children = $builder
-            ->arrayNode('session_transfer')
-                ->info('The configuration of Session Transfer.')
-                ->addDefaultsIfNotSet()
-                ->children();
-
-        $children
-            ->scalarNode('return_url')
-                ->info(
-                    'The absolute URL of the application that started a Session Transfer.'
-                    . ' Storefront pages rendered in Session Transfer mode link back to it.'
-                )
-                ->example('https://storefront.example.com')
-                ->defaultValue('http://localhost:3000')
-                ->cannotBeEmpty()
-                ->validate()
-                    ->ifTrue(static fn ($v): bool => false === filter_var($v, FILTER_VALIDATE_URL))
-                    ->thenInvalid('The Session Transfer return URL %s is not a valid absolute URL.')
-                ->end()
             ->end();
     }
 }

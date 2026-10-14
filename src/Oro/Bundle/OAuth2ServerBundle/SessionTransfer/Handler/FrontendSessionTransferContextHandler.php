@@ -72,16 +72,15 @@ final class FrontendSessionTransferContextHandler extends AbstractSessionTransfe
         $organization = $this->validateWebsiteContext($transferToken);
         $userIdentifier = $transferToken->getUserIdentifier();
         if (VisitorIdentifierUtil::isVisitorIdentifier($userIdentifier)) {
-            $this->createVisitorSession($request, $userIdentifier, $organization);
-
-            return;
+            $this->createVisitorSession($request, $transferToken, $userIdentifier, $organization);
+        } else {
+            $this->createCustomerUserSession($request, $transferToken, $userIdentifier, $organization);
         }
-
-        $this->createCustomerUserSession($request, $userIdentifier, $organization);
     }
 
     private function createCustomerUserSession(
         Request $request,
+        SessionTransferToken $transferToken,
         string $userIdentifier,
         Organization $organization
     ): void {
@@ -110,11 +109,16 @@ final class FrontendSessionTransferContextHandler extends AbstractSessionTransfe
             $organization,
             $customerUser->getRoles()
         );
+        $this->setSessionTransferClient($securityToken, $transferToken);
         $this->storeSecurityToken($request, $securityToken, true);
     }
 
-    private function createVisitorSession(Request $request, string $userIdentifier, Organization $organization): void
-    {
+    private function createVisitorSession(
+        Request $request,
+        SessionTransferToken $transferToken,
+        string $userIdentifier,
+        Organization $organization
+    ): void {
         $visitorSessionId = VisitorIdentifierUtil::decodeIdentifier($userIdentifier);
         $visitor = $this->visitorManager->findOrCreate($visitorSessionId);
         if (null === $visitor->getId()) {
@@ -136,6 +140,11 @@ final class FrontendSessionTransferContextHandler extends AbstractSessionTransfe
             SessionTransferCustomerVisitorTokenFactory::SESSION_KEY,
             $visitor->getSessionId()
         );
+        $request->getSession()->set(
+            SessionTransferCustomerVisitorTokenFactory::CLIENT_SESSION_KEY,
+            $transferToken->getClient()->getId()
+        );
+        $this->setSessionTransferClient($securityToken, $transferToken);
         $this->storeSecurityToken($request, $securityToken, false);
     }
 

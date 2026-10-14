@@ -15,6 +15,7 @@ use Oro\Bundle\CustomerBundle\Security\Firewall\CustomerVisitorCookieFactory;
 use Oro\Bundle\CustomerBundle\Security\VisitorIdentifierUtil;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Entity\SessionTransferToken;
+use Oro\Bundle\OAuth2ServerBundle\Provider\CurrentClientProvider;
 use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\SessionTransferAuthenticationToken;
 use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\SessionTransferCustomerVisitorAuthenticationToken;
 use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\SessionTransferCustomerVisitorTokenFactory;
@@ -74,6 +75,7 @@ class FrontendSessionTransferContextHandlerTest extends TestCase
         $customerUser->method('getOrganization')->willReturn($organization);
         $customerUser->method('getRoles')->willReturn(['ROLE_FRONTEND_USER']);
         $client = new Client();
+        ReflectionUtil::setId($client, 30);
         $client->setFrontend(true);
         $transferToken = (new SessionTransferToken())
             ->setClient($client)
@@ -98,7 +100,15 @@ class FrontendSessionTransferContextHandlerTest extends TestCase
         $sessionStrategy = $this->createMock(SessionAuthenticationStrategyInterface::class);
         $sessionStrategy->expects(self::once())
             ->method('onAuthentication')
-            ->with($request, self::isInstanceOf(SessionTransferAuthenticationToken::class));
+            ->with(
+                $request,
+                self::callback(static function (SessionTransferAuthenticationToken $token) use ($customerUser): bool {
+                    self::assertSame($customerUser, $token->getUser());
+                    self::assertSame(30, $token->getAttribute(CurrentClientProvider::CLIENT_ID_ATTRIBUTE));
+
+                    return true;
+                })
+            );
         $tokenStorage = $this->createMock(TokenStorageInterface::class);
         $tokenStorage->expects(self::once())
             ->method('setToken')
@@ -118,6 +128,11 @@ class FrontendSessionTransferContextHandlerTest extends TestCase
         );
 
         $handler->createSession($request, $transferToken);
+
+        self::assertFalse($request->getSession()->has(SessionTransferCustomerVisitorTokenFactory::SESSION_KEY));
+        self::assertFalse(
+            $request->getSession()->has(SessionTransferCustomerVisitorTokenFactory::CLIENT_SESSION_KEY)
+        );
     }
 
     public function testCreateCustomerVisitorSession(): void
@@ -131,6 +146,7 @@ class FrontendSessionTransferContextHandlerTest extends TestCase
         ReflectionUtil::setId($website, 20);
         $visitor = (new CustomerVisitor())->setSessionId('visitorSessionId');
         $client = new Client();
+        ReflectionUtil::setId($client, 30);
         $client->setFrontend(true);
         $transferToken = (new SessionTransferToken())
             ->setClient($client)
@@ -177,6 +193,7 @@ class FrontendSessionTransferContextHandlerTest extends TestCase
                         self::assertSame($visitor, $token->getVisitor());
                         self::assertSame($organization, $token->getOrganization());
                         self::assertSame(['ROLE_FRONTEND_ANONYMOUS'], $token->getRoleNames());
+                        self::assertSame(30, $token->getAttribute(CurrentClientProvider::CLIENT_ID_ATTRIBUTE));
                         $securityToken = $token;
 
                         return true;
@@ -215,6 +232,10 @@ class FrontendSessionTransferContextHandlerTest extends TestCase
         self::assertSame(
             'visitorSessionId',
             $request->getSession()->get(SessionTransferCustomerVisitorTokenFactory::SESSION_KEY)
+        );
+        self::assertSame(
+            30,
+            $request->getSession()->get(SessionTransferCustomerVisitorTokenFactory::CLIENT_SESSION_KEY)
         );
     }
 

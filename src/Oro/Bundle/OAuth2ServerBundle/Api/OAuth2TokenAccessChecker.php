@@ -5,6 +5,7 @@ namespace Oro\Bundle\OAuth2ServerBundle\Api;
 use Oro\Bundle\ApiBundle\Request\RequestType;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Provider\ApiDocViewProvider;
+use Oro\Bundle\OAuth2ServerBundle\Provider\CurrentClientProvider;
 use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\OAuth2Token;
 use Oro\Bundle\SecurityBundle\Authentication\TokenAccessor;
 
@@ -26,7 +27,7 @@ class OAuth2TokenAccessChecker
             return true;
         }
 
-        $client = $token->getAttribute('client');
+        $client = $token->getAttribute(CurrentClientProvider::CLIENT_ATTRIBUTE);
         if (!$client instanceof Client) {
             return true;
         }

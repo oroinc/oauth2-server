@@ -12,9 +12,6 @@ use PHPUnit\Framework\TestCase;
 
 final class SessionTransferModeContextConfiguratorTest extends TestCase
 {
-    /**
-     * The literal is repeated on purpose: it guards the option name the layout updates depend on.
-     */
     private const string OPTION_NAME = 'is_in_session_transfer_mode';
 
     private SessionTransferModeProvider&MockObject $sessionTransferModeProvider;

@@ -6,11 +6,13 @@ namespace Oro\Bundle\OAuth2ServerBundle\Tests\Unit\SessionTransfer\Handler;
 
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Entity\SessionTransferToken;
+use Oro\Bundle\OAuth2ServerBundle\Provider\CurrentClientProvider;
 use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\SessionTransferAuthenticationToken;
 use Oro\Bundle\OAuth2ServerBundle\SessionTransfer\Handler\BackendSessionTransferContextHandler;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Oro\Bundle\UserBundle\Entity\User;
 use Oro\Bundle\UserBundle\Security\UserLoaderInterface;
+use Oro\Component\Testing\ReflectionUtil;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\SecurityBundle\Security\FirewallConfig;
 use Symfony\Bundle\SecurityBundle\Security\FirewallMap;
@@ -49,6 +51,7 @@ class BackendSessionTransferContextHandlerTest extends TestCase
         $user->setUsername('user@example.com');
         $user->addOrganization($organization);
         $client = new Client();
+        ReflectionUtil::setId($client, 30);
         $transferToken = (new SessionTransferToken())
             ->setClient($client)
             ->setUserIdentifier('user@example.com')
@@ -82,6 +85,7 @@ class BackendSessionTransferContextHandlerTest extends TestCase
                         self::assertSame($organization, $token->getOrganization());
                         self::assertSame('main', $token->getFirewallName());
                         self::assertSame($user->getRoles(), $token->getRoleNames());
+                        self::assertSame(30, $token->getAttribute(CurrentClientProvider::CLIENT_ID_ATTRIBUTE));
                         $securityToken = $token;
 
                         return true;

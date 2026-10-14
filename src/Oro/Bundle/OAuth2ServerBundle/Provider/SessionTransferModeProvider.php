@@ -9,7 +9,7 @@ use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\SessionTransferC
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 /**
- * Checks whether the current storefront session was created via Session Transfer.
+ * Checks whether the current session was created via Session Transfer.
  */
 class SessionTransferModeProvider
 {

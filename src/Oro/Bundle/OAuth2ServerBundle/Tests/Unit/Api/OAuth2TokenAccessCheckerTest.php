@@ -6,6 +6,7 @@ use Oro\Bundle\ApiBundle\Request\RequestType;
 use Oro\Bundle\OAuth2ServerBundle\Api\OAuth2TokenAccessChecker;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Provider\ApiDocViewProvider;
+use Oro\Bundle\OAuth2ServerBundle\Provider\CurrentClientProvider;
 use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\OAuth2Token;
 use Oro\Bundle\SecurityBundle\Authentication\TokenAccessor;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -72,7 +73,7 @@ class OAuth2TokenAccessCheckerTest extends TestCase
         $token = $this->createMock(OAuth2Token::class);
         $token->expects(self::once())
             ->method('getAttribute')
-            ->with('client')
+            ->with(CurrentClientProvider::CLIENT_ATTRIBUTE)
             ->willReturn(null);
         $this->tokenAccessor->expects(self::once())
             ->method('getToken')
@@ -91,7 +92,7 @@ class OAuth2TokenAccessCheckerTest extends TestCase
         $token = $this->createMock(OAuth2Token::class);
         $token->expects(self::once())
             ->method('getAttribute')
-            ->with('client')
+            ->with(CurrentClientProvider::CLIENT_ATTRIBUTE)
             ->willReturn(new \stdClass());
         $this->tokenAccessor->expects(self::once())
             ->method('getToken')
@@ -112,7 +113,7 @@ class OAuth2TokenAccessCheckerTest extends TestCase
         $token = $this->createMock(OAuth2Token::class);
         $token->expects(self::once())
             ->method('getAttribute')
-            ->with('client')
+            ->with(CurrentClientProvider::CLIENT_ATTRIBUTE)
             ->willReturn($client);
         $this->tokenAccessor->expects(self::once())
             ->method('getToken')
@@ -149,7 +150,7 @@ class OAuth2TokenAccessCheckerTest extends TestCase
         $token = $this->createMock(OAuth2Token::class);
         $token->expects(self::once())
             ->method('getAttribute')
-            ->with('client')
+            ->with(CurrentClientProvider::CLIENT_ATTRIBUTE)
             ->willReturn($client);
         $this->tokenAccessor->expects(self::once())
             ->method('getToken')

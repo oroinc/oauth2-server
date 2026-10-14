@@ -632,3 +632,14 @@ services:
         class: Oro\Bundle\OAuth2ServerBundle\SessionTransfer\SessionTransferTokenManager
         arguments:
             - '@doctrine'
+
+    oro_oauth2_server.provider.session_transfer_mode:
+        class: Oro\Bundle\OAuth2ServerBundle\Provider\SessionTransferModeProvider
+        arguments:
+            - '@security.token_storage'
+
+    oro_oauth2_server.provider.current_client:
+        class: Oro\Bundle\OAuth2ServerBundle\Provider\CurrentClientProvider
+        arguments:
+            - '@security.token_storage'
+            - '@doctrine'

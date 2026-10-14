@@ -16,11 +16,6 @@ use Symfony\Component\DependencyInjection\Reference;
  */
 class OpenApiCompilerPass implements CompilerPassInterface
 {
-    /**
-     * The request type aspect that marks the storefront API views.
-     */
-    private const string FRONTEND_REQUEST_TYPE = 'frontend';
-
     #[\Override]
     public function process(ContainerBuilder $container): void
     {
@@ -41,9 +36,8 @@ class OpenApiCompilerPass implements CompilerPassInterface
                 ->addArgument(new Reference('router'))
                 ->addArgument(new Reference('oro_api.api_doc.open_api.data_type_describe_helper'))
                 ->addTag('oro.api.open_api.describer.' . $view);
-            if (\in_array(self::FRONTEND_REQUEST_TYPE, $requestType, true)) {
-                // the visitor authorization endpoint exists in the storefront API only;
-                // the tag has no priority, so this describer runs right after the OAuth token endpoint describer
+
+            if (\in_array('frontend', $requestType, true)) {
                 $container
                     ->register(
                         'oro_oauth2_server.open_api.visitor_authorization_describer.' . $view,

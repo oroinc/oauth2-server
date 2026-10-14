@@ -10,7 +10,6 @@ use Oro\Component\Layout\ContextInterface;
 
 /**
  * Adds the `is_in_session_transfer_mode` option to the layout context.
- * The option is true only when the current storefront session was created via Session Transfer.
  */
 class SessionTransferModeContextConfigurator implements ContextConfiguratorInterface
 {
