@@ -9,3 +9,5 @@ oro:
                 not_null.message: This value should not be blank.
             redirectUris:
                 not_empty.message: At least one redirect URL should be specified.
+            postLogoutRedirectUris:
+                not_empty.message: At least one post-logout URL should be specified when logout is enabled.

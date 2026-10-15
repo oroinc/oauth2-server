@@ -91,6 +91,40 @@ class ClientEntityTest extends TestCase
         self::assertFalse($entity->isSkipAuthorizeClientAllowed());
     }
 
+    public function testLogoutAllowed(): void
+    {
+        $entity = new ClientEntity();
+        self::assertFalse($entity->isLogoutAllowed());
+
+        $entity->setLogoutAllowed(true);
+        self::assertTrue($entity->isLogoutAllowed());
+
+        $entity->setLogoutAllowed(false);
+        self::assertFalse($entity->isLogoutAllowed());
+    }
+
+    public function testPostLogoutRedirectUris(): void
+    {
+        $uris = ['https://example.com/'];
+
+        $entity = new ClientEntity();
+        self::assertSame([], $entity->getPostLogoutRedirectUris());
+
+        $entity->setPostLogoutRedirectUris($uris);
+        self::assertSame($uris, $entity->getPostLogoutRedirectUris());
+    }
+
+    public function testGrants(): void
+    {
+        $grants = ['authorization_code', 'client_credentials'];
+
+        $entity = new ClientEntity();
+        self::assertSame([], $entity->getGrants());
+
+        $entity->setGrants($grants);
+        self::assertSame($grants, $entity->getGrants());
+    }
+
     public function testApis(): void
     {
         $apis = ['test'];

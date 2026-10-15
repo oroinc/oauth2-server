@@ -45,6 +45,8 @@ abstract class AbstractClientType extends AbstractType
                 $this->addRedirectUrisField($event);
                 $this->addConfidentialField($event);
                 $this->addSkipAuthorizeClientAllowedField($event);
+                $this->addLogoutAllowedField($event);
+                $this->addPostLogoutRedirectUrisField($event);
             })
             ->add('allApis', CheckboxType::class, [
                 'label' => 'oro.oauth2server.client.all_apis.label',
@@ -265,16 +267,11 @@ abstract class AbstractClientType extends AbstractType
      */
     private function addRedirectUrisField(FormEvent $event): void
     {
-        /** @var Client $client */
-        $client = $event->getData();
-        if ($client->getId() && !\in_array('authorization_code', $client->getGrants(), true)) {
+        if (!$this->isAuthorizationCodeFieldsAvailable($event)) {
             return;
         }
 
         $form = $event->getForm();
-        if (!$form->getConfig()->getOption('show_grants')) {
-            return;
-        }
 
         $form->add(
             'redirectUris',
@@ -301,16 +298,11 @@ abstract class AbstractClientType extends AbstractType
      */
     private function addConfidentialField(FormEvent $event): void
     {
-        /** @var Client $client */
-        $client = $event->getData();
-        if ($client->getId() && !\in_array('authorization_code', $client->getGrants(), true)) {
+        if (!$this->isAuthorizationCodeFieldsAvailable($event)) {
             return;
         }
 
         $form = $event->getForm();
-        if (!$form->getConfig()->getOption('show_grants')) {
-            return;
-        }
 
         $form->add(
             'confidential',
@@ -327,16 +319,11 @@ abstract class AbstractClientType extends AbstractType
      */
     private function addSkipAuthorizeClientAllowedField(FormEvent $event): void
     {
-        /** @var Client $client */
-        $client = $event->getData();
-        if ($client->getId() && !\in_array('authorization_code', $client->getGrants(), true)) {
+        if (!$this->isAuthorizationCodeFieldsAvailable($event)) {
             return;
         }
 
         $form = $event->getForm();
-        if (!$form->getConfig()->getOption('show_grants')) {
-            return;
-        }
 
         $form->add(
             'skipAuthorizeClientAllowed',
@@ -346,5 +333,69 @@ abstract class AbstractClientType extends AbstractType
                 'tooltip' => 'oro.oauth2server.client.skip_authorize_client_allowed.description'
             ]
         );
+    }
+
+    /**
+     * Adds the logoutAllowed field to form.
+     */
+    private function addLogoutAllowedField(FormEvent $event): void
+    {
+        if (!$this->isAuthorizationCodeFieldsAvailable($event)) {
+            return;
+        }
+
+        $event->getForm()->add(
+            'logoutAllowed',
+            CheckboxType::class,
+            [
+                'label' => 'oro.oauth2server.client.logout_allowed.label',
+                'tooltip' => 'oro.oauth2server.client.logout_allowed.description',
+                'required' => false
+            ]
+        );
+    }
+
+    /**
+     * Adds the postLogoutRedirectUris field to form.
+     */
+    private function addPostLogoutRedirectUrisField(FormEvent $event): void
+    {
+        if (!$this->isAuthorizationCodeFieldsAvailable($event)) {
+            return;
+        }
+
+        $event->getForm()->add(
+            'postLogoutRedirectUris',
+            CollectionType::class,
+            [
+                'label' => 'oro.oauth2server.client.post_logout_redirect_uris.label',
+                'tooltip' => 'oro.oauth2server.client.post_logout_redirect_uris.description',
+                'add_label' => 'oro.oauth2server.client.post_logout_redirect_uris.add',
+                'entry_type' => UrlType::class,
+                'entry_options' => [
+                    'default_protocol' => null,
+                    'constraints' => [new Url(), new NotBlank()]
+                ],
+                'error_bubbling' => false,
+                'allow_add' => true,
+                'allow_delete' => true,
+                'prototype' => true,
+                'required' => false
+            ]
+        );
+    }
+
+    /**
+     * Checks whether the fields related to the "authorization_code" grant can be added to form.
+     */
+    private function isAuthorizationCodeFieldsAvailable(FormEvent $event): bool
+    {
+        /** @var Client $client */
+        $client = $event->getData();
+        if ($client->getId() && !\in_array('authorization_code', $client->getGrants(), true)) {
+            return false;
+        }
+
+        return (bool)$event->getForm()->getConfig()->getOption('show_grants');
     }
 }

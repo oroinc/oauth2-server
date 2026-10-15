@@ -268,6 +268,17 @@ class ClientManagerTest extends TestCase
         self::assertNull($client->getRedirectUris());
     }
 
+    public function testUpdateClientWithEmptyArrayInPostLogoutRedirectUris(): void
+    {
+        $client = $this->getClient(123);
+        $client->setOrganization($this->createMock(Organization::class));
+        $client->setPostLogoutRedirectUris([]);
+
+        $this->clientManager->updateClient($client, false);
+
+        self::assertNull($client->getPostLogoutRedirectUris());
+    }
+
     public function testActivateClient(): void
     {
         $client = $this->getClient();

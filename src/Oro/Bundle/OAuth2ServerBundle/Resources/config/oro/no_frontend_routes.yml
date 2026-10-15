@@ -38,6 +38,13 @@ oro_oauth2_server_authenticate:
         type: backoffice
         _controller: Oro\Bundle\OAuth2ServerBundle\Controller\AuthorizeClientController::authorizeAction
 
+oro_oauth2_server_logout:
+    path: '/oauth2-token/logout'
+    methods: [GET]
+    defaults:
+        type: backoffice
+        _controller: Oro\Bundle\OAuth2ServerBundle\Controller\LogoutController::logoutAction
+
 oro_oauth2_session_transfer_consume:
     path: '/oauth2/session-transfer/consume'
     methods: [GET]

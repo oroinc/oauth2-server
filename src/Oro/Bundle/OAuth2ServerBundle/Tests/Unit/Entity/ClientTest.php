@@ -102,6 +102,29 @@ class ClientTest extends TestCase
         self::assertSame($uris, $entity->getRedirectUris());
     }
 
+    public function testPostLogoutRedirectUris(): void
+    {
+        $uris = ['https://example.com/'];
+
+        $entity = new Client();
+        self::assertNull($entity->getPostLogoutRedirectUris());
+
+        self::assertSame($entity, $entity->setPostLogoutRedirectUris($uris));
+        self::assertSame($uris, $entity->getPostLogoutRedirectUris());
+    }
+
+    public function testLogoutAllowed(): void
+    {
+        $entity = new Client();
+        self::assertFalse($entity->isLogoutAllowed());
+
+        self::assertSame($entity, $entity->setLogoutAllowed(true));
+        self::assertTrue($entity->isLogoutAllowed());
+
+        $entity->setLogoutAllowed(false);
+        self::assertFalse($entity->isLogoutAllowed());
+    }
+
     public function testActive(): void
     {
         $entity = new Client();

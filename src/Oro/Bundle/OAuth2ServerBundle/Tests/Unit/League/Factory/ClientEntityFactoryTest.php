@@ -104,4 +104,63 @@ class ClientEntityFactoryTest extends TestCase
             ],
         ];
     }
+
+    /**
+     * @dataProvider createClientEntityWithLogoutDataProvider
+     */
+    public function testCreateClientEntityWithLogout(
+        bool $logoutAllowed,
+        ?array $postLogoutRedirectUris,
+        array $expectedPostLogoutRedirectUris
+    ): void {
+        $client = new Client();
+        $client->setIdentifier('test_id');
+        $client->setName('Test');
+        $client->setRedirectUris(['https://test.com/callback']);
+        $client->setLogoutAllowed($logoutAllowed);
+        $client->setPostLogoutRedirectUris($postLogoutRedirectUris);
+
+        $clientEntity = (new ClientEntityFactory())->createClientEntity($client);
+
+        self::assertSame($logoutAllowed, $clientEntity->isLogoutAllowed());
+        self::assertSame($expectedPostLogoutRedirectUris, $clientEntity->getPostLogoutRedirectUris());
+        self::assertSame(['https://test.com/callback'], $clientEntity->getRedirectUri());
+    }
+
+    public static function createClientEntityWithLogoutDataProvider(): iterable
+    {
+        yield 'logout not allowed, no post-logout URIs' => [false, null, []];
+        yield 'logout allowed' => [true, ['https://test.com/'], ['https://test.com/']];
+        yield 'empty post-logout URIs are skipped' => [
+            true,
+            ['https://test.com/', '', 'https://test.com/bye', null],
+            ['https://test.com/', 'https://test.com/bye']
+        ];
+    }
+
+    /**
+     * @dataProvider createClientEntityWithGrantsDataProvider
+     */
+    public function testCreateClientEntityWithGrants(?array $grants, array $expectedGrants): void
+    {
+        $client = new Client();
+        $client->setIdentifier('test_id');
+        $client->setName('Test');
+        $client->setRedirectUris(['https://test.com/callback']);
+        $client->setGrants($grants);
+
+        $clientEntity = (new ClientEntityFactory())->createClientEntity($client);
+
+        self::assertSame($expectedGrants, $clientEntity->getGrants());
+    }
+
+    public static function createClientEntityWithGrantsDataProvider(): iterable
+    {
+        yield 'no grants' => [null, []];
+        yield 'one grant' => [[Client::AUTHORIZATION_CODE], [Client::AUTHORIZATION_CODE]];
+        yield 'several grants' => [
+            [Client::AUTHORIZATION_CODE, Client::CLIENT_CREDENTIALS],
+            [Client::AUTHORIZATION_CODE, Client::CLIENT_CREDENTIALS]
+        ];
+    }
 }

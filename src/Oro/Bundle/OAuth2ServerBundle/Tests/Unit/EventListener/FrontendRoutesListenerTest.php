@@ -30,10 +30,12 @@ class FrontendRoutesListenerTest extends TestCase
                 'oro_oauth2_server_metadata_well_known_alias',
                 'oro_oauth2_server_metadata',
                 'oro_oauth2_server_authenticate',
+                'oro_oauth2_server_logout',
                 'oro_oauth2_session_transfer_consume',
                 'oro_oauth2_server_frontend_metadata',
                 'oro_oauth2_server_frontend_authenticate',
                 'oro_oauth2_server_frontend_authenticate_visitor',
+                'oro_oauth2_server_frontend_logout',
                 'oro_oauth2_frontend_session_transfer_consume'
             ],
             array_keys($routes)

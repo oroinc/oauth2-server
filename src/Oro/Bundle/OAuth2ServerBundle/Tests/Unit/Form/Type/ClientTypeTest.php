@@ -261,6 +261,9 @@ class ClientTypeTest extends TypeTestCase
         self::assertTrue($form->isSynchronized());
         self::assertTrue($form->isSubmitted());
         self::assertFalse($form->has('organization'));
+        self::assertFalse($form->has('redirectUris'));
+        self::assertFalse($form->has('logoutAllowed'));
+        self::assertFalse($form->has('postLogoutRedirectUris'));
 
         self::assertEquals('test name', $client->getName());
         self::assertTrue($client->isActive());
@@ -388,7 +391,9 @@ class ClientTypeTest extends TypeTestCase
             'name'         => 'test name',
             'active'       => 1,
             'grants'       => 'authorization_code',
-            'redirectUris' => ['http://example.com']
+            'redirectUris' => ['http://example.com'],
+            'logoutAllowed' => 1,
+            'postLogoutRedirectUris' => ['http://example.com/logged-out']
         ];
 
         $this->organizationsProvider->expects(self::once())
@@ -408,5 +413,7 @@ class ClientTypeTest extends TypeTestCase
         self::assertTrue($client->isActive());
         self::assertEquals(['authorization_code'], $client->getGrants());
         self::assertEquals(['http://example.com'], $client->getRedirectUris());
+        self::assertTrue($client->isLogoutAllowed());
+        self::assertEquals(['http://example.com/logged-out'], $client->getPostLogoutRedirectUris());
     }
 }

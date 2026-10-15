@@ -192,6 +192,9 @@ services:
         public: false
         tags: [validator.constraint_validator]
 
+    Oro\Bundle\OAuth2ServerBundle\Validator\Constraints\ClientPostLogoutRedirectUrisValidator:
+        tags: [validator.constraint_validator]
+
     Oro\Bundle\OAuth2ServerBundle\Validator\Constraints\ClientOwnerValidator:
         public: false
         tags: [validator.constraint_validator]
@@ -458,6 +461,11 @@ services:
             - '@oro_oauth2_server.auth_code_log_attempt.helper'
         tags:
             - { name: oro_oauth2_server.authorize_client_exception_handler }
+
+    oro_oauth2_server.handler.logout.post_logout_redirect_uri_resolver:
+        class: Oro\Bundle\OAuth2ServerBundle\Handler\Logout\PostLogoutRedirectUriResolver
+        arguments:
+            - '@oro_oauth2_server.league.repository.client_repository'
 
     oro_oauth2_server.visitor_access_token_parser:
         class: Oro\Bundle\OAuth2ServerBundle\Security\VisitorAccessTokenParser

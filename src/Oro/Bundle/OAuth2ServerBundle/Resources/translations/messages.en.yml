@@ -92,6 +92,18 @@ oro:
                     Allows this OAuth application to exchange a user-bound API
                     access token for a short-lived Session Transfer Token that
                     can be converted into a browser session.
+            logout_allowed:
+                label: Enable Logout
+                description: >
+                    Allows this OAuth application to end the session of the user
+                    and to redirect the user to one of the post-logout URLs.
+                value:
+                    yes: Yes
+                    no: No
+            post_logout_redirect_uris:
+                label: Post-Logout URLs
+                description: The list of URLs to which it is allowed to redirect the user after logout.
+                add: Add URL
         scopes:
             all: all
         grant_types:

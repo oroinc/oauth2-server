@@ -11,7 +11,7 @@ class OroOAuth2ServerBundleInstaller implements Installation
     #[\Override]
     public function getMigrationVersion(): string
     {
-        return 'v7_1_0_1';
+        return 'v7_1_0_2';
     }
 
     #[\Override]
@@ -58,6 +58,12 @@ class OroOAuth2ServerBundleInstaller implements Installation
         $table->addColumn('plain_text_pkce_allowed', 'boolean', ['default' => '0']);
         $table->addColumn('skip_authorize_client_allowed', 'boolean', ['default' => '0']);
         $table->addColumn('session_transfer_allowed', 'boolean', ['default' => '0']);
+        $table->addColumn('logout_allowed', 'boolean', ['default' => '0']);
+        $table->addColumn(
+            'post_logout_redirect_uris',
+            'simple_array',
+            ['notnull' => false, 'comment' => '(DC2Type:simple_array)']
+        );
         $table->setPrimaryKey(['id']);
         $table->addUniqueIndex(['identifier'], 'oro_oauth2_client_uidx');
         $table->addIndex(['organization_id'], 'IDX_2A8C454232C8A3DE');
