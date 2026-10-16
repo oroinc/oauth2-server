@@ -26,6 +26,14 @@ class ClientEntity implements ClientEntityInterface
     /** @var array */
     private $apis = [];
 
+    private bool $logoutAllowed = false;
+
+    /** @var string[] */
+    private array $postLogoutRedirectUris = [];
+
+    /** @var string[] */
+    private array $grants = [];
+
     public function setName(string $name): void
     {
         $this->name = $name;
@@ -82,5 +90,49 @@ class ClientEntity implements ClientEntityInterface
     public function setApis(array $apis): void
     {
         $this->apis = $apis;
+    }
+
+    public function isLogoutAllowed(): bool
+    {
+        return $this->logoutAllowed;
+    }
+
+    public function setLogoutAllowed(bool $logoutAllowed): void
+    {
+        $this->logoutAllowed = $logoutAllowed;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getPostLogoutRedirectUris(): array
+    {
+        return $this->postLogoutRedirectUris;
+    }
+
+    /**
+     * @param string[] $postLogoutRedirectUris
+     */
+    public function setPostLogoutRedirectUris(array $postLogoutRedirectUris): void
+    {
+        $this->postLogoutRedirectUris = $postLogoutRedirectUris;
+    }
+
+    /**
+     * Gets grant types supported by the client.
+     *
+     * @return string[]
+     */
+    public function getGrants(): array
+    {
+        return $this->grants;
+    }
+
+    /**
+     * @param string[] $grants
+     */
+    public function setGrants(array $grants): void
+    {
+        $this->grants = $grants;
     }
 }

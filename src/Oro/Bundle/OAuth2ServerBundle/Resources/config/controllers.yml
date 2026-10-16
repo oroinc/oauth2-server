@@ -44,6 +44,7 @@ services:
                 issuer: oro_oauth2_server_metadata
                 authorization_endpoint: oro_oauth2_server_authenticate
                 token_endpoint: oro_oauth2_server_auth_token
+                end_session_endpoint: oro_oauth2_server_logout
             - '@router'
             - '%oro_oauth2_server.enabled_grant_types%'
 
@@ -57,3 +58,11 @@ services:
             - '@oro_oauth2_server.session_transfer.token_redeemer'
             - '@oro_oauth2_server.session_transfer.context_handler_registry'
             - '@router'
+
+    Oro\Bundle\OAuth2ServerBundle\Controller\LogoutController:
+        calls:
+            - [setContainer, ['@Psr\Container\ContainerInterface']]
+        tags:
+            - { name: container.service_subscriber }
+            - { name: container.service_subscriber, id: oro_oauth2_server.handler.logout.post_logout_redirect_uri_resolver, key: Oro\Bundle\OAuth2ServerBundle\Handler\Logout\PostLogoutRedirectUriResolverInterface }
+            - { name: container.service_subscriber, id: security.helper, key: Symfony\Bundle\SecurityBundle\Security }

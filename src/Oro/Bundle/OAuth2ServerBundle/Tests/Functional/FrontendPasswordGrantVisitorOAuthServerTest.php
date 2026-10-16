@@ -5,6 +5,7 @@ namespace Oro\Bundle\OAuth2ServerBundle\Tests\Functional;
 use Oro\Bundle\ConfigBundle\Tests\Functional\Traits\ConfigManagerAwareTestTrait;
 use Oro\Bundle\CustomerBundle\Entity\CustomerUser;
 use Oro\Bundle\CustomerBundle\Security\Token\AnonymousCustomerUserToken;
+use Oro\Bundle\OAuth2ServerBundle\Provider\CurrentClientProvider;
 use Oro\Bundle\OAuth2ServerBundle\Tests\Functional\DataFixtures\LoadFrontendPasswordGrantClient;
 use Oro\Bundle\OAuth2ServerBundle\Tests\Functional\DataFixtures\LoadPasswordGrantClient;
 use Symfony\Component\HttpFoundation\Response;
@@ -156,6 +157,11 @@ class FrontendPasswordGrantVisitorOAuthServerTest extends OAuthServerTestCase
         self::assertEquals(
             [self::getContainer()->get('oro_website.manager')->getCurrentWebsite()->getGuestRole()->getRole()],
             $token->getRoleNames()
+        );
+        // assert the visitor security token holds the authenticating OAuth2 client
+        self::assertSame(
+            $this->getReference(LoadFrontendPasswordGrantClient::OAUTH_CLIENT_REFERENCE)->getId(),
+            $token->getAttribute(CurrentClientProvider::CLIENT_ATTRIBUTE)->getId()
         );
 
         // create a shopping list

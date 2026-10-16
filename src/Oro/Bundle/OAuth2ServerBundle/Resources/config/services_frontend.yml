@@ -30,6 +30,7 @@ services:
                 issuer: oro_oauth2_server_frontend_metadata
                 authorization_endpoint: oro_oauth2_server_frontend_authenticate
                 token_endpoint: oro_oauth2_server_auth_token
+                end_session_endpoint: oro_oauth2_server_frontend_logout
             - '@router'
             - '%oro_oauth2_server.enabled_grant_types%'
 
@@ -42,6 +43,7 @@ services:
         class: Oro\Bundle\OAuth2ServerBundle\Provider\GuestAccessAllowedUrlsProvider
         calls:
             - [addAllowedUrlPattern, ['^/oauth2-token$']]
+            - [addAllowedUrlPattern, ['^/oauth2-token/logout$']]
             - [addAllowedUrlPattern, [ '^/oauth2/session-transfer/consume$' ]]
         tags: [oro_frontend.guest_access_urls_provider]
 
@@ -112,3 +114,10 @@ services:
         arguments:
             - '@.inner'
             - '@request_stack'
+
+    oro_oauth2_server.layout.extension.session_transfer_mode_context_configurator:
+        class: Oro\Bundle\OAuth2ServerBundle\Layout\Extension\SessionTransferModeContextConfigurator
+        arguments:
+            - '@oro_oauth2_server.provider.session_transfer_mode'
+        tags:
+            - { name: layout.context_configurator }

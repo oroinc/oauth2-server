@@ -23,6 +23,11 @@ class ClientEntityFactory implements ClientEntityFactoryInterface
         $clientEntity->setConfidential($client->isConfidential());
         $clientEntity->setPlainTextPkceAllowed($client->isPlainTextPkceAllowed());
         $clientEntity->setSkipAuthorizeClientAllowed($client->isSkipAuthorizeClientAllowed());
+        $clientEntity->setGrants($client->getGrants() ?? []);
+        $clientEntity->setLogoutAllowed($client->isLogoutAllowed());
+        $clientEntity->setPostLogoutRedirectUris(
+            array_values(array_filter($client->getPostLogoutRedirectUris() ?? []))
+        );
         if (!$client->isAllApis()) {
             $clientEntity->setApis($client->getApis());
         }

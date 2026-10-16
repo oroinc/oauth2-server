@@ -146,6 +146,20 @@ class Client
     private bool $sessionTransferAllowed = false;
 
     /**
+     * Used to allow the OAuth application to log the user out
+     */
+    #[ORM\Column(name: 'logout_allowed', type: Types::BOOLEAN, options: ['default' => false])]
+    #[ConfigField(defaultValues: ['email' => ['available_in_template' => true]])]
+    private bool $logoutAllowed = false;
+
+    /**
+     * @var string[]|null
+     */
+    #[ORM\Column(name: 'post_logout_redirect_uris', type: Types::SIMPLE_ARRAY, nullable: true)]
+    #[ConfigField(defaultValues: ['email' => ['available_in_template' => true]])]
+    private ?array $postLogoutRedirectUris = null;
+
+    /**
      * Gets the entity identifier.
      *
      * @return int|null
@@ -533,6 +547,40 @@ class Client
     public function setSessionTransferAllowed(bool $sessionTransferAllowed): self
     {
         $this->sessionTransferAllowed = $sessionTransferAllowed;
+
+        return $this;
+    }
+
+    public function isLogoutAllowed(): bool
+    {
+        return $this->logoutAllowed;
+    }
+
+    public function setLogoutAllowed(bool $logoutAllowed): self
+    {
+        $this->logoutAllowed = $logoutAllowed;
+
+        return $this;
+    }
+
+    /**
+     * Gets the URIs the OAuth application is allowed to be redirected to after logout.
+     *
+     * @return string[]|null
+     */
+    public function getPostLogoutRedirectUris(): ?array
+    {
+        return $this->postLogoutRedirectUris;
+    }
+
+    /**
+     * Sets the URIs the OAuth application is allowed to be redirected to after logout.
+     *
+     * @param string[]|null $postLogoutRedirectUris
+     */
+    public function setPostLogoutRedirectUris(?array $postLogoutRedirectUris): self
+    {
+        $this->postLogoutRedirectUris = $postLogoutRedirectUris;
 
         return $this;
     }

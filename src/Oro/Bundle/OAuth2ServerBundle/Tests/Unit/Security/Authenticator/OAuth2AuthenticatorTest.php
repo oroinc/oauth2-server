@@ -12,6 +12,7 @@ use Oro\Bundle\CustomerBundle\Security\AnonymousCustomerUserRolesProvider;
 use Oro\Bundle\CustomerBundle\Security\Token\AnonymousCustomerUserToken;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
+use Oro\Bundle\OAuth2ServerBundle\Provider\CurrentClientProvider;
 use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\OAuth2Token;
 use Oro\Bundle\OAuth2ServerBundle\Security\Authenticator\OAuth2Authenticator;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
@@ -417,6 +418,7 @@ class OAuth2AuthenticatorTest extends TestCase
     {
         $user = $this->createMock(User::class);
         $organization = $this->createMock(Organization::class);
+        $client = new Client();
 
         $passport = new SelfValidatingPassport(
             new UserBadge('testUser', function () use ($user) {
@@ -424,20 +426,26 @@ class OAuth2AuthenticatorTest extends TestCase
             })
         );
         $passport->setAttribute('organization', $organization);
+        $passport->setAttribute('client', $client);
 
-        self::assertInstanceOf(OAuth2Token::class, $this->authenticator->createToken($passport, 'firewallName'));
+        $resultToken = $this->authenticator->createToken($passport, 'firewallName');
+
+        self::assertInstanceOf(OAuth2Token::class, $resultToken);
+        self::assertSame($client, $resultToken->getAttribute(CurrentClientProvider::CLIENT_ATTRIBUTE));
     }
 
     public function testCreateAnonymousCustomerUserToken(): void
     {
         $user = new CustomerVisitor();
         $organization = $this->createMock(Organization::class);
+        $client = new Client();
         $roles = ['ROLE_ANONYMOUS'];
 
         $passport = new SelfValidatingPassport(new UserBadge('username', function () use ($user) {
             return $user;
         }));
         $passport->setAttribute('organization', $organization);
+        $passport->setAttribute('client', $client);
 
         $this->rolesProvider->expects(self::once())
             ->method('getRoles')
@@ -447,6 +455,8 @@ class OAuth2AuthenticatorTest extends TestCase
 
         self::assertInstanceOf(AnonymousCustomerUserToken::class, $resultToken);
         self::assertEquals($roles, $resultToken->getRoles());
+        self::assertSame($organization, $resultToken->getOrganization());
+        self::assertSame($client, $resultToken->getAttribute(CurrentClientProvider::CLIENT_ATTRIBUTE));
     }
 
     public function testOnAuthenticationFailure(): void

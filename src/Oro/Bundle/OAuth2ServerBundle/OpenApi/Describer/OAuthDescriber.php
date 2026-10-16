@@ -33,7 +33,7 @@ class OAuthDescriber implements
     use ResponseStorageAwareTrait;
     use ErrorResponseStorageAwareTrait;
 
-    private const OAUTH_FAILURE = 'oauthTokenFailure';
+    public const string OAUTH_FAILURE = 'oauthTokenFailure';
 
     private UrlGeneratorInterface $urlGenerator;
     private DataTypeDescribeHelper $dataTypeDescribeHelper;

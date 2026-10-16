@@ -56,6 +56,8 @@
                     form.redirectUris is defined ? form_row_collection(form.redirectUris) : '',
                     form.confidential is defined ? form_row(form.confidential) : '',
                     form.skipAuthorizeClientAllowed is defined ? form_row(form.skipAuthorizeClientAllowed) : '',
+                    form.logoutAllowed is defined ? form_row(form.logoutAllowed) : '',
+                    form.postLogoutRedirectUris is defined ? form_row_collection(form.postLogoutRedirectUris) : '',
                     form.owner is defined ? form_row(form.owner) : ''
                 ]
             }

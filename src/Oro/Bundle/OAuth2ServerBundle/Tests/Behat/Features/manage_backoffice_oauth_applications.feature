@@ -38,6 +38,8 @@ Feature: Manage Backoffice OAuth Applications
     And I should not see "Redirect URLs"
     And I should not see "Confidential Client"
     And I should not see "Skip User Consent"
+    And I should not see "Enable Logout"
+    And I should not see "Post-Logout URLs"
 
   Scenario: Delete OAuth application from view page
     When I click "Delete"
@@ -76,6 +78,8 @@ Feature: Manage Backoffice OAuth Applications
     And I should not see "Redirect URLs"
     And I should not see "Confidential Client"
     And I should not see "Skip User Consent"
+    And I should not see "Enable Logout"
+    And I should not see "Post-Logout URLs"
 
   Scenario: View grid for OAuth application for specific APIs
     When I go to System/User Management/OAuth Applications
@@ -128,6 +132,8 @@ Feature: Manage Backoffice OAuth Applications
     And I should not see "Redirect URLs"
     And I should not see "Confidential Client"
     And I should not see "Skip User Consent"
+    And I should not see "Enable Logout"
+    And I should not see "Post-Logout URLs"
     And I click "Save and Close"
     Then I should see "OAuth application has been created." flash message
     And I should see "Please copy Client Secret and save it somewhere safe. For security reasons, we cannot show it to you again."
@@ -141,6 +147,8 @@ Feature: Manage Backoffice OAuth Applications
     And I should not see "Redirect URLs"
     And I should not see "Confidential Client"
     And I should not see "Skip User Consent"
+    And I should not see "Enable Logout"
+    And I should not see "Post-Logout URLs"
     And I should see "Client ID"
     When I fill form with:
       | Application Name | Client App edited |
@@ -194,6 +202,8 @@ Feature: Manage Backoffice OAuth Applications
     And I should not see "User*"
     And I should see "Confidential Client"
     And I should see "Skip User Consent"
+    And I should see "Enable Logout"
+    And I should see "Post-Logout URLs"
     And I click "Save and Close"
     Then I should see "OAuth application has been created." flash message
     And I should see "Please copy Client Secret and save it somewhere safe. For security reasons, we cannot show it to you again."
@@ -209,12 +219,18 @@ Feature: Manage Backoffice OAuth Applications
       | Application Name | Auth Code App edited |
     And I uncheck "Confidential Client"
     And I check "Skip User Consent"
-    And click "Save and Close"
+    And I check "Enable Logout"
+    And I save form
+    Then I should see "At least one post-logout URL should be specified when logout is enabled."
+    When I fill form with:
+      | Post-Logout URLs | [https://test.com/logged-out] |
+    And I save and close form
     Then I should see "OAuth application has been updated." flash message
     And I should see OAuth Application with:
       | Application Name    | Auth Code App edited |
       | Grant Type          | Authorization Code   |
       | Confidential Client | No                   |
       | Skip User Consent   | Yes                  |
-    And I should see "https://test.com"
+      | Enable Logout       | Yes                  |
+    And I should see "https://test.com/logged-out"
     And I should see "https://another.com"

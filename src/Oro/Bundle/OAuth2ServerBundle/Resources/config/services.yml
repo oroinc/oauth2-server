@@ -192,6 +192,9 @@ services:
         public: false
         tags: [validator.constraint_validator]
 
+    Oro\Bundle\OAuth2ServerBundle\Validator\Constraints\ClientPostLogoutRedirectUrisValidator:
+        tags: [validator.constraint_validator]
+
     Oro\Bundle\OAuth2ServerBundle\Validator\Constraints\ClientOwnerValidator:
         public: false
         tags: [validator.constraint_validator]
@@ -459,6 +462,11 @@ services:
         tags:
             - { name: oro_oauth2_server.authorize_client_exception_handler }
 
+    oro_oauth2_server.handler.logout.post_logout_redirect_uri_resolver:
+        class: Oro\Bundle\OAuth2ServerBundle\Handler\Logout\PostLogoutRedirectUriResolver
+        arguments:
+            - '@oro_oauth2_server.league.repository.client_repository'
+
     oro_oauth2_server.visitor_access_token_parser:
         class: Oro\Bundle\OAuth2ServerBundle\Security\VisitorAccessTokenParser
         arguments:
@@ -631,4 +639,15 @@ services:
     oro_oauth2_server.session_transfer.token_manager:
         class: Oro\Bundle\OAuth2ServerBundle\SessionTransfer\SessionTransferTokenManager
         arguments:
+            - '@doctrine'
+
+    oro_oauth2_server.provider.session_transfer_mode:
+        class: Oro\Bundle\OAuth2ServerBundle\Provider\SessionTransferModeProvider
+        arguments:
+            - '@security.token_storage'
+
+    oro_oauth2_server.provider.current_client:
+        class: Oro\Bundle\OAuth2ServerBundle\Provider\CurrentClientProvider
+        arguments:
+            - '@security.token_storage'
             - '@doctrine'

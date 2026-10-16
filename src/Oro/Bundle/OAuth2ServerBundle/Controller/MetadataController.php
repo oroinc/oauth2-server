@@ -30,15 +30,20 @@ class MetadataController
             throw new NotFoundHttpException();
         }
 
-        return new JsonResponse([
+        $metadata = [
             'issuer' => $this->generateAbsoluteUrl($this->routeNames['issuer']),
             'authorization_endpoint' => $this->generateAbsoluteUrl($this->routeNames['authorization_endpoint']),
-            'token_endpoint' => $this->generateAbsoluteUrl($this->routeNames['token_endpoint']),
-            'response_types_supported' => ['code'],
-            'grant_types_supported' => $this->enabledGrantTypes,
-            'code_challenge_methods_supported' => [OAuth2CodeGenerator::CODE_CHALLENGE_METHOD],
-            'client_id_metadata_document_supported' => true
-        ]);
+            'token_endpoint' => $this->generateAbsoluteUrl($this->routeNames['token_endpoint'])
+        ];
+        if (!empty($this->routeNames['end_session_endpoint'])) {
+            $metadata['end_session_endpoint'] = $this->generateAbsoluteUrl($this->routeNames['end_session_endpoint']);
+        }
+        $metadata['response_types_supported'] = ['code'];
+        $metadata['grant_types_supported'] = $this->enabledGrantTypes;
+        $metadata['code_challenge_methods_supported'] = [OAuth2CodeGenerator::CODE_CHALLENGE_METHOD];
+        $metadata['client_id_metadata_document_supported'] = true;
+
+        return new JsonResponse($metadata);
     }
 
     private function generateAbsoluteUrl(string $routeName): string

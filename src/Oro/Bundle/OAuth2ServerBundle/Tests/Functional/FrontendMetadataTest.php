@@ -53,6 +53,7 @@ class FrontendMetadataTest extends WebTestCase
                 'issuer' => $this->getUrl('oro_oauth2_server_frontend_metadata', [], true),
                 'authorization_endpoint' => $this->getUrl('oro_oauth2_server_frontend_authenticate', [], true),
                 'token_endpoint' => $this->getUrl('oro_oauth2_server_auth_token', [], true),
+                'end_session_endpoint' => $this->getUrl('oro_oauth2_server_frontend_logout', [], true),
                 'response_types_supported' => ['code'],
                 'grant_types_supported' => [
                     'authorization_code',

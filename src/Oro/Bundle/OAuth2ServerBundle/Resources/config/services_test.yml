@@ -1,0 +1,4 @@
+services:
+    oro_oauth2_server.tests.provider.current_client:
+        alias: oro_oauth2_server.provider.current_client
+        public: true

@@ -80,6 +80,7 @@ class OroOAuth2ServerExtension extends Extension implements PrependExtensionInte
         }
 
         if ('test' === $container->getParameter('kernel.environment')) {
+            $loader->load('services_test.yml');
             $keysFileLocator = new FileLocator(__DIR__ . '/../Tests/Functional/Environment/keys');
             $config['authorization_server']['private_key'] = $keysFileLocator->locate('private.key');
             $config['resource_server']['public_key'] = $keysFileLocator->locate('public.key');

@@ -96,6 +96,14 @@
                             ? 'oro.oauth2server.client.skip_authorize_client_allowed.value.yes'|trans
                             : 'oro.oauth2server.client.skip_authorize_client_allowed.value.no'|trans
                         ) }}
+                        {{ UI.renderHtmlProperty('oro.oauth2server.client.logout_allowed.label'|trans,
+                            entity.logoutAllowed
+                            ? 'oro.oauth2server.client.logout_allowed.value.yes'|trans
+                            : 'oro.oauth2server.client.logout_allowed.value.no'|trans
+                        ) }}
+                        {% if entity.logoutAllowed %}
+                            {{ UI.renderHtmlProperty('oro.oauth2server.client.post_logout_redirect_uris.label'|trans, (entity.postLogoutRedirectUris ?? [])|join('\n')|nl2br) }}
+                        {% endif %}
                     {% endif -%}
                     {% if user is not null %}
                         {{ UI.renderHtmlProperty(

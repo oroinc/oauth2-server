@@ -18,6 +18,8 @@ const GrantWatcherView = BaseView.extend({
         this.redirectUrisField = $(options.redirectUrisField);
         this.confidentialField = $(options.confidentialField);
         this.skipAuthorizeClientAllowedField = $(options.skipAuthorizeClientAllowedField);
+        this.logoutAllowedField = $(options.logoutAllowedField);
+        this.postLogoutRedirectUrisField = $(options.postLogoutRedirectUrisField);
 
         this.updateClientView();
     },
@@ -34,10 +36,14 @@ const GrantWatcherView = BaseView.extend({
             this.redirectUrisField.removeClass('hide');
             this.confidentialField.removeClass('hide');
             this.skipAuthorizeClientAllowedField.removeClass('hide');
+            this.logoutAllowedField.removeClass('hide');
+            this.postLogoutRedirectUrisField.removeClass('hide');
         } else {
             this.redirectUrisField.addClass('hide');
             this.confidentialField.addClass('hide');
             this.skipAuthorizeClientAllowedField.addClass('hide');
+            this.logoutAllowedField.addClass('hide');
+            this.postLogoutRedirectUrisField.addClass('hide');
         }
     },
 

@@ -30,6 +30,7 @@ class NoFrontendRoutesListenerTest extends TestCase
                 'oro_oauth2_server_metadata_well_known_alias',
                 'oro_oauth2_server_metadata',
                 'oro_oauth2_server_authenticate',
+                'oro_oauth2_server_logout',
                 'oro_oauth2_session_transfer_consume'
             ],
             array_keys($routes)

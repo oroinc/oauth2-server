@@ -76,6 +76,7 @@ final class BackendSessionTransferContextHandler extends AbstractSessionTransfer
             $organization,
             $user->getRoles()
         );
+        $this->setSessionTransferClient($securityToken, $transferToken);
         $this->storeSecurityToken($request, $securityToken, true);
     }
 }

@@ -6,6 +6,7 @@ use Oro\Bundle\ApiBundle\Request\RequestType;
 use Oro\Bundle\ApiBundle\Util\DependencyInjectionUtil;
 use Oro\Bundle\OAuth2ServerBundle\OpenApi\Describer\OAuthDescriber;
 use Oro\Bundle\OAuth2ServerBundle\OpenApi\Describer\OAuthSecurityDescriber;
+use Oro\Bundle\OAuth2ServerBundle\OpenApi\Describer\OAuthVisitorAuthorizationDescriber;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Reference;
@@ -35,6 +36,16 @@ class OpenApiCompilerPass implements CompilerPassInterface
                 ->addArgument(new Reference('router'))
                 ->addArgument(new Reference('oro_api.api_doc.open_api.data_type_describe_helper'))
                 ->addTag('oro.api.open_api.describer.' . $view);
+
+            if (\in_array('frontend', $requestType, true)) {
+                $container
+                    ->register(
+                        'oro_oauth2_server.open_api.visitor_authorization_describer.' . $view,
+                        OAuthVisitorAuthorizationDescriber::class
+                    )
+                    ->addArgument(new Reference('router'))
+                    ->addTag('oro.api.open_api.describer.' . $view);
+            }
         }
     }
 

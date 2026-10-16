@@ -13,6 +13,7 @@ use Oro\Bundle\CustomerBundle\Security\AnonymousCustomerUserRolesProvider;
 use Oro\Bundle\CustomerBundle\Security\Token\AnonymousCustomerUserToken;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Client;
 use Oro\Bundle\OAuth2ServerBundle\Entity\Manager\ClientManager;
+use Oro\Bundle\OAuth2ServerBundle\Provider\CurrentClientProvider;
 use Oro\Bundle\OAuth2ServerBundle\Security\Authentication\Token\OAuth2Token;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Oro\Bundle\UserBundle\Entity\AbstractUser;
@@ -110,16 +111,16 @@ class OAuth2Authenticator implements AuthenticatorInterface
 
         if ($user instanceof AbstractUser) {
             $token = new OAuth2Token($user, $organization);
-            $token->setAttribute('client', $passport->getAttribute('client'));
-
-            return $token;
+        } else {
+            $token = new AnonymousCustomerUserToken(
+                $user,
+                $this->rolesProvider->getRoles(),
+                $organization
+            );
         }
+        $token->setAttribute(CurrentClientProvider::CLIENT_ATTRIBUTE, $passport->getAttribute('client'));
 
-        return new AnonymousCustomerUserToken(
-            $user,
-            $this->rolesProvider->getRoles(),
-            $organization
-        );
+        return $token;
     }
 
     #[\Override]

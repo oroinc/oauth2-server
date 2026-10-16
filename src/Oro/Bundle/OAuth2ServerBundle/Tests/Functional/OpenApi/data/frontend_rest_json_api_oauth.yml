@@ -32,6 +32,60 @@ paths:
           $ref: '#/components/responses/empty'
         '500':
           $ref: '#/components/responses/err500_1'
+  /oauth2-token/authorize-visitor:
+    get:
+      tags:
+        - oauth
+      summary: 'Get OAuth 2.0 authorization code for a visitor'
+      description: 'Obtain the OAuth 2.0 authorization code for a storefront visitor (guest).'
+      operationId: oauthtoken-authorize-visitor-get
+      parameters:
+        -
+          name: response_type
+          in: query
+          description: 'The response type.'
+          required: true
+          schema:
+            type: string
+            enum:
+              - code
+        -
+          name: client_id
+          in: query
+          description: 'The client ID.'
+          required: true
+          schema:
+            type: string
+        -
+          name: redirect_uri
+          in: query
+          description: 'The client redirect URI.'
+          schema:
+            type: string
+        -
+          name: code_challenge
+          in: query
+          description: 'The code challenge for the PKCE request.'
+          schema:
+            type: string
+        -
+          name: code_challenge_method
+          in: query
+          description: 'The code challenge method for the PKCE request.'
+          schema:
+            type: string
+            enum:
+              - plain
+              - S256
+      responses:
+        '302':
+          $ref: '#/components/responses/empty'
+        '400':
+          $ref: '#/components/responses/err400_1'
+        '401':
+          $ref: '#/components/responses/err401_1'
+        '500':
+          $ref: '#/components/responses/err500_1'
 components:
   schemas:
     oauthTokenRequestModel:
