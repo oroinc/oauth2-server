@@ -464,9 +464,9 @@ class OAuth2AuthenticatorTest extends TestCase
         $request = $this->createMock(Request::class);
         $exception = $this->createMock(AuthenticationException::class);
 
-        self::assertEquals(
-            new Response('', 401, []),
-            $this->authenticator->onAuthenticationFailure($request, $exception)
-        );
+        $response = $this->authenticator->onAuthenticationFailure($request, $exception);
+        self::assertInstanceOf(Response::class, $response);
+        self::assertSame(Response::HTTP_UNAUTHORIZED, $response->getStatusCode());
+        self::assertSame('', $response->getContent());
     }
 }
