@@ -53,9 +53,9 @@ final class LogoutControllerTest extends WebTestCase
     /**
      * @dataProvider loggedInServerParametersProvider
      */
-    public function testLogoutEndsSessionAndRedirectsToRegisteredPostLogoutUri(array $server): void
+    public function testLogoutEndsSessionAndRedirectsToRegisteredPostLogoutUri(\Closure $serverClosure): void
     {
-        $this->initClient([], $server);
+        $this->initClient([], $serverClosure());
 
         $response = $this->requestLogout([
             'client_id' => LoadFrontendLogoutClients::LOGOUT_ALLOWED_CLIENT_ID,
@@ -69,10 +69,14 @@ final class LogoutControllerTest extends WebTestCase
 
     public static function loggedInServerParametersProvider(): iterable
     {
+        // A data provider runs before setUp(), so the fixture constants are read lazily, after the skip.
         yield 'customer user' => [
-            self::generateBasicAuthHeader(LoadCustomerUserData::EMAIL, LoadCustomerUserData::PASSWORD),
+            static fn (): array => self::generateBasicAuthHeader(
+                LoadCustomerUserData::EMAIL,
+                LoadCustomerUserData::PASSWORD
+            ),
         ];
-        yield 'guest' => [[]];
+        yield 'guest' => [static fn (): array => []];
     }
 
     public function testLogoutKeepsHeadersAddedByFirewallLogoutListenersExceptLocation(): void
